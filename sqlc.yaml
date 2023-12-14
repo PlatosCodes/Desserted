@@ -1,0 +1,12 @@
+version: "1"
+packages:
+  - name: "backend/db"
+    path: "./backend/db/sqlc"
+    queries: "./backend/db/query/"
+    schema: "./backend/db/migration/"
+    engine: "postgresql"
+    emit_prepared_queries: false
+    emit_interface: true
+    emit_exact_table_names: false
+    emit_empty_slices: true
+    emit_json_tags: true

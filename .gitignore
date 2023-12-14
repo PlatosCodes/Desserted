@@ -1,0 +1,10 @@
+# Node
+node_modules/
+build/
+
+# Go
+bin/
+pkg/
+
+# Environment files
+.env
