@@ -3,7 +3,7 @@ Project Desserted {
 }
 
 Table users {
-  id integer [pk, increment] // Primary key
+  id bigserial [pk] // primary key, auto-increment
   username varchar
   email varchar [unique]
   password_hash varchar
@@ -13,7 +13,7 @@ Table users {
 }
 
 Table games {
-  id integer [pk, increment] // Primary key
+  id bigserial [pk] // primary key, auto-increment
   status varchar
   created_at timestamp
   ended_at timestamp
@@ -30,7 +30,7 @@ Table players {
 }
 
 Table cards {
-  id integer [pk, increment] // Primary key
+  id bigserial [pk] // primary key, auto-increment
   type varchar // 'ingredient' or 'special'
   name varchar
   points integer

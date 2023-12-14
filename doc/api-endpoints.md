@@ -3,6 +3,7 @@
 ## User Authentication
 - `POST /api/auth/register`: User registration.
 - `POST /api/auth/login`: User login.
+- `GET /user/{userId}`: Retrieve user profile and stats.
 
 ## Game Management
 - `POST /api/game/create`: Create a new game session.
