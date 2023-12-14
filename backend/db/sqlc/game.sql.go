@@ -11,18 +11,19 @@ import (
 )
 
 const createGame = `-- name: CreateGame :one
-INSERT INTO games (status, created_at)
-VALUES ($1, NOW())
-RETURNING id, status, created_at, ended_at
+INSERT INTO games (created_by)
+VALUES ($1)
+RETURNING id, status, created_by, created_at, ended_at
 `
 
 // Create a new game session
-func (q *Queries) CreateGame(ctx context.Context, status sql.NullString) (Game, error) {
-	row := q.db.QueryRowContext(ctx, createGame, status)
+func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error) {
+	row := q.db.QueryRowContext(ctx, createGame, createdBy)
 	var i Game
 	err := row.Scan(
 		&i.ID,
 		&i.Status,
+		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.EndedAt,
 	)
@@ -30,24 +31,33 @@ func (q *Queries) CreateGame(ctx context.Context, status sql.NullString) (Game, 
 }
 
 const drawCard = `-- name: DrawCard :one
-SELECT id, type, name, points FROM cards ORDER BY RANDOM() LIMIT 1
+SELECT id, type, name FROM cards
+ORDER BY RANDOM()
+LIMIT 1
 `
 
 // Draw a card
 func (q *Queries) DrawCard(ctx context.Context) (Card, error) {
 	row := q.db.QueryRowContext(ctx, drawCard)
 	var i Card
-	err := row.Scan(
-		&i.ID,
-		&i.Type,
-		&i.Name,
-		&i.Points,
-	)
+	err := row.Scan(&i.ID, &i.Type, &i.Name)
 	return i, err
 }
 
+const endGame = `-- name: EndGame :exec
+UPDATE games 
+SET status = 'complete', ended_at = NOW() 
+WHERE id = $1
+`
+
+// End game
+func (q *Queries) EndGame(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, endGame, id)
+	return err
+}
+
 const getGameByID = `-- name: GetGameByID :one
-SELECT id, status, created_at, ended_at FROM games WHERE id = $1
+SELECT id, status, created_by, created_at, ended_at FROM games WHERE id = $1
 `
 
 // Get game session by ID
@@ -57,6 +67,7 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Status,
+		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.EndedAt,
 	)
@@ -64,32 +75,19 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 }
 
 const playDessert = `-- name: PlayDessert :exec
-UPDATE players SET played_cards = array_append(played_cards, $1) WHERE user_id = $2 AND game_id = $3
+UPDATE players 
+SET played_cards = array_append(played_cards, $1) 
+WHERE user_id = $2 AND game_id = $3
 `
 
 type PlayDessertParams struct {
 	ArrayAppend interface{}   `json:"array_append"`
-	UserID      sql.NullInt32 `json:"user_id"`
-	GameID      sql.NullInt32 `json:"game_id"`
+	UserID      sql.NullInt64 `json:"user_id"`
+	GameID      sql.NullInt64 `json:"game_id"`
 }
 
 // Play a dessert
 func (q *Queries) PlayDessert(ctx context.Context, arg PlayDessertParams) error {
 	_, err := q.db.ExecContext(ctx, playDessert, arg.ArrayAppend, arg.UserID, arg.GameID)
-	return err
-}
-
-const updateGameStatus = `-- name: UpdateGameStatus :exec
-UPDATE games SET status = $1, ended_at = NOW() WHERE id = $2
-`
-
-type UpdateGameStatusParams struct {
-	Status sql.NullString `json:"status"`
-	ID     int64          `json:"id"`
-}
-
-// Update game status
-func (q *Queries) UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error {
-	_, err := q.db.ExecContext(ctx, updateGameStatus, arg.Status, arg.ID)
 	return err
 }

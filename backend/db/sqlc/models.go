@@ -11,24 +11,31 @@ import (
 
 // Details of each card used in the game
 type Card struct {
-	ID     int64          `json:"id"`
-	Type   sql.NullString `json:"type"`
-	Name   sql.NullString `json:"name"`
-	Points sql.NullInt32  `json:"points"`
+	ID   int64          `json:"id"`
+	Type sql.NullString `json:"type"`
+	Name sql.NullString `json:"name"`
+}
+
+type Dessert struct {
+	ID     int32  `json:"id"`
+	Name   string `json:"name"`
+	Points int32  `json:"points"`
+	Type   string `json:"type"`
 }
 
 // Represents a game session
 type Game struct {
 	ID        int64          `json:"id"`
 	Status    sql.NullString `json:"status"`
+	CreatedBy int64          `json:"created_by"`
 	CreatedAt time.Time      `json:"created_at"`
 	EndedAt   sql.NullTime   `json:"ended_at"`
 }
 
 // Associates users with their game sessions and tracks their progress
 type Player struct {
-	UserID      sql.NullInt32  `json:"user_id"`
-	GameID      sql.NullInt32  `json:"game_id"`
+	UserID      sql.NullInt64  `json:"user_id"`
+	GameID      sql.NullInt64  `json:"game_id"`
 	Score       sql.NullInt32  `json:"score"`
 	HandCards   sql.NullString `json:"hand_cards"`
 	PlayedCards sql.NullString `json:"played_cards"`

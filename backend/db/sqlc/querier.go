@@ -14,33 +14,34 @@ type Querier interface {
 	// Add player to a game
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
 	// Create a new game session
-	CreateGame(ctx context.Context, status sql.NullString) (Game, error)
+	CreateGame(ctx context.Context, createdBy int64) (Game, error)
 	// Register a new user
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	// Draw a card
 	DrawCard(ctx context.Context) (Card, error)
-	// card.sql
-	// Get all cards
-	GetAllCards(ctx context.Context) ([]Card, error)
+	// End game
+	EndGame(ctx context.Context, id int64) error
 	// Get card by ID
 	GetCardByID(ctx context.Context, id int64) (Card, error)
-	// Get cards by type
-	GetCardsByType(ctx context.Context, type_ sql.NullString) ([]Card, error)
 	// Get game session by ID
 	GetGameByID(ctx context.Context, id int64) (Game, error)
 	// Get players in a game
-	GetPlayersInGame(ctx context.Context, gameID sql.NullInt32) ([]Player, error)
+	GetPlayersInGame(ctx context.Context, gameID sql.NullInt64) ([]Player, error)
 	// Retrieve a user
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	// Get a user by their ID
 	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
+	// card.sql
+	// List all cards
+	ListCards(ctx context.Context) ([]Card, error)
+	// List cards by type
+	ListCardsByType(ctx context.Context, type_ sql.NullString) ([]Card, error)
 	// Retrieve a list of all users
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	// Play a dessert
 	PlayDessert(ctx context.Context, arg PlayDessertParams) error
-	// Update game status
-	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
 	// Update player's score
 	UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
