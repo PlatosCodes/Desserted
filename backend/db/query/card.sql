@@ -1,5 +1,3 @@
--- card.sql
-
 -- List all cards
 -- name: ListCards :many
 SELECT * FROM cards;
@@ -7,7 +5,7 @@ SELECT * FROM cards;
 -- Get card by ID
 -- name: GetCardByID :one
 SELECT * FROM cards 
-WHERE id = $1;
+WHERE card_id = $1;
 
 -- List cards by type
 -- name: ListCardsByType :many

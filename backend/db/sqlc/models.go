@@ -11,34 +11,56 @@ import (
 
 // Details of each card used in the game
 type Card struct {
-	ID   int64          `json:"id"`
-	Type sql.NullString `json:"type"`
-	Name sql.NullString `json:"name"`
+	CardID int64  `json:"card_id"`
+	Type   string `json:"type"`
+	Name   string `json:"name"`
 }
 
 type Dessert struct {
-	ID     int32  `json:"id"`
-	Name   string `json:"name"`
-	Points int32  `json:"points"`
-	Type   string `json:"type"`
+	DessertID int32  `json:"dessert_id"`
+	Name      string `json:"name"`
+	Points    int32  `json:"points"`
+}
+
+type DessertPlayed struct {
+	DessertPlayedID int32          `json:"dessert_played_id"`
+	PlayerGameID    int32          `json:"player_game_id"`
+	DessertID       int32          `json:"dessert_id"`
+	IconPath        sql.NullString `json:"icon_path"`
+	Timestamp       time.Time      `json:"timestamp"`
 }
 
 // Represents a game session
 type Game struct {
-	ID        int64          `json:"id"`
-	Status    sql.NullString `json:"status"`
-	CreatedBy int64          `json:"created_by"`
-	CreatedAt time.Time      `json:"created_at"`
-	EndedAt   sql.NullTime   `json:"ended_at"`
+	GameID    int32        `json:"game_id"`
+	Status    string       `json:"status"`
+	CreatedBy int64        `json:"created_by"`
+	StartTime time.Time    `json:"start_time"`
+	EndTime   sql.NullTime `json:"end_time"`
+}
+
+type PlayedCard struct {
+	PlayedCardID int32     `json:"played_card_id"`
+	PlayerGameID int32     `json:"player_game_id"`
+	CardID       int64     `json:"card_id"`
+	PlayTime     time.Time `json:"play_time"`
 }
 
 // Associates users with their game sessions and tracks their progress
-type Player struct {
-	UserID      sql.NullInt64  `json:"user_id"`
-	GameID      sql.NullInt64  `json:"game_id"`
-	Score       sql.NullInt32  `json:"score"`
-	HandCards   sql.NullString `json:"hand_cards"`
-	PlayedCards sql.NullString `json:"played_cards"`
+type PlayerGame struct {
+	PlayerGameID int32          `json:"player_game_id"`
+	PlayerID     int64          `json:"player_id"`
+	GameID       int32          `json:"game_id"`
+	PlayerScore  sql.NullInt32  `json:"player_score"`
+	PlayerStatus sql.NullString `json:"player_status"`
+	HandCards    sql.NullString `json:"hand_cards"`
+	PlayedCards  sql.NullString `json:"played_cards"`
+}
+
+type PlayerHand struct {
+	PlayerHandID int32 `json:"player_hand_id"`
+	PlayerGameID int32 `json:"player_game_id"`
+	CardID       int64 `json:"card_id"`
 }
 
 // Stores user account information
@@ -49,4 +71,7 @@ type User struct {
 	Password          []byte    `json:"password"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
+	TotalScore        int32     `json:"total_score"`
+	TotalWins         int32     `json:"total_wins"`
+	TotalLosses       int32     `json:"total_losses"`
 }

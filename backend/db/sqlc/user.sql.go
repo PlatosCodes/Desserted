@@ -13,7 +13,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password, email) 
 VALUES ($1, $2, $3) 
-RETURNING id, username, email, password, password_changed_at, created_at
+RETURNING id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses
 `
 
 type CreateUserParams struct {
@@ -22,7 +22,6 @@ type CreateUserParams struct {
 	Email    string `json:"email"`
 }
 
-// Register a new user
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Password, arg.Email)
 	var i User
@@ -33,6 +32,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Password,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.TotalScore,
+		&i.TotalWins,
+		&i.TotalLosses,
 	)
 	return i, err
 }
@@ -47,11 +49,10 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password, password_changed_at, created_at FROM users
-WHERE email = $1 LIMIT 1
+SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
+ WHERE email = $1 LIMIT 1
 `
 
-// Retrieve a user
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
 	var i User
@@ -62,16 +63,18 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Password,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.TotalScore,
+		&i.TotalWins,
+		&i.TotalLosses,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, email, password, password_changed_at, created_at FROM users 
-WHERE id = $1
+SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
+WHERE id = $1 LIMIT 1
 `
 
-// Get a user by their ID
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
 	var i User
@@ -82,12 +85,15 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Password,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.TotalScore,
+		&i.TotalWins,
+		&i.TotalLosses,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, email, password, password_changed_at, created_at FROM users
+SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
 WHERE username = $1 LIMIT 1
 `
 
@@ -101,12 +107,15 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Password,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.TotalScore,
+		&i.TotalWins,
+		&i.TotalLosses,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, username, email, password, password_changed_at, created_at FROM users
+SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -117,7 +126,6 @@ type ListUsersParams struct {
 	Offset int32 `json:"offset"`
 }
 
-// Retrieve a list of all users
 func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
@@ -134,6 +142,9 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Password,
 			&i.PasswordChangedAt,
 			&i.CreatedAt,
+			&i.TotalScore,
+			&i.TotalWins,
+			&i.TotalLosses,
 		); err != nil {
 			return nil, err
 		}
@@ -156,7 +167,7 @@ SET
   password_changed_at = COALESCE($3, password_changed_at)
 WHERE
   username = $4
-RETURNING id, username, email, password, password_changed_at, created_at
+RETURNING id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses
 `
 
 type UpdateUserParams struct {
@@ -181,6 +192,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Password,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.TotalScore,
+		&i.TotalWins,
+		&i.TotalLosses,
 	)
 	return i, err
 }

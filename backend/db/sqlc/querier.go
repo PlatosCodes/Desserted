@@ -6,44 +6,36 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 type Querier interface {
-	// player.sql
-	// Add player to a game
+	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) error
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
-	// Create a new game session
 	CreateGame(ctx context.Context, createdBy int64) (Game, error)
-	// Register a new user
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteUser(ctx context.Context, id int64) error
-	// Draw a card
-	DrawCard(ctx context.Context) (Card, error)
-	// End game
-	EndGame(ctx context.Context, id int64) error
+	EndGame(ctx context.Context, gameID int32) error
 	// Get card by ID
-	GetCardByID(ctx context.Context, id int64) (Card, error)
-	// Get game session by ID
-	GetGameByID(ctx context.Context, id int64) (Game, error)
-	// Get players in a game
-	GetPlayersInGame(ctx context.Context, gameID sql.NullInt64) ([]Player, error)
-	// Retrieve a user
+	GetCardByID(ctx context.Context, cardID int64) (Card, error)
+	GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int32) ([]GetDessertsPlayedByPlayerRow, error)
+	GetGameByID(ctx context.Context, gameID int32) (Game, error)
+	GetPlayerGame(ctx context.Context, playerGameID int32) (PlayerGame, error)
+	GetPlayerHand(ctx context.Context, playerGameID int32) ([]int64, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	// Get a user by their ID
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
-	// card.sql
+	ListActiveGames(ctx context.Context, arg ListActiveGamesParams) ([]Game, error)
 	// List all cards
 	ListCards(ctx context.Context) ([]Card, error)
 	// List cards by type
-	ListCardsByType(ctx context.Context, type_ sql.NullString) ([]Card, error)
-	// Retrieve a list of all users
+	ListCardsByType(ctx context.Context, type_ string) ([]Card, error)
+	ListPlayerGames(ctx context.Context, playerID int64) ([]PlayerGame, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
-	// Play a dessert
-	PlayDessert(ctx context.Context, arg PlayDessertParams) error
-	// Update player's score
-	UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) error
+	RecordDessertPlayed(ctx context.Context, arg RecordDessertPlayedParams) error
+	RecordPlayedCard(ctx context.Context, arg RecordPlayedCardParams) error
+	RemoveCardFromPlayerHand(ctx context.Context, playerHandID int32) error
+	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
+	UpdatePlayerGame(ctx context.Context, arg UpdatePlayerGameParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
