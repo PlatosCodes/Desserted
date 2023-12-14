@@ -3,36 +3,81 @@ Project Desserted {
 }
 
 Table users {
-  id bigserial [pk] // primary key, auto-increment
-  username varchar
-  email varchar [unique]
-  password_hash varchar
-  created_at timestamp
-  last_login timestamp
-  Note: 'Stores user account information'
+  id BigSerial [pk]
+  username Varchar(255) [unique, not null]
+  email Varchar(255) [unique, not null]
+  password Bytea [not null]
+  password_changed_at Timestamptz [not null, default: '0001-01-01 00:00:00']
+  created_at Timestamptz [not null, default: `now()`]
+  total_score Int [default: 0]
+  total_wins Int [default: 0]
+  total_losses Int [default: 0]
+  Note: '"users" Stores user account information'
+  Indexes {
+    (username) [name: 'idx_user_username']
+  }
 }
 
 Table games {
-  id bigserial [pk] // primary key, auto-increment
-  status varchar
-  created_at timestamp
-  ended_at timestamp
-  Note: 'Represents a game session'
+  game_id Serial [pk]
+  status Varchar(50) [not null, default: 'active']
+  created_by Bigint [not null, ref: > users.id]
+  start_time Timestamp [not null, default: `now()`]
+  end_time Timestamp
+  Note: '"games" Represents a game session'
+  Indexes {
+    (status) [name: 'idx_games_status']
+  }
 }
 
-Table players {
-  user_id integer [ref: > users.id] // Foreign key to users
-  game_id integer [ref: > games.id] // Foreign key to games
-  score integer
-  hand_cards text // JSON representation of cards in hand
-  played_cards text // JSON representation of played cards
-  Note: 'Associates users with their game sessions and tracks their progress'
+Table player_game {
+  player_game_id Serial [pk]
+  player_id Bigint [not null, ref: > users.id]
+  game_id Int [not null, ref: > games.game_id]
+  player_score Int [default: 0]
+  player_status Varchar(50) [default: 'active']
+  hand_cards Text
+  played_cards Text
+  Note: '"player_game" Associates users with their game sessions and tracks their progress'
+  Indexes {
+    (player_id) [name: 'idx_playergame_player_id']
+    (game_id) [name: 'idx_playergame_game_id']
+  }
 }
 
 Table cards {
-  id bigserial [pk] // primary key, auto-increment
-  type varchar // 'ingredient' or 'special'
-  name varchar
-  points integer
-  Note: 'Details of each card used in the game'
+  card_id BigSerial [pk]
+  type Varchar [not null]
+  name Varchar [not null]
+  Note: '"cards" Details of each card used in the game'
+}
+
+Table desserts {
+  dessert_id Serial [pk]
+  name Text [not null]
+  points Int [not null]
+}
+
+Table player_hand {
+  player_hand_id Serial [pk]
+  player_game_id Int [not null, ref: > player_game.player_game_id]
+  card_id Bigint [not null, ref: > cards.card_id]
+}
+
+Table played_cards {
+  played_card_id Serial [pk]
+  player_game_id Int [not null, ref: > player_game.player_game_id]
+  card_id Bigint [not null, ref: > cards.card_id]
+  play_time Timestamp [not null, default: `now()`]
+}
+
+Table dessert_played {
+  dessert_played_id Serial [pk]
+  player_game_id Int [not null, ref: > player_game.player_game_id]
+  dessert_id Int [not null, ref: > desserts.dessert_id]
+  icon_path Varchar(255)
+  timestamp Timestamp [not null, default: `now()`]
+  Indexes {
+    (timestamp) [name: 'idx_dessertplayed_timestamp']
+  }
 }

@@ -1,27 +1,25 @@
--- Create a new game session
 -- name: CreateGame :one
-INSERT INTO games (created_by)
-VALUES ($1)
+INSERT INTO games (created_by) 
+VALUES ($1) 
 RETURNING *;
 
--- End game
--- name: EndGame :exec
-UPDATE games 
-SET status = 'complete', ended_at = NOW() 
-WHERE id = $1;
-
--- Get game session by ID
 -- name: GetGameByID :one
-SELECT * FROM games WHERE id = $1;
+SELECT * FROM games 
+WHERE game_id = $1;
 
--- Draw a card
--- name: DrawCard :one
-SELECT * FROM cards
-ORDER BY RANDOM()
-LIMIT 1;
+-- name: ListActiveGames :many
+SELECT * FROM games 
+WHERE status = 'active' 
+LIMIT $1 OFFSET $2;
 
--- Play a dessert
--- name: PlayDessert :exec
-UPDATE players 
-SET played_cards = array_append(played_cards, $1) 
-WHERE user_id = $2 AND game_id = $3;
+-- name: UpdateGameStatus :exec
+UPDATE games SET status = $1 
+WHERE game_id = $2;
+
+-- name: DeclareWinner :one
+-- Declare the winner of the game
+SELECT player_id FROM player_game WHERE game_id = ? ORDER BY player_score DESC LIMIT 1;
+
+-- name: EndGame :exec
+UPDATE games SET end_time = NOW() 
+WHERE game_id = $1;

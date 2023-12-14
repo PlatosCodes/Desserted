@@ -7,87 +7,106 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createGame = `-- name: CreateGame :one
-INSERT INTO games (created_by)
-VALUES ($1)
-RETURNING id, status, created_by, created_at, ended_at
+INSERT INTO games (created_by) 
+VALUES ($1) 
+RETURNING game_id, status, created_by, start_time, end_time
 `
 
-// Create a new game session
 func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error) {
 	row := q.db.QueryRowContext(ctx, createGame, createdBy)
 	var i Game
 	err := row.Scan(
-		&i.ID,
+		&i.GameID,
 		&i.Status,
 		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.EndedAt,
+		&i.StartTime,
+		&i.EndTime,
 	)
-	return i, err
-}
-
-const drawCard = `-- name: DrawCard :one
-SELECT id, type, name FROM cards
-ORDER BY RANDOM()
-LIMIT 1
-`
-
-// Draw a card
-func (q *Queries) DrawCard(ctx context.Context) (Card, error) {
-	row := q.db.QueryRowContext(ctx, drawCard)
-	var i Card
-	err := row.Scan(&i.ID, &i.Type, &i.Name)
 	return i, err
 }
 
 const endGame = `-- name: EndGame :exec
-UPDATE games 
-SET status = 'complete', ended_at = NOW() 
-WHERE id = $1
+UPDATE games SET end_time = NOW() 
+WHERE game_id = $1
 `
 
-// End game
-func (q *Queries) EndGame(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, endGame, id)
+func (q *Queries) EndGame(ctx context.Context, gameID int32) error {
+	_, err := q.db.ExecContext(ctx, endGame, gameID)
 	return err
 }
 
 const getGameByID = `-- name: GetGameByID :one
-SELECT id, status, created_by, created_at, ended_at FROM games WHERE id = $1
+SELECT game_id, status, created_by, start_time, end_time FROM games 
+WHERE game_id = $1
 `
 
-// Get game session by ID
-func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
-	row := q.db.QueryRowContext(ctx, getGameByID, id)
+func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (Game, error) {
+	row := q.db.QueryRowContext(ctx, getGameByID, gameID)
 	var i Game
 	err := row.Scan(
-		&i.ID,
+		&i.GameID,
 		&i.Status,
 		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.EndedAt,
+		&i.StartTime,
+		&i.EndTime,
 	)
 	return i, err
 }
 
-const playDessert = `-- name: PlayDessert :exec
-UPDATE players 
-SET played_cards = array_append(played_cards, $1) 
-WHERE user_id = $2 AND game_id = $3
+const listActiveGames = `-- name: ListActiveGames :many
+SELECT game_id, status, created_by, start_time, end_time FROM games 
+WHERE status = 'active' 
+LIMIT $1 OFFSET $2
 `
 
-type PlayDessertParams struct {
-	ArrayAppend interface{}   `json:"array_append"`
-	UserID      sql.NullInt64 `json:"user_id"`
-	GameID      sql.NullInt64 `json:"game_id"`
+type ListActiveGamesParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
-// Play a dessert
-func (q *Queries) PlayDessert(ctx context.Context, arg PlayDessertParams) error {
-	_, err := q.db.ExecContext(ctx, playDessert, arg.ArrayAppend, arg.UserID, arg.GameID)
+func (q *Queries) ListActiveGames(ctx context.Context, arg ListActiveGamesParams) ([]Game, error) {
+	rows, err := q.db.QueryContext(ctx, listActiveGames, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Game{}
+	for rows.Next() {
+		var i Game
+		if err := rows.Scan(
+			&i.GameID,
+			&i.Status,
+			&i.CreatedBy,
+			&i.StartTime,
+			&i.EndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateGameStatus = `-- name: UpdateGameStatus :exec
+UPDATE games SET status = $1 
+WHERE game_id = $2
+`
+
+type UpdateGameStatusParams struct {
+	Status string `json:"status"`
+	GameID int32  `json:"game_id"`
+}
+
+func (q *Queries) UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateGameStatus, arg.Status, arg.GameID)
 	return err
 }
