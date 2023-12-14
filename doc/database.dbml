@@ -1,0 +1,38 @@
+Project Desserted {
+  Note: 'Database schema for the Desserted card game'
+}
+
+Table users {
+  id integer [pk, increment] // Primary key
+  username varchar
+  email varchar [unique]
+  password_hash varchar
+  created_at timestamp
+  last_login timestamp
+  Note: 'Stores user account information'
+}
+
+Table games {
+  id integer [pk, increment] // Primary key
+  status varchar
+  created_at timestamp
+  ended_at timestamp
+  Note: 'Represents a game session'
+}
+
+Table players {
+  user_id integer [ref: > users.id] // Foreign key to users
+  game_id integer [ref: > games.id] // Foreign key to games
+  score integer
+  hand_cards text // JSON representation of cards in hand
+  played_cards text // JSON representation of played cards
+  Note: 'Associates users with their game sessions and tracks their progress'
+}
+
+Table cards {
+  id integer [pk, increment] // Primary key
+  type varchar // 'ingredient' or 'special'
+  name varchar
+  points integer
+  Note: 'Details of each card used in the game'
+}
