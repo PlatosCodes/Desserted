@@ -10,15 +10,28 @@ import (
 	"database/sql"
 )
 
-const getAllCards = `-- name: GetAllCards :many
+const getCardByID = `-- name: GetCardByID :one
+SELECT id, type, name FROM cards 
+WHERE id = $1
+`
 
-SELECT id, type, name, points FROM cards
+// Get card by ID
+func (q *Queries) GetCardByID(ctx context.Context, id int64) (Card, error) {
+	row := q.db.QueryRowContext(ctx, getCardByID, id)
+	var i Card
+	err := row.Scan(&i.ID, &i.Type, &i.Name)
+	return i, err
+}
+
+const listCards = `-- name: ListCards :many
+
+SELECT id, type, name FROM cards
 `
 
 // card.sql
-// Get all cards
-func (q *Queries) GetAllCards(ctx context.Context) ([]Card, error) {
-	rows, err := q.db.QueryContext(ctx, getAllCards)
+// List all cards
+func (q *Queries) ListCards(ctx context.Context) ([]Card, error) {
+	rows, err := q.db.QueryContext(ctx, listCards)
 	if err != nil {
 		return nil, err
 	}
@@ -26,12 +39,7 @@ func (q *Queries) GetAllCards(ctx context.Context) ([]Card, error) {
 	items := []Card{}
 	for rows.Next() {
 		var i Card
-		if err := rows.Scan(
-			&i.ID,
-			&i.Type,
-			&i.Name,
-			&i.Points,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.Type, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -45,32 +53,14 @@ func (q *Queries) GetAllCards(ctx context.Context) ([]Card, error) {
 	return items, nil
 }
 
-const getCardByID = `-- name: GetCardByID :one
-SELECT id, type, name, points FROM cards 
-WHERE id = $1
-`
-
-// Get card by ID
-func (q *Queries) GetCardByID(ctx context.Context, id int64) (Card, error) {
-	row := q.db.QueryRowContext(ctx, getCardByID, id)
-	var i Card
-	err := row.Scan(
-		&i.ID,
-		&i.Type,
-		&i.Name,
-		&i.Points,
-	)
-	return i, err
-}
-
-const getCardsByType = `-- name: GetCardsByType :many
-SELECT id, type, name, points FROM cards 
+const listCardsByType = `-- name: ListCardsByType :many
+SELECT id, type, name FROM cards 
 WHERE type = $1
 `
 
-// Get cards by type
-func (q *Queries) GetCardsByType(ctx context.Context, type_ sql.NullString) ([]Card, error) {
-	rows, err := q.db.QueryContext(ctx, getCardsByType, type_)
+// List cards by type
+func (q *Queries) ListCardsByType(ctx context.Context, type_ sql.NullString) ([]Card, error) {
+	rows, err := q.db.QueryContext(ctx, listCardsByType, type_)
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +68,7 @@ func (q *Queries) GetCardsByType(ctx context.Context, type_ sql.NullString) ([]C
 	items := []Card{}
 	for rows.Next() {
 		var i Card
-		if err := rows.Scan(
-			&i.ID,
-			&i.Type,
-			&i.Name,
-			&i.Points,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.Type, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

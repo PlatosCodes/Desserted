@@ -1,29 +1,41 @@
 -- Seed file for Desserted game
 
 -- Inserting ingredient cards
-INSERT INTO cards (type, name, points) VALUES 
-('ingredient', 'Flour', 1),
-('ingredient', 'Sugar', 1),
-('ingredient', 'Eggs', 1),
-('ingredient', 'Butter', 1),
-('ingredient', 'Milk', 1),
-('ingredient', 'Chocolate', 3),
-('ingredient', 'Vanilla', 3),
-('ingredient', 'Berries', 3),
-('ingredient', 'Nuts', 3),
-('ingredient', 'Cream Cheese', 5),
-('ingredient', 'Saffron', 5),
-('ingredient', 'Honey', 5),
-('ingredient', 'Dark Chocolate', 5),
-('ingredient', 'Matcha Powder', 5),
-('ingredient', 'Edible Gold Leaf', 5);
+INSERT INTO cards (type, name) VALUES 
+('ingredient', 'Flour'),
+('ingredient', 'Sugar'),
+('ingredient', 'Eggs'),
+('ingredient', 'Butter'),
+('ingredient', 'Milk'),
+('ingredient', 'Chocolate'),
+('ingredient', 'Vanilla'),
+('ingredient', 'Berries'),
+('ingredient', 'Nuts'),
+('ingredient', 'Cream Cheese'),
+('ingredient', 'Saffron'),
+('ingredient', 'Honey'),
+('ingredient', 'Dark Chocolate'),
+('ingredient', 'Matcha Powder'),
+('ingredient', 'Edible Gold Leaf');
+
+-- Inserting dessert cards
+INSERT INTO desserts (type, name, points) VALUES 
+('dessert', 'Cake', 10),
+('dessert', 'Pie', 15),
+('dessert', 'Chocolate Chip Cookies', 20),
+('dessert', 'Cheesecake', 25),
+('dessert', 'Tiramisu', 30),
+('dessert', 'Matcha Cake', 35),
+('dessert', 'Saffron Panna Cotta', 40),
+('dessert', 'Gourmet Truffles', 45),
+('dessert', 'Gold Leaf Cupcakes', 50);
 
 -- Inserting special cards
-INSERT INTO cards (type, name, points) VALUES 
-('special', 'Wildcard Ingredient', 0),
-('special', 'Steal Card', 0),
-('special', 'Double Points', 0),
-('special', 'Refresh Hand', 0),
-('special', 'Instant Bake', 0),
-('special', 'Mystery Flavor', 0),
-('special', 'Sabotage', 0);
+INSERT INTO cards (type, name) VALUES 
+('special', 'Wildcard Ingredient'),
+('special', 'Steal Card'),
+('special', 'Double Points'),
+('special', 'Refresh Hand'),
+('special', 'Instant Bake'),
+('special', 'Mystery Flavor'),
+('special', 'Sabotage');

@@ -2,8 +2,8 @@
 
 -- Add player to a game
 -- name: AddPlayerToGame :exec
-INSERT INTO players (user_id, game_id, score, hand_cards, played_cards)
-VALUES ($1, $2, $3, $4, $5);
+INSERT INTO players (user_id, game_id, hand_cards, played_cards)
+VALUES ($1, $2, $3, $4);
 
 -- Update player's score
 -- name: UpdatePlayerScore :exec

@@ -1,7 +1,7 @@
 -- card.sql
 
--- Get all cards
--- name: GetAllCards :many
+-- List all cards
+-- name: ListCards :many
 SELECT * FROM cards;
 
 -- Get card by ID
@@ -9,7 +9,7 @@ SELECT * FROM cards;
 SELECT * FROM cards 
 WHERE id = $1;
 
--- Get cards by type
--- name: GetCardsByType :many
+-- List cards by type
+-- name: ListCardsByType :many
 SELECT * FROM cards 
 WHERE type = $1;

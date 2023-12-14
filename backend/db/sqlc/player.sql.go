@@ -12,14 +12,13 @@ import (
 
 const addPlayerToGame = `-- name: AddPlayerToGame :exec
 
-INSERT INTO players (user_id, game_id, score, hand_cards, played_cards)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO players (user_id, game_id, hand_cards, played_cards)
+VALUES ($1, $2, $3, $4)
 `
 
 type AddPlayerToGameParams struct {
-	UserID      sql.NullInt32  `json:"user_id"`
-	GameID      sql.NullInt32  `json:"game_id"`
-	Score       sql.NullInt32  `json:"score"`
+	UserID      sql.NullInt64  `json:"user_id"`
+	GameID      sql.NullInt64  `json:"game_id"`
 	HandCards   sql.NullString `json:"hand_cards"`
 	PlayedCards sql.NullString `json:"played_cards"`
 }
@@ -30,7 +29,6 @@ func (q *Queries) AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams
 	_, err := q.db.ExecContext(ctx, addPlayerToGame,
 		arg.UserID,
 		arg.GameID,
-		arg.Score,
 		arg.HandCards,
 		arg.PlayedCards,
 	)
@@ -42,7 +40,7 @@ SELECT user_id, game_id, score, hand_cards, played_cards FROM players WHERE game
 `
 
 // Get players in a game
-func (q *Queries) GetPlayersInGame(ctx context.Context, gameID sql.NullInt32) ([]Player, error) {
+func (q *Queries) GetPlayersInGame(ctx context.Context, gameID sql.NullInt64) ([]Player, error) {
 	rows, err := q.db.QueryContext(ctx, getPlayersInGame, gameID)
 	if err != nil {
 		return nil, err
@@ -77,8 +75,8 @@ UPDATE players SET score = $1 WHERE user_id = $2 AND game_id = $3
 
 type UpdatePlayerScoreParams struct {
 	Score  sql.NullInt32 `json:"score"`
-	UserID sql.NullInt32 `json:"user_id"`
-	GameID sql.NullInt32 `json:"game_id"`
+	UserID sql.NullInt64 `json:"user_id"`
+	GameID sql.NullInt64 `json:"game_id"`
 }
 
 // Update player's score
