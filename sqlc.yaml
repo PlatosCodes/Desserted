@@ -1,8 +1,12 @@
 version: "1"
 packages:
-  - name: "backend/db"
+  - name: "db"
     path: "./backend/db/sqlc"
-    queries: "./backend/db/query/"
+    queries: 
+      - "./backend/db/query/user.sql"
+      - "./backend/db/query/card.sql"
+      - "./backend/db/query/game.sql"
+      - "./backend/db/query/player.sql"
     schema: "./backend/db/migration/"
     engine: "postgresql"
     emit_prepared_queries: false

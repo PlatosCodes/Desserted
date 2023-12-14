@@ -1,19 +1,31 @@
-DB_URL=postgresql://root:bluecomet@localhost:5432/desserted?sslmode=disable
+# This Makefile is for managing the Desserted card game project
 
+# Environment Variables
+POSTGRES_USER := root
+POSTGRES_PASSWORD := bluecomet
+DB_NAME := desserted
+CONTAINER_NAME := postgres-desserted
+CONTAINER_VOLUME_PATH := /data
+LOCAL_DB_PATH := /Users/alexmerola/Developer/desserted/backend/db
+DB_URL := postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable
+
+# Docker PostgreSQL container setup
 network:
 	docker network create desserted-network
+
 postgres:
-	docker run --name postgres -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=bluecomet -d postgres:15-alpine
-	
+	docker run --name ${CONTAINER_NAME} -p 5432:5432 -e POSTGRES_USER=${POSTGRES_USER} -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -d -v ${LOCAL_DB_PATH}:${CONTAINER_VOLUME_PATH} postgres:15-alpine
+
 createdb: 
-	docker exec -it postgres createdb --username=root --owner=root desserted
+	docker exec -it ${CONTAINER_NAME} createdb --username=${POSTGRES_USER} --owner=${POSTGRES_USER} ${DB_NAME}
 
 dropdb:
-	docker exec -it postgres dropdb --username=root desserted
+	docker exec -it ${CONTAINER_NAME} dropdb --username=${POSTGRES_USER} ${DB_NAME}
 
 citext:
-	docker exec -it postgres psql --username=root desserted -c "CREATE EXTENSION IF NOT EXISTS citext;"
+	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} ${DB_NAME} -c "CREATE EXTENSION IF NOT EXISTS citext;"
 
+# Database migrations
 migrateup:
 	migrate -path backend/db/migration -database "${DB_URL}" -verbose up
 
@@ -29,6 +41,19 @@ migratedown1:
 new_migration:
 	migrate create -ext sql -dir backend/db/migration -seq $(name)
 
+# Database seeding
+seeddb:
+	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
+
+resetdb:
+	@echo "Resetting database..."
+	@make dropdb || true
+	@make createdb
+	@make citext
+	@make migrateup
+	@make seeddb
+
+# Additional tools
 db_docs:
 	dbdocs build doc/database.dbml
 
@@ -41,4 +66,6 @@ sqlc:
 server:
 	go run main.go
 
-.PHONY: postgres createdb dropdb citext migrateup migrateup1 migratedown migratedown1 new_migration db_docs db_schema sqlc server
+# Define phony targets
+.PHONY: network postgres createdb dropdb citext migrateup migrateup1 migratedown migratedown1 new_migration seeddb resetdb db_docs db_schema sqlc server
+
