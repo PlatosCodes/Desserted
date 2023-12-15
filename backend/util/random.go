@@ -49,24 +49,24 @@ func RandomEmail() string {
 }
 
 func RandomCard() int64 {
-	return Rand().Int63n(23)
+	return Rand().Int63n(50) + 1
 }
 
-// RandomSupportedIngredient generates a random supported ingredient.
-func RandomSupportedIngredient() string {
+// RandomIngredient generates a random ingredient.
+func RandomIngredient() string {
 	ingredients := []string{
-		"Flour", "Sugar", "Eggs", "Butter", "Milk", "Chocolate", "Vanilla",
-		"Berries", "Nuts", "Cream Cheese", "Saffron", "Honey",
+		"Flour", "Sugar", "Eggs", "Butter", "Cocoa", "Vanilla",
+		"Berries", "Cream Cheese", "Saffron", "Honey",
 		"Dark Chocolate", "Matcha Powder", "Edible Gold Leaf",
 	}
 	return ingredients[rand.Intn(len(ingredients))]
 }
 
-// RandomSupportedDessertType generates a random supported dessert type.
-func RandomSupportedDessertType() string {
-	dessertTypes := []string{
+// RandomDessert generates a random dessert.
+func RandomDessertName() string {
+	dessertName := []string{
 		"Cake", "Pie", "Chocolate Chip Cookies", "Cheesecake", "Tiramisu",
 		"Matcha Cake", "Saffron Panna Cotta", "Gourmet Truffles", "Gold Leaf Cupcakes",
 	}
-	return dessertTypes[rand.Intn(len(dessertTypes))]
+	return dessertName[rand.Intn(len(dessertName))]
 }

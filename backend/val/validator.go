@@ -17,13 +17,13 @@ func ValidateDessert(dessertType string, ingredientCards []string) error {
 	requiredIngredients := map[string][]string{
 		util.Cake:                 {"Flour", "Sugar", "Eggs"},
 		util.Pie:                  {"Flour", "Butter", "Berries"},
-		util.ChocolateChipCookies: {"Flour", "Sugar", "Chocolate"},
+		util.ChocolateChipCookies: {"Flour", "Sugar", "Dark Chocolate"},
 		util.Cheesecake:           {"Cream Cheese", "Eggs", "Vanilla"},
 		util.Tiramisu:             {"Coffee", "Cream Cheese", "Cocoa"},
 		util.MatchaCake:           {"Flour", "Matcha Powder", "Eggs"},
 		util.SaffronPannaCotta:    {"Cream", "Saffron", "Sugar"},
 		util.GourmetTruffles:      {"Dark Chocolate", "Cream", "Honey"},
-		util.GoldLeafCupcakes:     {"Flour", "Sugar", "Edible Gold Leaf"},
+		util.GoldLeafCupcakes:     {"Flour", "Sugar", "Butter", "Edible Gold Leaf"},
 	}
 
 	// Check if the ingredient cards match the required ingredients

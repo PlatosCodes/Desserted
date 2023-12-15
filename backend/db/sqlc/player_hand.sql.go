@@ -24,6 +24,39 @@ func (q *Queries) AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHa
 	return err
 }
 
+const getPlayedCards = `-- name: GetPlayedCards :many
+SELECT played_card_id, player_game_id, card_id, play_time FROM played_cards
+WHERE player_game_id = $1
+`
+
+func (q *Queries) GetPlayedCards(ctx context.Context, playerGameID int64) ([]PlayedCard, error) {
+	rows, err := q.db.QueryContext(ctx, getPlayedCards, playerGameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PlayedCard{}
+	for rows.Next() {
+		var i PlayedCard
+		if err := rows.Scan(
+			&i.PlayedCardID,
+			&i.PlayerGameID,
+			&i.CardID,
+			&i.PlayTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPlayerHand = `-- name: GetPlayerHand :many
 SELECT card_id 
 FROM player_hand 
@@ -70,10 +103,15 @@ func (q *Queries) RecordPlayedCard(ctx context.Context, arg RecordPlayedCardPara
 
 const removeCardFromPlayerHand = `-- name: RemoveCardFromPlayerHand :exec
 DELETE FROM player_hand 
-WHERE player_hand_id = $1
+WHERE player_game_id = $1 and card_id = $2
 `
 
-func (q *Queries) RemoveCardFromPlayerHand(ctx context.Context, playerHandID int64) error {
-	_, err := q.db.ExecContext(ctx, removeCardFromPlayerHand, playerHandID)
+type RemoveCardFromPlayerHandParams struct {
+	PlayerGameID int64 `json:"player_game_id"`
+	CardID       int64 `json:"card_id"`
+}
+
+func (q *Queries) RemoveCardFromPlayerHand(ctx context.Context, arg RemoveCardFromPlayerHandParams) error {
+	_, err := q.db.ExecContext(ctx, removeCardFromPlayerHand, arg.PlayerGameID, arg.CardID)
 	return err
 }

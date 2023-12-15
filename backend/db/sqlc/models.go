@@ -25,7 +25,7 @@ type Dessert struct {
 type DessertPlayed struct {
 	DessertPlayedID int64          `json:"dessert_played_id"`
 	PlayerGameID    int64          `json:"player_game_id"`
-	DessertID       int32          `json:"dessert_id"`
+	DessertID       int64          `json:"dessert_id"`
 	IconPath        sql.NullString `json:"icon_path"`
 	Timestamp       time.Time      `json:"timestamp"`
 }

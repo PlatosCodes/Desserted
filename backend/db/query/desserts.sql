@@ -7,3 +7,7 @@ SELECT dessert_id
 FROM dessert_played 
 WHERE player_game_id = $1;
 
+-- name: GetDessertIDByName :one
+SELECT dessert_id 
+FROM desserts
+WHERE name = $1;

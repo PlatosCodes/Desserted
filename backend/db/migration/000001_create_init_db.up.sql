@@ -85,7 +85,7 @@ CREATE TABLE played_cards (
 CREATE TABLE dessert_played (
   dessert_played_id BIGSERIAL PRIMARY KEY,
   player_game_id BIGINT NOT NULL,
-  dessert_id INT NOT NULL,
+  dessert_id BIGINT NOT NULL,
   icon_path VARCHAR(255),
   timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   FOREIGN KEY (player_game_id) REFERENCES player_game(player_game_id),
