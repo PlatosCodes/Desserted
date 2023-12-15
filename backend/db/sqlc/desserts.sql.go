@@ -9,21 +9,34 @@ import (
 	"context"
 )
 
+const getDessertIDByName = `-- name: GetDessertIDByName :one
+SELECT dessert_id 
+FROM desserts
+WHERE name = $1
+`
+
+func (q *Queries) GetDessertIDByName(ctx context.Context, name string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getDessertIDByName, name)
+	var dessert_id int64
+	err := row.Scan(&dessert_id)
+	return dessert_id, err
+}
+
 const getDessertsPlayedByPlayer = `-- name: GetDessertsPlayedByPlayer :many
 SELECT dessert_id
 FROM dessert_played 
 WHERE player_game_id = $1
 `
 
-func (q *Queries) GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int64) ([]int32, error) {
+func (q *Queries) GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int64) ([]int64, error) {
 	rows, err := q.db.QueryContext(ctx, getDessertsPlayedByPlayer, playerGameID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []int32{}
+	items := []int64{}
 	for rows.Next() {
-		var dessert_id int32
+		var dessert_id int64
 		if err := rows.Scan(&dessert_id); err != nil {
 			return nil, err
 		}
@@ -45,7 +58,7 @@ VALUES ($1, $2)
 
 type RecordDessertPlayedParams struct {
 	PlayerGameID int64 `json:"player_game_id"`
-	DessertID    int32 `json:"dessert_id"`
+	DessertID    int64 `json:"dessert_id"`
 }
 
 func (q *Queries) RecordDessertPlayed(ctx context.Context, arg RecordDessertPlayedParams) error {

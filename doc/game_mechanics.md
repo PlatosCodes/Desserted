@@ -14,11 +14,9 @@
 - Sugar (Common)
 - Eggs (Common)
 - Butter (Common)
-- Milk (Common)
-- Chocolate (Rare)
+- Cocoa (Rare)
 - Vanilla (Rare)
 - Berries (Rare - various types like Strawberries, Blueberries)
-- Nuts (Rare - such as Almonds, Walnuts)
 - Cream Cheese (Epic)
 - Saffron (Epic)
 - Honey (Epic)
@@ -29,13 +27,13 @@
 ### Desserts List
 - Cake (10 Points) - Requires Flour, Sugar, Eggs
 - Pie (15 Points) - Requires Flour, Butter, Berries
-- Chocolate Chip Cookies (20 Points) - Requires Flour, Sugar, Chocolate
+- Chocolate Chip Cookies (20 Points) - Requires Flour, Sugar, Dark Chocolate
 - Cheesecake (25 Points) - Requires Cream Cheese, Eggs, Vanilla
 - Tiramisu (30 Points) - Requires Coffee, Cream Cheese, Cocoa
 - Matcha Cake (35 Points) - Requires Flour, Matcha Powder, Eggs
 - Saffron Panna Cotta (40 Points) - Requires Cream, Saffron, Sugar
 - Gourmet Truffles (45 Points) - Requires Dark Chocolate, Cream, Honey
-- Gold Leaf Cupcakes (50 Points) - Requires Flour, Sugar, Edible Gold Leaf
+- Gold Leaf Cupcakes (50 Points) - Requires Flour, Sugar, Butter, Edible Gold Leaf
 
 ### Special Cards
 - Wildcard Ingredient: Can substitute any one ingredient.
@@ -45,6 +43,7 @@
 - Instant Bake: Play a dessert without using a turn.
 - Mystery Flavor: Add random extra points (1-10) to a dessert.
 - Sabotage: Force another player to skip their turn.
+- Glass of Milk: Add 3 points to your dessert.
 
 ## Winning Conditions
 - The game ends when a player reaches a set point threshold (e.g., 100 points) or when the draw pile is depleted.
