@@ -19,7 +19,7 @@ Table users {
 }
 
 Table games {
-  game_id Serial [pk]
+  game_id BigSerial [pk]
   status Varchar(50) [not null, default: 'active']
   created_by Bigint [not null, ref: > users.id]
   start_time Timestamp [not null, default: `now()`]
@@ -31,7 +31,7 @@ Table games {
 }
 
 Table player_game {
-  player_game_id Serial [pk]
+  player_game_id BigSerial [pk]
   player_id Bigint [not null, ref: > users.id]
   game_id Int [not null, ref: > games.game_id]
   player_score Int [default: 0]
@@ -53,26 +53,26 @@ Table cards {
 }
 
 Table desserts {
-  dessert_id Serial [pk]
+  dessert_id BigSerial [pk]
   name Text [not null]
   points Int [not null]
 }
 
 Table player_hand {
-  player_hand_id Serial [pk]
+  player_hand_id BigSerial [pk]
   player_game_id Int [not null, ref: > player_game.player_game_id]
   card_id Bigint [not null, ref: > cards.card_id]
 }
 
 Table played_cards {
-  played_card_id Serial [pk]
+  played_card_id BigSerial [pk]
   player_game_id Int [not null, ref: > player_game.player_game_id]
   card_id Bigint [not null, ref: > cards.card_id]
   play_time Timestamp [not null, default: `now()`]
 }
 
 Table dessert_played {
-  dessert_played_id Serial [pk]
+  dessert_played_id BigSerial [pk]
   player_game_id Int [not null, ref: > player_game.player_game_id]
   dessert_id Int [not null, ref: > desserts.dessert_id]
   icon_path Varchar(255)

@@ -10,11 +10,12 @@ import (
 )
 
 const addCardToPlayerHand = `-- name: AddCardToPlayerHand :exec
-INSERT INTO player_hand (player_game_id, card_id) VALUES ($1, $2)
+INSERT INTO player_hand (player_game_id, card_id) 
+VALUES ($1, $2)
 `
 
 type AddCardToPlayerHandParams struct {
-	PlayerGameID int32 `json:"player_game_id"`
+	PlayerGameID int64 `json:"player_game_id"`
 	CardID       int64 `json:"card_id"`
 }
 
@@ -24,10 +25,12 @@ func (q *Queries) AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHa
 }
 
 const getPlayerHand = `-- name: GetPlayerHand :many
-SELECT card_id FROM player_hand WHERE player_game_id = $1
+SELECT card_id 
+FROM player_hand 
+WHERE player_game_id = $1
 `
 
-func (q *Queries) GetPlayerHand(ctx context.Context, playerGameID int32) ([]int64, error) {
+func (q *Queries) GetPlayerHand(ctx context.Context, playerGameID int64) ([]int64, error) {
 	rows, err := q.db.QueryContext(ctx, getPlayerHand, playerGameID)
 	if err != nil {
 		return nil, err
@@ -51,11 +54,12 @@ func (q *Queries) GetPlayerHand(ctx context.Context, playerGameID int32) ([]int6
 }
 
 const recordPlayedCard = `-- name: RecordPlayedCard :exec
-INSERT INTO played_cards (player_game_id, card_id, play_time) VALUES ($1, $2, NOW())
+INSERT INTO played_cards (player_game_id, card_id) 
+VALUES ($1, $2)
 `
 
 type RecordPlayedCardParams struct {
-	PlayerGameID int32 `json:"player_game_id"`
+	PlayerGameID int64 `json:"player_game_id"`
 	CardID       int64 `json:"card_id"`
 }
 
@@ -65,10 +69,11 @@ func (q *Queries) RecordPlayedCard(ctx context.Context, arg RecordPlayedCardPara
 }
 
 const removeCardFromPlayerHand = `-- name: RemoveCardFromPlayerHand :exec
-DELETE FROM player_hand WHERE player_hand_id = $1
+DELETE FROM player_hand 
+WHERE player_hand_id = $1
 `
 
-func (q *Queries) RemoveCardFromPlayerHand(ctx context.Context, playerHandID int32) error {
+func (q *Queries) RemoveCardFromPlayerHand(ctx context.Context, playerHandID int64) error {
 	_, err := q.db.ExecContext(ctx, removeCardFromPlayerHand, playerHandID)
 	return err
 }

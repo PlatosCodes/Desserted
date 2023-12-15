@@ -28,12 +28,26 @@ func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error)
 	return i, err
 }
 
+const declareWinner = `-- name: DeclareWinner :one
+SELECT player_id FROM player_game 
+WHERE game_id = $1 
+ORDER BY player_score DESC LIMIT 1
+`
+
+// Declare the winner of the game
+func (q *Queries) DeclareWinner(ctx context.Context, gameID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, declareWinner, gameID)
+	var player_id int64
+	err := row.Scan(&player_id)
+	return player_id, err
+}
+
 const endGame = `-- name: EndGame :exec
-UPDATE games SET end_time = NOW() 
+UPDATE games SET status = 'completed', end_time = NOW() 
 WHERE game_id = $1
 `
 
-func (q *Queries) EndGame(ctx context.Context, gameID int32) error {
+func (q *Queries) EndGame(ctx context.Context, gameID int64) error {
 	_, err := q.db.ExecContext(ctx, endGame, gameID)
 	return err
 }
@@ -43,7 +57,7 @@ SELECT game_id, status, created_by, start_time, end_time FROM games
 WHERE game_id = $1
 `
 
-func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (Game, error) {
+func (q *Queries) GetGameByID(ctx context.Context, gameID int64) (Game, error) {
 	row := q.db.QueryRowContext(ctx, getGameByID, gameID)
 	var i Game
 	err := row.Scan(
@@ -96,6 +110,49 @@ func (q *Queries) ListActiveGames(ctx context.Context, arg ListActiveGamesParams
 	return items, nil
 }
 
+const listGamePlayers = `-- name: ListGamePlayers :many
+SELECT player_game_id, player_id, game_id, player_score, player_status, hand_cards, played_cards FROM player_game 
+WHERE game_id = $1 
+LIMIT $2 OFFSET $3
+`
+
+type ListGamePlayersParams struct {
+	GameID int64 `json:"game_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListGamePlayers(ctx context.Context, arg ListGamePlayersParams) ([]PlayerGame, error) {
+	rows, err := q.db.QueryContext(ctx, listGamePlayers, arg.GameID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PlayerGame{}
+	for rows.Next() {
+		var i PlayerGame
+		if err := rows.Scan(
+			&i.PlayerGameID,
+			&i.PlayerID,
+			&i.GameID,
+			&i.PlayerScore,
+			&i.PlayerStatus,
+			&i.HandCards,
+			&i.PlayedCards,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateGameStatus = `-- name: UpdateGameStatus :exec
 UPDATE games SET status = $1 
 WHERE game_id = $2
@@ -103,7 +160,7 @@ WHERE game_id = $2
 
 type UpdateGameStatusParams struct {
 	Status string `json:"status"`
-	GameID int32  `json:"game_id"`
+	GameID int64  `json:"game_id"`
 }
 
 func (q *Queries) UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error {

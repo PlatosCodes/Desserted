@@ -14,7 +14,7 @@ WHERE player_game_id = $3;
 -- Check if a player has reached the winning condition
 -- name: CheckWinCondition :one
 SELECT player_id, player_score FROM player_game 
-WHERE player_game_id = ? AND player_score >= ?;
+WHERE player_game_id = $1 AND player_score >= $2;
 
 -- name: ListPlayerGames :many
 SELECT * FROM player_game 

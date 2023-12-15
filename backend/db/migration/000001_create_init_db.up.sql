@@ -18,7 +18,7 @@ CREATE INDEX idx_user_username ON users(username);
 -- Table: Games
 -- Represents a game session
 CREATE TABLE games (
-  game_id SERIAL PRIMARY KEY,
+  game_id BIGSERIAL PRIMARY KEY,
   status VARCHAR(10) NOT NULL DEFAULT 'active',
   created_by BIGINT NOT NULL,
   start_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -30,11 +30,11 @@ CREATE INDEX idx_games_status ON games(status);
 -- Table: PlayerGame
 -- Associates users with their game sessions and tracks their progress
 CREATE TABLE player_game (
-  player_game_id SERIAL PRIMARY KEY,
+  player_game_id BIGSERIAL PRIMARY KEY,
   player_id BIGINT NOT NULL,
-  game_id INT NOT NULL,
-  player_score INT DEFAULT 0,
-  player_status VARCHAR(50) DEFAULT 'active',
+  game_id BIGINT NOT NULL,
+  player_score BIGINT DEFAULT 0,
+  player_status VARCHAR(10) DEFAULT 'active',
   hand_cards TEXT,
   played_cards TEXT,
   FOREIGN KEY (player_id) REFERENCES users(id),
@@ -54,7 +54,7 @@ CREATE TABLE cards (
 -- Table: Desserts
 -- Stores information about desserts
 CREATE TABLE desserts (
-  dessert_id SERIAL PRIMARY KEY,
+  dessert_id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   points INT NOT NULL
 );
@@ -62,8 +62,8 @@ CREATE TABLE desserts (
 -- Table: PlayerHand
 -- Tracks the cards in each player's hand for a game
 CREATE TABLE player_hand (
-  player_hand_id SERIAL PRIMARY KEY,
-  player_game_id INT NOT NULL,
+  player_hand_id BIGSERIAL PRIMARY KEY,
+  player_game_id BIGINT NOT NULL,
   card_id BIGINT NOT NULL,
   FOREIGN KEY (player_game_id) REFERENCES player_game(player_game_id),
   FOREIGN KEY (card_id) REFERENCES cards(card_id)
@@ -72,8 +72,8 @@ CREATE TABLE player_hand (
 -- Table: PlayedCards
 -- Records the cards played by players in each game
 CREATE TABLE played_cards (
-  played_card_id SERIAL PRIMARY KEY,
-  player_game_id INT NOT NULL,
+  played_card_id BIGSERIAL PRIMARY KEY,
+  player_game_id BIGINT NOT NULL,
   card_id BIGINT NOT NULL,
   play_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   FOREIGN KEY (player_game_id) REFERENCES player_game(player_game_id),
@@ -83,8 +83,8 @@ CREATE TABLE played_cards (
 -- Table: DessertPlayed
 -- Records desserts created by players in each game
 CREATE TABLE dessert_played (
-  dessert_played_id SERIAL PRIMARY KEY,
-  player_game_id INT NOT NULL,
+  dessert_played_id BIGSERIAL PRIMARY KEY,
+  player_game_id BIGINT NOT NULL,
   dessert_id INT NOT NULL,
   icon_path VARCHAR(255),
   timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),

@@ -11,16 +11,20 @@ import (
 type Querier interface {
 	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) error
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
+	// Check if a player has reached the winning condition
+	CheckWinCondition(ctx context.Context, arg CheckWinConditionParams) (CheckWinConditionRow, error)
 	CreateGame(ctx context.Context, createdBy int64) (Game, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Declare the winner of the game
+	DeclareWinner(ctx context.Context, gameID int64) (int64, error)
 	DeleteUser(ctx context.Context, id int64) error
-	EndGame(ctx context.Context, gameID int32) error
+	EndGame(ctx context.Context, gameID int64) error
 	// Get card by ID
 	GetCardByID(ctx context.Context, cardID int64) (Card, error)
-	GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int32) ([]GetDessertsPlayedByPlayerRow, error)
-	GetGameByID(ctx context.Context, gameID int32) (Game, error)
-	GetPlayerGame(ctx context.Context, playerGameID int32) (PlayerGame, error)
-	GetPlayerHand(ctx context.Context, playerGameID int32) ([]int64, error)
+	GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int64) ([]int32, error)
+	GetGameByID(ctx context.Context, gameID int64) (Game, error)
+	GetPlayerGame(ctx context.Context, playerGameID int64) (PlayerGame, error)
+	GetPlayerHand(ctx context.Context, playerGameID int64) ([]int64, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
@@ -29,11 +33,12 @@ type Querier interface {
 	ListCards(ctx context.Context) ([]Card, error)
 	// List cards by type
 	ListCardsByType(ctx context.Context, type_ string) ([]Card, error)
+	ListGamePlayers(ctx context.Context, arg ListGamePlayersParams) ([]PlayerGame, error)
 	ListPlayerGames(ctx context.Context, playerID int64) ([]PlayerGame, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	RecordDessertPlayed(ctx context.Context, arg RecordDessertPlayedParams) error
 	RecordPlayedCard(ctx context.Context, arg RecordPlayedCardParams) error
-	RemoveCardFromPlayerHand(ctx context.Context, playerHandID int32) error
+	RemoveCardFromPlayerHand(ctx context.Context, playerHandID int64) error
 	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
 	UpdatePlayerGame(ctx context.Context, arg UpdatePlayerGameParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
