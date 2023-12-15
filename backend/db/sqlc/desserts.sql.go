@@ -7,31 +7,27 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const getDessertsPlayedByPlayer = `-- name: GetDessertsPlayedByPlayer :many
-SELECT dessert_id, icon_path FROM dessert_played WHERE player_game_id = $1
+SELECT dessert_id
+FROM dessert_played 
+WHERE player_game_id = $1
 `
 
-type GetDessertsPlayedByPlayerRow struct {
-	DessertID int32          `json:"dessert_id"`
-	IconPath  sql.NullString `json:"icon_path"`
-}
-
-func (q *Queries) GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int32) ([]GetDessertsPlayedByPlayerRow, error) {
+func (q *Queries) GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int64) ([]int32, error) {
 	rows, err := q.db.QueryContext(ctx, getDessertsPlayedByPlayer, playerGameID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetDessertsPlayedByPlayerRow{}
+	items := []int32{}
 	for rows.Next() {
-		var i GetDessertsPlayedByPlayerRow
-		if err := rows.Scan(&i.DessertID, &i.IconPath); err != nil {
+		var dessert_id int32
+		if err := rows.Scan(&dessert_id); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, dessert_id)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -43,17 +39,16 @@ func (q *Queries) GetDessertsPlayedByPlayer(ctx context.Context, playerGameID in
 }
 
 const recordDessertPlayed = `-- name: RecordDessertPlayed :exec
-INSERT INTO dessert_played (player_game_id, dessert_id, icon_path, timestamp) 
-VALUES ($1, $2, $3, NOW())
+INSERT INTO dessert_played (player_game_id, dessert_id) 
+VALUES ($1, $2)
 `
 
 type RecordDessertPlayedParams struct {
-	PlayerGameID int32          `json:"player_game_id"`
-	DessertID    int32          `json:"dessert_id"`
-	IconPath     sql.NullString `json:"icon_path"`
+	PlayerGameID int64 `json:"player_game_id"`
+	DessertID    int32 `json:"dessert_id"`
 }
 
 func (q *Queries) RecordDessertPlayed(ctx context.Context, arg RecordDessertPlayedParams) error {
-	_, err := q.db.ExecContext(ctx, recordDessertPlayed, arg.PlayerGameID, arg.DessertID, arg.IconPath)
+	_, err := q.db.ExecContext(ctx, recordDessertPlayed, arg.PlayerGameID, arg.DessertID)
 	return err
 }

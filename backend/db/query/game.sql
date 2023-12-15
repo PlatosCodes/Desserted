@@ -7,6 +7,11 @@ RETURNING *;
 SELECT * FROM games 
 WHERE game_id = $1;
 
+-- name: ListGamePlayers :many
+SELECT * FROM player_game 
+WHERE game_id = $1 
+LIMIT $2 OFFSET $3;
+
 -- name: ListActiveGames :many
 SELECT * FROM games 
 WHERE status = 'active' 
@@ -18,8 +23,10 @@ WHERE game_id = $2;
 
 -- name: DeclareWinner :one
 -- Declare the winner of the game
-SELECT player_id FROM player_game WHERE game_id = ? ORDER BY player_score DESC LIMIT 1;
+SELECT player_id FROM player_game 
+WHERE game_id = $1 
+ORDER BY player_score DESC LIMIT 1;
 
 -- name: EndGame :exec
-UPDATE games SET end_time = NOW() 
+UPDATE games SET status = 'completed', end_time = NOW() 
 WHERE game_id = $1;

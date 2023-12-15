@@ -17,14 +17,14 @@ type Card struct {
 }
 
 type Dessert struct {
-	DessertID int32  `json:"dessert_id"`
+	DessertID int64  `json:"dessert_id"`
 	Name      string `json:"name"`
 	Points    int32  `json:"points"`
 }
 
 type DessertPlayed struct {
-	DessertPlayedID int32          `json:"dessert_played_id"`
-	PlayerGameID    int32          `json:"player_game_id"`
+	DessertPlayedID int64          `json:"dessert_played_id"`
+	PlayerGameID    int64          `json:"player_game_id"`
 	DessertID       int32          `json:"dessert_id"`
 	IconPath        sql.NullString `json:"icon_path"`
 	Timestamp       time.Time      `json:"timestamp"`
@@ -32,7 +32,7 @@ type DessertPlayed struct {
 
 // Represents a game session
 type Game struct {
-	GameID    int32        `json:"game_id"`
+	GameID    int64        `json:"game_id"`
 	Status    string       `json:"status"`
 	CreatedBy int64        `json:"created_by"`
 	StartTime time.Time    `json:"start_time"`
@@ -40,26 +40,26 @@ type Game struct {
 }
 
 type PlayedCard struct {
-	PlayedCardID int32     `json:"played_card_id"`
-	PlayerGameID int32     `json:"player_game_id"`
+	PlayedCardID int64     `json:"played_card_id"`
+	PlayerGameID int64     `json:"player_game_id"`
 	CardID       int64     `json:"card_id"`
 	PlayTime     time.Time `json:"play_time"`
 }
 
 // Associates users with their game sessions and tracks their progress
 type PlayerGame struct {
-	PlayerGameID int32          `json:"player_game_id"`
+	PlayerGameID int64          `json:"player_game_id"`
 	PlayerID     int64          `json:"player_id"`
-	GameID       int32          `json:"game_id"`
-	PlayerScore  sql.NullInt32  `json:"player_score"`
+	GameID       int64          `json:"game_id"`
+	PlayerScore  sql.NullInt64  `json:"player_score"`
 	PlayerStatus sql.NullString `json:"player_status"`
 	HandCards    sql.NullString `json:"hand_cards"`
 	PlayedCards  sql.NullString `json:"played_cards"`
 }
 
 type PlayerHand struct {
-	PlayerHandID int32 `json:"player_hand_id"`
-	PlayerGameID int32 `json:"player_game_id"`
+	PlayerHandID int64 `json:"player_hand_id"`
+	PlayerGameID int64 `json:"player_game_id"`
 	CardID       int64 `json:"card_id"`
 }
 

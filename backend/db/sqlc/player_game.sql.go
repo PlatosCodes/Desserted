@@ -17,7 +17,7 @@ VALUES ($1, $2)
 
 type AddPlayerToGameParams struct {
 	PlayerID int64 `json:"player_id"`
-	GameID   int32 `json:"game_id"`
+	GameID   int64 `json:"game_id"`
 }
 
 func (q *Queries) AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error {
@@ -25,12 +25,35 @@ func (q *Queries) AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams
 	return err
 }
 
+const checkWinCondition = `-- name: CheckWinCondition :one
+SELECT player_id, player_score FROM player_game 
+WHERE player_game_id = $1 AND player_score >= $2
+`
+
+type CheckWinConditionParams struct {
+	PlayerGameID int64         `json:"player_game_id"`
+	PlayerScore  sql.NullInt64 `json:"player_score"`
+}
+
+type CheckWinConditionRow struct {
+	PlayerID    int64         `json:"player_id"`
+	PlayerScore sql.NullInt64 `json:"player_score"`
+}
+
+// Check if a player has reached the winning condition
+func (q *Queries) CheckWinCondition(ctx context.Context, arg CheckWinConditionParams) (CheckWinConditionRow, error) {
+	row := q.db.QueryRowContext(ctx, checkWinCondition, arg.PlayerGameID, arg.PlayerScore)
+	var i CheckWinConditionRow
+	err := row.Scan(&i.PlayerID, &i.PlayerScore)
+	return i, err
+}
+
 const getPlayerGame = `-- name: GetPlayerGame :one
 SELECT player_game_id, player_id, game_id, player_score, player_status, hand_cards, played_cards FROM player_game 
 WHERE player_game_id = $1
 `
 
-func (q *Queries) GetPlayerGame(ctx context.Context, playerGameID int32) (PlayerGame, error) {
+func (q *Queries) GetPlayerGame(ctx context.Context, playerGameID int64) (PlayerGame, error) {
 	row := q.db.QueryRowContext(ctx, getPlayerGame, playerGameID)
 	var i PlayerGame
 	err := row.Scan(
@@ -88,9 +111,9 @@ WHERE player_game_id = $3
 `
 
 type UpdatePlayerGameParams struct {
-	PlayerScore  sql.NullInt32  `json:"player_score"`
+	PlayerScore  sql.NullInt64  `json:"player_score"`
 	PlayerStatus sql.NullString `json:"player_status"`
-	PlayerGameID int32          `json:"player_game_id"`
+	PlayerGameID int64          `json:"player_game_id"`
 }
 
 func (q *Queries) UpdatePlayerGame(ctx context.Context, arg UpdatePlayerGameParams) error {
