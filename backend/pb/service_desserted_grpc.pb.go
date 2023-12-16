@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,10 +20,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Desserted_CreateUser_FullMethodName = "/pb.Desserted/CreateUser"
-	Desserted_LoginUser_FullMethodName  = "/pb.Desserted/LoginUser"
-	Desserted_UpdateUser_FullMethodName = "/pb.Desserted/UpdateUser"
-	Desserted_CreateGame_FullMethodName = "/pb.Desserted/CreateGame"
+	Desserted_CreateUser_FullMethodName      = "/pb.Desserted/CreateUser"
+	Desserted_LoginUser_FullMethodName       = "/pb.Desserted/LoginUser"
+	Desserted_UpdateUser_FullMethodName      = "/pb.Desserted/UpdateUser"
+	Desserted_CreateGame_FullMethodName      = "/pb.Desserted/CreateGame"
+	Desserted_AddPlayerToGame_FullMethodName = "/pb.Desserted/AddPlayerToGame"
+	Desserted_ListGamePlayers_FullMethodName = "/pb.Desserted/ListGamePlayers"
 )
 
 // DessertedClient is the client API for Desserted service.
@@ -36,6 +39,8 @@ type DessertedClient interface {
 	// Updates a user's password
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	CreateGame(ctx context.Context, in *CreateGameRequest, opts ...grpc.CallOption) (*CreateGameResponse, error)
+	AddPlayerToGame(ctx context.Context, in *AddPlayerToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListGamePlayers(ctx context.Context, in *ListGamePlayersRequest, opts ...grpc.CallOption) (*ListGamePlayersResponse, error)
 }
 
 type dessertedClient struct {
@@ -82,6 +87,24 @@ func (c *dessertedClient) CreateGame(ctx context.Context, in *CreateGameRequest,
 	return out, nil
 }
 
+func (c *dessertedClient) AddPlayerToGame(ctx context.Context, in *AddPlayerToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Desserted_AddPlayerToGame_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) ListGamePlayers(ctx context.Context, in *ListGamePlayersRequest, opts ...grpc.CallOption) (*ListGamePlayersResponse, error) {
+	out := new(ListGamePlayersResponse)
+	err := c.cc.Invoke(ctx, Desserted_ListGamePlayers_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DessertedServer is the server API for Desserted service.
 // All implementations must embed UnimplementedDessertedServer
 // for forward compatibility
@@ -93,6 +116,8 @@ type DessertedServer interface {
 	// Updates a user's password
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error)
+	AddPlayerToGame(context.Context, *AddPlayerToGameRequest) (*emptypb.Empty, error)
+	ListGamePlayers(context.Context, *ListGamePlayersRequest) (*ListGamePlayersResponse, error)
 	mustEmbedUnimplementedDessertedServer()
 }
 
@@ -111,6 +136,12 @@ func (UnimplementedDessertedServer) UpdateUser(context.Context, *UpdateUserReque
 }
 func (UnimplementedDessertedServer) CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGame not implemented")
+}
+func (UnimplementedDessertedServer) AddPlayerToGame(context.Context, *AddPlayerToGameRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddPlayerToGame not implemented")
+}
+func (UnimplementedDessertedServer) ListGamePlayers(context.Context, *ListGamePlayersRequest) (*ListGamePlayersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListGamePlayers not implemented")
 }
 func (UnimplementedDessertedServer) mustEmbedUnimplementedDessertedServer() {}
 
@@ -197,6 +228,42 @@ func _Desserted_CreateGame_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Desserted_AddPlayerToGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddPlayerToGameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).AddPlayerToGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_AddPlayerToGame_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).AddPlayerToGame(ctx, req.(*AddPlayerToGameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_ListGamePlayers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListGamePlayersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).ListGamePlayers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_ListGamePlayers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).ListGamePlayers(ctx, req.(*ListGamePlayersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Desserted_ServiceDesc is the grpc.ServiceDesc for Desserted service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -219,6 +286,14 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateGame",
 			Handler:    _Desserted_CreateGame_Handler,
+		},
+		{
+			MethodName: "AddPlayerToGame",
+			Handler:    _Desserted_AddPlayerToGame_Handler,
+		},
+		{
+			MethodName: "ListGamePlayers",
+			Handler:    _Desserted_ListGamePlayers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

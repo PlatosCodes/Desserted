@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message AddPlayerToGameRequest {
+    int64 player_id = 1;
+    int64 game_id = 2;
+  }
+  

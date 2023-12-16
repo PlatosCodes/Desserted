@@ -21,6 +21,47 @@
     "application/json"
   ],
   "paths": {
+    "/v1/add_player_to_game": {
+      "post": {
+        "summary": "Add player to the game",
+        "description": "Use this API to add player to the game",
+        "operationId": "Desserted_AddPlayerToGame",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gameId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/create_game": {
       "post": {
         "summary": "Create new game",
@@ -82,6 +123,53 @@
             "schema": {
               "$ref": "#/definitions/pbCreateUserRequest"
             }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
+    "/v1/list_game_players": {
+      "get": {
+        "summary": "List the game's players",
+        "description": "Use this API to list the players of the game",
+        "operationId": "Desserted_ListGamePlayers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListGamePlayersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -222,6 +310,18 @@
         }
       }
     },
+    "pbListGamePlayersResponse": {
+      "type": "object",
+      "properties": {
+        "players": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbPlayerGame"
+          }
+        }
+      }
+    },
     "pbLoginUserRequest": {
       "type": "object",
       "properties": {
@@ -255,6 +355,36 @@
         },
         "user": {
           "$ref": "#/definitions/pbUser"
+        }
+      }
+    },
+    "pbPlayerGame": {
+      "type": "object",
+      "properties": {
+        "playerGame": {
+          "type": "string",
+          "format": "int64"
+        },
+        "playerId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gameId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "playerScore": {
+          "type": "string",
+          "format": "int64"
+        },
+        "playerStatus": {
+          "type": "string"
+        },
+        "handCards": {
+          "type": "string"
+        },
+        "playedCards": {
+          "type": "string"
         }
       }
     },

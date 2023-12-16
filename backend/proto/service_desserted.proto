@@ -7,9 +7,10 @@ import "rpc_create_user.proto";
 import "rpc_login_user.proto";
 import "rpc_update_user.proto";
 import "rpc_create_game.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
+import "rpc_add_player_to_game.proto";
+import "rpc_list_game_players.proto";
 import "google/protobuf/empty.proto";
-
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/PlatosCodes/desserted/backend/pb";
 
@@ -68,5 +69,24 @@ service Desserted {
         description: "Use this API to create a new game";
         summary: "Create new game";
       };
-  };    
+    };
+    rpc AddPlayerToGame (AddPlayerToGameRequest) returns (google.protobuf.Empty) {
+      option (google.api.http) = {    
+          post: "/v1/add_player_to_game"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to add player to the game";
+        summary: "Add player to the game";
+      };
+    };   
+    rpc ListGamePlayers (ListGamePlayersRequest) returns (ListGamePlayersResponse) {
+      option (google.api.http) = {    
+          get: "/v1/list_game_players"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list the players of the game";
+        summary: "List the game's players";
+      };
+    };      
 }
