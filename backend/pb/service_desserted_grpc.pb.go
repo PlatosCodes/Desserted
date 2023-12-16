@@ -20,12 +20,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Desserted_CreateUser_FullMethodName      = "/pb.Desserted/CreateUser"
-	Desserted_LoginUser_FullMethodName       = "/pb.Desserted/LoginUser"
-	Desserted_UpdateUser_FullMethodName      = "/pb.Desserted/UpdateUser"
-	Desserted_CreateGame_FullMethodName      = "/pb.Desserted/CreateGame"
-	Desserted_AddPlayerToGame_FullMethodName = "/pb.Desserted/AddPlayerToGame"
-	Desserted_ListGamePlayers_FullMethodName = "/pb.Desserted/ListGamePlayers"
+	Desserted_CreateUser_FullMethodName         = "/pb.Desserted/CreateUser"
+	Desserted_LoginUser_FullMethodName          = "/pb.Desserted/LoginUser"
+	Desserted_UpdateUser_FullMethodName         = "/pb.Desserted/UpdateUser"
+	Desserted_CreateGame_FullMethodName         = "/pb.Desserted/CreateGame"
+	Desserted_InvitePlayerToGame_FullMethodName = "/pb.Desserted/InvitePlayerToGame"
+	Desserted_AcceptGameInvite_FullMethodName   = "/pb.Desserted/AcceptGameInvite"
+	Desserted_ListGamePlayers_FullMethodName    = "/pb.Desserted/ListGamePlayers"
+	Desserted_StartGame_FullMethodName          = "/pb.Desserted/StartGame"
+	Desserted_GetPlayerHand_FullMethodName      = "/pb.Desserted/GetPlayerHand"
 )
 
 // DessertedClient is the client API for Desserted service.
@@ -39,8 +42,21 @@ type DessertedClient interface {
 	// Updates a user's password
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	CreateGame(ctx context.Context, in *CreateGameRequest, opts ...grpc.CallOption) (*CreateGameResponse, error)
-	AddPlayerToGame(ctx context.Context, in *AddPlayerToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	InvitePlayerToGame(ctx context.Context, in *InvitePlayerToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	AcceptGameInvite(ctx context.Context, in *AcceptGameInviteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	//	rpc AddPlayerToGame (AddPlayerToGameRequest) returns (google.protobuf.Empty) {
+	//	  option (google.api.http) = {
+	//	      post: "/v1/add_player_to_game"
+	//	      body: "*"
+	//	  };
+	//	  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+	//	    description: "Use this API to add player to the game";
+	//	    summary: "Add player to the game";
+	//	  };
+	//	};
 	ListGamePlayers(ctx context.Context, in *ListGamePlayersRequest, opts ...grpc.CallOption) (*ListGamePlayersResponse, error)
+	StartGame(ctx context.Context, in *StartGameRequest, opts ...grpc.CallOption) (*StartGameResponse, error)
+	GetPlayerHand(ctx context.Context, in *GetPlayerHandRequest, opts ...grpc.CallOption) (*GetPlayerHandResponse, error)
 }
 
 type dessertedClient struct {
@@ -87,9 +103,18 @@ func (c *dessertedClient) CreateGame(ctx context.Context, in *CreateGameRequest,
 	return out, nil
 }
 
-func (c *dessertedClient) AddPlayerToGame(ctx context.Context, in *AddPlayerToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *dessertedClient) InvitePlayerToGame(ctx context.Context, in *InvitePlayerToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Desserted_AddPlayerToGame_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Desserted_InvitePlayerToGame_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) AcceptGameInvite(ctx context.Context, in *AcceptGameInviteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Desserted_AcceptGameInvite_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +124,24 @@ func (c *dessertedClient) AddPlayerToGame(ctx context.Context, in *AddPlayerToGa
 func (c *dessertedClient) ListGamePlayers(ctx context.Context, in *ListGamePlayersRequest, opts ...grpc.CallOption) (*ListGamePlayersResponse, error) {
 	out := new(ListGamePlayersResponse)
 	err := c.cc.Invoke(ctx, Desserted_ListGamePlayers_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) StartGame(ctx context.Context, in *StartGameRequest, opts ...grpc.CallOption) (*StartGameResponse, error) {
+	out := new(StartGameResponse)
+	err := c.cc.Invoke(ctx, Desserted_StartGame_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) GetPlayerHand(ctx context.Context, in *GetPlayerHandRequest, opts ...grpc.CallOption) (*GetPlayerHandResponse, error) {
+	out := new(GetPlayerHandResponse)
+	err := c.cc.Invoke(ctx, Desserted_GetPlayerHand_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +159,21 @@ type DessertedServer interface {
 	// Updates a user's password
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error)
-	AddPlayerToGame(context.Context, *AddPlayerToGameRequest) (*emptypb.Empty, error)
+	InvitePlayerToGame(context.Context, *InvitePlayerToGameRequest) (*emptypb.Empty, error)
+	AcceptGameInvite(context.Context, *AcceptGameInviteRequest) (*emptypb.Empty, error)
+	//	rpc AddPlayerToGame (AddPlayerToGameRequest) returns (google.protobuf.Empty) {
+	//	  option (google.api.http) = {
+	//	      post: "/v1/add_player_to_game"
+	//	      body: "*"
+	//	  };
+	//	  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+	//	    description: "Use this API to add player to the game";
+	//	    summary: "Add player to the game";
+	//	  };
+	//	};
 	ListGamePlayers(context.Context, *ListGamePlayersRequest) (*ListGamePlayersResponse, error)
+	StartGame(context.Context, *StartGameRequest) (*StartGameResponse, error)
+	GetPlayerHand(context.Context, *GetPlayerHandRequest) (*GetPlayerHandResponse, error)
 	mustEmbedUnimplementedDessertedServer()
 }
 
@@ -137,11 +193,20 @@ func (UnimplementedDessertedServer) UpdateUser(context.Context, *UpdateUserReque
 func (UnimplementedDessertedServer) CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGame not implemented")
 }
-func (UnimplementedDessertedServer) AddPlayerToGame(context.Context, *AddPlayerToGameRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddPlayerToGame not implemented")
+func (UnimplementedDessertedServer) InvitePlayerToGame(context.Context, *InvitePlayerToGameRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InvitePlayerToGame not implemented")
+}
+func (UnimplementedDessertedServer) AcceptGameInvite(context.Context, *AcceptGameInviteRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AcceptGameInvite not implemented")
 }
 func (UnimplementedDessertedServer) ListGamePlayers(context.Context, *ListGamePlayersRequest) (*ListGamePlayersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListGamePlayers not implemented")
+}
+func (UnimplementedDessertedServer) StartGame(context.Context, *StartGameRequest) (*StartGameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartGame not implemented")
+}
+func (UnimplementedDessertedServer) GetPlayerHand(context.Context, *GetPlayerHandRequest) (*GetPlayerHandResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPlayerHand not implemented")
 }
 func (UnimplementedDessertedServer) mustEmbedUnimplementedDessertedServer() {}
 
@@ -228,20 +293,38 @@ func _Desserted_CreateGame_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Desserted_AddPlayerToGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddPlayerToGameRequest)
+func _Desserted_InvitePlayerToGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InvitePlayerToGameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DessertedServer).AddPlayerToGame(ctx, in)
+		return srv.(DessertedServer).InvitePlayerToGame(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Desserted_AddPlayerToGame_FullMethodName,
+		FullMethod: Desserted_InvitePlayerToGame_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DessertedServer).AddPlayerToGame(ctx, req.(*AddPlayerToGameRequest))
+		return srv.(DessertedServer).InvitePlayerToGame(ctx, req.(*InvitePlayerToGameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_AcceptGameInvite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AcceptGameInviteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).AcceptGameInvite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_AcceptGameInvite_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).AcceptGameInvite(ctx, req.(*AcceptGameInviteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -260,6 +343,42 @@ func _Desserted_ListGamePlayers_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DessertedServer).ListGamePlayers(ctx, req.(*ListGamePlayersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_StartGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartGameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).StartGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_StartGame_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).StartGame(ctx, req.(*StartGameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_GetPlayerHand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlayerHandRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).GetPlayerHand(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_GetPlayerHand_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).GetPlayerHand(ctx, req.(*GetPlayerHandRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -288,12 +407,24 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Desserted_CreateGame_Handler,
 		},
 		{
-			MethodName: "AddPlayerToGame",
-			Handler:    _Desserted_AddPlayerToGame_Handler,
+			MethodName: "InvitePlayerToGame",
+			Handler:    _Desserted_InvitePlayerToGame_Handler,
+		},
+		{
+			MethodName: "AcceptGameInvite",
+			Handler:    _Desserted_AcceptGameInvite_Handler,
 		},
 		{
 			MethodName: "ListGamePlayers",
 			Handler:    _Desserted_ListGamePlayers_Handler,
+		},
+		{
+			MethodName: "StartGame",
+			Handler:    _Desserted_StartGame_Handler,
+		},
+		{
+			MethodName: "GetPlayerHand",
+			Handler:    _Desserted_GetPlayerHand_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

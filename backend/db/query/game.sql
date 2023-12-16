@@ -14,8 +14,11 @@ LIMIT $2 OFFSET $3;
 
 -- name: ListActiveGames :many
 SELECT * FROM games 
-WHERE status = 'active' 
 LIMIT $1 OFFSET $2;
+
+-- name: StartGame :exec
+UPDATE games SET status = "active" 
+WHERE game_id = $1;
 
 -- name: UpdateGameStatus :exec
 UPDATE games SET status = $1 

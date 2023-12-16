@@ -7,8 +7,12 @@ import "rpc_create_user.proto";
 import "rpc_login_user.proto";
 import "rpc_update_user.proto";
 import "rpc_create_game.proto";
-import "rpc_add_player_to_game.proto";
+import "rpc_invite_player_to_game.proto";
+import "rpc_accept_game_invite.proto";
+// import "rpc_add_player_to_game.proto";
 import "rpc_list_game_players.proto";
+import "rpc_start_game.proto";
+import "rpc_get_player_hand.proto";
 import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -70,16 +74,36 @@ service Desserted {
         summary: "Create new game";
       };
     };
-    rpc AddPlayerToGame (AddPlayerToGameRequest) returns (google.protobuf.Empty) {
+    rpc InvitePlayerToGame (InvitePlayerToGameRequest) returns (google.protobuf.Empty) {
       option (google.api.http) = {    
-          post: "/v1/add_player_to_game"
+          post: "/v1/invite_player_to_game"
           body: "*"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-        description: "Use this API to add player to the game";
-        summary: "Add player to the game";
+        description: "Use this API to invite a player to the game";
+        summary: "Invite player to the game";
       };
     };   
+    rpc AcceptGameInvite (AcceptGameInviteRequest) returns (google.protobuf.Empty) {
+      option (google.api.http) = {    
+          post: "/v1/accept_game_invite"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to accept an invitation to a game";
+        summary: "Accept invite the game";
+      };
+    };   
+    // rpc AddPlayerToGame (AddPlayerToGameRequest) returns (google.protobuf.Empty) {
+    //   option (google.api.http) = {    
+    //       post: "/v1/add_player_to_game"
+    //       body: "*"
+    //   };
+    //   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //     description: "Use this API to add player to the game";
+    //     summary: "Add player to the game";
+    //   };
+    // };   
     rpc ListGamePlayers (ListGamePlayersRequest) returns (ListGamePlayersResponse) {
       option (google.api.http) = {    
           get: "/v1/list_game_players"
@@ -87,6 +111,25 @@ service Desserted {
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
         description: "Use this API to list the players of the game";
         summary: "List the game's players";
+      };
+    };      
+    rpc StartGame (StartGameRequest) returns (StartGameResponse) {
+      option (google.api.http) = {    
+          post: "/v1/start_game"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to start a game";
+        summary: "Start the game";
+      };
+    };   
+    rpc GetPlayerHand (GetPlayerHandRequest) returns (GetPlayerHandResponse) {
+      option (google.api.http) = {    
+          get: "/v1/get_player_hand"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to get a player's hand";
+        summary: "Get the player's hand";
       };
     };      
 }

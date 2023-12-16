@@ -21,11 +21,11 @@
     "application/json"
   ],
   "paths": {
-    "/v1/add_player_to_game": {
+    "/v1/accept_game_invite": {
       "post": {
-        "summary": "Add player to the game",
-        "description": "Use this API to add player to the game",
-        "operationId": "Desserted_AddPlayerToGame",
+        "summary": "Accept invite the game",
+        "description": "Use this API to accept an invitation to a game",
+        "operationId": "Desserted_AcceptGameInvite",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -43,18 +43,12 @@
         },
         "parameters": [
           {
-            "name": "playerId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "gameId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbAcceptGameInviteRequest"
+            }
           }
         ],
         "tags": [
@@ -122,6 +116,74 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/pbCreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
+    "/v1/get_player_hand": {
+      "get": {
+        "summary": "Get the player's hand",
+        "description": "Use this API to get a player's hand",
+        "operationId": "Desserted_GetPlayerHand",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetPlayerHandResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerGameId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
+    "/v1/invite_player_to_game": {
+      "post": {
+        "summary": "Invite player to the game",
+        "description": "Use this API to invite a player to the game",
+        "operationId": "Desserted_InvitePlayerToGame",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbInvitePlayerToGameRequest"
             }
           }
         ],
@@ -211,6 +273,40 @@
         ]
       }
     },
+    "/v1/start_game": {
+      "post": {
+        "summary": "Start the game",
+        "description": "Use this API to start a game",
+        "operationId": "Desserted_StartGame",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbStartGameResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbStartGameRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/update_user": {
       "patch": {
         "summary": "Update a user",
@@ -247,6 +343,18 @@
     }
   },
   "definitions": {
+    "pbAcceptGameInviteRequest": {
+      "type": "object",
+      "properties": {
+        "inviteeUsername": {
+          "type": "string"
+        },
+        "gameId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "pbCreateGameRequest": {
       "type": "object",
       "properties": {
@@ -307,6 +415,34 @@
         "endTime": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "pbGetPlayerHandResponse": {
+      "type": "object",
+      "properties": {
+        "playerHand": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbPlayerHand"
+          }
+        }
+      }
+    },
+    "pbInvitePlayerToGameRequest": {
+      "type": "object",
+      "properties": {
+        "inviterPlayerId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "inviteeUsername": {
+          "type": "string"
+        },
+        "gameId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -385,6 +521,47 @@
         },
         "playedCards": {
           "type": "string"
+        }
+      }
+    },
+    "pbPlayerHand": {
+      "type": "object",
+      "properties": {
+        "playerHandId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "playerGameId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cardId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cardName": {
+          "type": "string"
+        }
+      }
+    },
+    "pbStartGameRequest": {
+      "type": "object",
+      "properties": {
+        "creatorId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gameId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbStartGameResponse": {
+      "type": "object",
+      "properties": {
+        "game": {
+          "$ref": "#/definitions/pbGame"
         }
       }
     },

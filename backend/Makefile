@@ -44,10 +44,11 @@ migratedown1:
 new_migration:
 	migrate create -ext sql -dir db/migration -seq $(name)
 
-# Database seeding
+# Database seeding -- CHANGE TO seed.sql before deploying
 seeddb:
 	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
 
+# Change the seed file before deploying
 resetdb:
 	@echo "Resetting database..."
 	@make dropdb || true

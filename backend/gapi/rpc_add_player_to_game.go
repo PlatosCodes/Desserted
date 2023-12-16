@@ -11,6 +11,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// Will use this functionality in the future if players want to "find an open game"
+// Requires adding a private/public column to games
 func (server *Server) AddPlayerToGame(ctx context.Context, req *pb.AddPlayerToGameRequest) (*emptypb.Empty, error) {
 	authPayload, err := server.authorizeUser(ctx)
 	if err != nil {

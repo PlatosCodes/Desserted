@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/PlatosCodes/desserted/backend/util"
 )
 
 // Store provides all functions to execure db queries and transactions
@@ -11,6 +13,7 @@ import (
 type Store interface {
 	Querier
 	RegisterTx(ctx context.Context, arg CreateUserParams) (RegisterTxResult, error)
+	StartGameTx(ctx context.Context, arg StartGameTxParams) (StartGameTxResult, error) // Add this line
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -86,4 +89,61 @@ func (store *SQLStore) RegisterTx(ctx context.Context, arg CreateUserParams) (Re
 
 	return result, err
 
+}
+
+type StartGameTxParams struct {
+	GameID    int64   `json:"game_id"`
+	PlayerIDs []int64 `json:"player_ids"`
+}
+
+type StartGameTxResult struct {
+	Game Game `json:"game"`
+}
+
+// StartGameTx starts a game and deals cards to each player in a transaction
+func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (StartGameTxResult, error) {
+	var result StartGameTxResult
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+
+		// Update game status to active
+		err = q.UpdateGameStatus(ctx, UpdateGameStatusParams{
+			Status: "active",
+			GameID: arg.GameID,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Shuffle and deal cards to each player
+		cards, err := q.ListCards(ctx)
+		if err != nil {
+			return err
+		}
+
+		util.Rand().Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
+
+		for _, playerID := range arg.PlayerIDs {
+			for i := 0; i < 7; i++ { // Deal 7 cards to each player
+				err = q.AddCardToPlayerHand(ctx, AddCardToPlayerHandParams{
+					PlayerGameID: playerID,
+					CardID:       cards[i].CardID,
+				})
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// Retrieve the updated game details
+		result.Game, err = q.GetGameByID(ctx, arg.GameID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return result, err
 }
