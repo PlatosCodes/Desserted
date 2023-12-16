@@ -2,10 +2,11 @@ package db
 
 import (
 	"database/sql"
-	"desserted-backend/util"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/PlatosCodes/desserted/backend/util"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

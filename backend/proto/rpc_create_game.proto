@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+import "game.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message CreateGameRequest {
+    int64 created_by = 1;
+}
+
+message CreateGameResponse {
+    Game game = 1;
+}

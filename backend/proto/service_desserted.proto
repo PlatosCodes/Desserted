@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "rpc_create_user.proto";
+import "rpc_login_user.proto";
+import "rpc_update_user.proto";
+import "rpc_create_game.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/empty.proto";
+
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Desserted API";
+    version: "1.0";
+    contact: {
+      name: "Alex Merola";
+      url: "https://github.com/PlatosCodes";
+      email: "codingplato@gmail.com";
+    };
+  };
+};
+
+service Desserted {
+      // Creates a new user
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+        option (google.api.http) = {    
+            post: "/v1/create_user"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to create a new user";
+          summary: "Create new user";
+        };
+    };
+    // Logs in a user
+    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
+        option (google.api.http) = {    
+            post: "/v1/login_user"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to login a user";
+          summary: "Login a user";
+        };
+    };
+    // Updates a user's password
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
+      option (google.api.http) = {    
+          patch: "/v1/update_user"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to update a user";
+        summary: "Update a user";
+      };
+    };
+    rpc CreateGame (CreateGameRequest) returns (CreateGameResponse) {
+      option (google.api.http) = {    
+          post: "/v1/create_game"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to create a new game";
+        summary: "Create new game";
+      };
+  };    
+}

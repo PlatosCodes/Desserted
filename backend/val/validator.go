@@ -1,10 +1,49 @@
 package val
 
 import (
-	"desserted-backend/util" // Import your utility package for dessert type validation
 	"errors"
 	"fmt"
+	"net/mail"
+	"regexp"
+
+	"github.com/PlatosCodes/desserted/backend/util" // Import your utility package for dessert type validation
 )
+
+var isValidUsername = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
+var isValidRecipeName = regexp.MustCompile(`^[a-zA-Z0-9_ ]+$`).MatchString
+
+func ValidateString(value string, minLength int, maxLength int) error {
+	n := len(value)
+	if n < minLength || n > maxLength {
+		return fmt.Errorf("must contain from %d-%d characters", minLength, maxLength)
+	}
+	return nil
+}
+
+func ValidateUsername(value string) error {
+	if err := ValidateString(value, 3, 100); err != nil {
+		return err
+	}
+	if !isValidUsername(value) {
+		return fmt.Errorf("must contain only lower case letters, digits or underscores")
+	}
+	return nil
+}
+
+func ValidatePassword(value string) error {
+	return ValidateString(value, 6, 100)
+}
+
+func ValidateEmail(value string) error {
+	if err := ValidateString(value, 3, 200); err != nil {
+		return err
+	}
+	_, err := mail.ParseAddress(value)
+	if err != nil {
+		return fmt.Errorf("not a valid email address")
+	}
+	return nil
+}
 
 // ValidateDessert validates if a dessert is valid based on game rules
 func ValidateDessert(dessertType string, ingredientCards []string) error {
