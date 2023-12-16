@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -14,6 +16,7 @@ type Querier interface {
 	// Check if a player has reached the winning condition
 	CheckWinCondition(ctx context.Context, arg CheckWinConditionParams) (CheckWinConditionRow, error)
 	CreateGame(ctx context.Context, createdBy int64) (Game, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Declare the winner of the game
 	DeclareWinner(ctx context.Context, gameID int64) (int64, error)
@@ -27,6 +30,7 @@ type Querier interface {
 	GetPlayedCards(ctx context.Context, playerGameID int64) ([]PlayedCard, error)
 	GetPlayerGame(ctx context.Context, playerGameID int64) (PlayerGame, error)
 	GetPlayerHand(ctx context.Context, playerGameID int64) ([]int64, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)

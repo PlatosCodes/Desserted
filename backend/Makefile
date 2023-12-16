@@ -79,22 +79,34 @@ resetdb_test:
 	@make migrateup_test
 	@make seeddb_test
 
+sqlc:
+	sqlc generate
+
+proto:
+	rm -f pb/*.go
+	rm -f doc/swagger/*.swagger.json
+	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+		--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+		--grpc-gateway_out=pb --grpc-gateway_opt paths=source_relative \
+		--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=desserted \
+		proto/*.proto	
+
+mock:
+	mockgen -package mockdb -destination db/mock/store.go github.com/PlatosCodes/desserted/backend/db/sqlc Store
+
+server:
+	go run main.go
+
 test:
 	go test -v -cover ./...
 
 # Additional tools
 db_docs:
-	dbdocs build ../doc/database.dbml
+	dbdocs build doc/database.dbml
 
 db_schema:
-	dbml2sql --postgres -o ../doc/schema.sql ../doc/database.dbml
-
-sqlc:
-	sqlc generate
-
-server:
-	go run main.go
+	dbml2sql --postgres -o doc/schema.sql doc/database.dbml
 
 # Define phony targets
-.PHONY: network postgres createdb dropdb citext migrateup migrateup1 migratedown migratedown1 new_migration seeddb resetdb createdb_test seeddb_test test db_docs db_schema sqlc server
+.PHONY: network postgres createdb dropdb citext migrateup migrateup1 migratedown migratedown1 new_migration seeddb resetdb createdb_test seeddb_test sqlc proto server test db_docs db_schema 
 

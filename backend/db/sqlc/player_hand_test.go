@@ -2,8 +2,9 @@ package db
 
 import (
 	"context"
-	"desserted-backend/util"
 	"testing"
+
+	"github.com/PlatosCodes/desserted/backend/util"
 
 	"github.com/stretchr/testify/require"
 )

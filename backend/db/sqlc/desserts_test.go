@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
-	"desserted-backend/util"
-	"desserted-backend/val"
 	"testing"
+
+	"github.com/PlatosCodes/desserted/backend/util"
+	"github.com/PlatosCodes/desserted/backend/val"
 
 	"github.com/stretchr/testify/require"
 )

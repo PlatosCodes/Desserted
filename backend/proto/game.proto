@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message Game {
+    int64 game_id = 1;
+    string status = 2;
+    int64 created_by = 3;
+    google.protobuf.Timestamp start_time = 4;
+    google.protobuf.Timestamp  end_time = 5;
+}

@@ -1,134 +1,131 @@
 package main
 
-// import (
-// 	"context"
-// 	"database/sql"
-// 	"embed"
-// 	"io/fs"
-// 	"log"
-// 	"net"
-// 	"net/http"
+import (
+	"context"
+	"database/sql"
+	"embed"
+	"io/fs"
+	"log"
+	"net"
+	"net/http"
 
-// 	"github.com/golang-migrate/migrate"
-// 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-// 	_ "github.com/lib/pq"
-// 	"google.golang.org/grpc"
-// 	"google.golang.org/grpc/reflection"
-// 	"google.golang.org/protobuf/encoding/protojson"
-// )
+	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
+	"github.com/PlatosCodes/desserted/backend/gapi"
+	"github.com/PlatosCodes/desserted/backend/pb"
+	"github.com/PlatosCodes/desserted/backend/util"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 
-// func main() {
-// 	config, err := util.LoadConfig(".")
-// 	if err != nil {
-// 		log.Fatal("cannot load config", err)
-// 	}
+	_ "embed"
 
-// 	conn, err := sql.Open(config.DBDriver, config.DBSource)
-// 	if err != nil {
-// 		log.Fatal("cannot connect to db:", err)
-// 	}
+	_ "github.com/lib/pq"
+)
 
-// 	runDBMigration(config.MigrationURL, config.DBSource)
+func main() {
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config", err)
+	}
 
-// 	store := db.NewStore(conn)
-// 	go runGatewayServer(config, store) //run in a separate routine
-// 	runGrpcServer(config, store)
-// }
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	if err != nil {
+		log.Fatal("cannot connect to db:", err)
+	}
 
-// func runDBMigration(migrationURL string, dbSource string) {
-// 	migration, err := migrate.New(migrationURL, dbSource)
-// 	if err != nil {
-// 		log.Fatal("cannot create new migrate instance:", err)
-// 	}
-// 	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
-// 		log.Fatal("failed to run migrate up:", err)
-// 	}
-// 	log.Println("db migrated successfully")
-// }
+	runDBMigration(config.MigrationURL, config.DBSource)
 
-// func runGrpcServer(config util.Config, store db.Store) {
-// 	server, err := gapi.NewServer(config, store)
-// 	if err != nil {
-// 		log.Fatal("cannot create server")
-// 	}
+	store := db.NewStore(conn)
+	go runGatewayServer(config, store) //run in a separate routine
+	runGrpcServer(config, store)
+}
 
-// 	grpcServer := grpc.NewServer()
-// 	pb.RegisterMomsRecipesServer(grpcServer, server)
-// 	reflection.Register(grpcServer)
+func runDBMigration(migrationURL string, dbSource string) {
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatal("cannot create new migrate instance:", err)
+	}
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal("failed to run migrate up:", err)
+	}
+	log.Println("db migrated successfully")
+}
 
-// 	listener, err := net.Listen("tcp", config.GRPCServerAddress)
-// 	if err != nil {
-// 		log.Fatal("cannot create listener")
-// 	}
+func runGrpcServer(config util.Config, store db.Store) {
+	server, err := gapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server")
+	}
 
-// 	log.Printf("start gRPC server at %s", listener.Addr().String())
-// 	err = grpcServer.Serve(listener)
-// 	if err != nil {
-// 		log.Fatal("cannot start gRPC server")
-// 	}
-// }
+	grpcServer := grpc.NewServer()
+	pb.RegisterDessertedServer(grpcServer, server)
+	reflection.Register(grpcServer)
 
-// // Embed Swagger docs into content
-// //
-// //go:embed doc/swagger/*
-// var swagger embed.FS
+	listener, err := net.Listen("tcp", config.GRPCServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener")
+	}
 
-// func runGatewayServer(config util.Config, store db.Store) {
-// 	server, err := gapi.NewServer(config, store)
-// 	if err != nil {
-// 		log.Fatal("cannot create server")
-// 	}
+	log.Printf("start gRPC server at %s", listener.Addr().String())
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		log.Fatal("cannot start gRPC server")
+	}
+}
 
-// 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-// 		MarshalOptions: protojson.MarshalOptions{
-// 			UseProtoNames: true,
-// 		},
-// 		UnmarshalOptions: protojson.UnmarshalOptions{
-// 			DiscardUnknown: true,
-// 		},
-// 	})
+// Embed Swagger docs into content
+//
+//go:embed doc/swagger/*
+var swagger embed.FS
 
-// 	grpcMux := runtime.NewServeMux(jsonOption)
+func runGatewayServer(config util.Config, store db.Store) {
+	server, err := gapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server")
+	}
 
-// 	ctx, cancel := context.WithCancel(context.Background())
-// 	defer cancel()
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
 
-// 	err = pb.RegisterMomsRecipesHandlerServer(ctx, grpcMux, server)
-// 	if err != nil {
-// 		log.Fatalf("cannot register handler server: %s", err)
-// 	}
+	grpcMux := runtime.NewServeMux(jsonOption)
 
-// 	mux := http.NewServeMux()
-// 	mux.Handle("/", grpcMux)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-// 	// Create a sub filesystem that contains the swagger files
-// 	swaggerFiles, err := fs.Sub(swagger, "doc/swagger")
-// 	if err != nil {
-// 		log.Fatalf("cannot create sub filesystem: %s", err)
-// 	}
+	err = pb.RegisterDessertedHandlerServer(ctx, grpcMux, server)
+	if err != nil {
+		log.Fatalf("cannot register handler server: %s", err)
+	}
 
-// 	mux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.FS(swaggerFiles))))
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
 
-// 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
-// 	if err != nil {
-// 		log.Fatal("cannot create listener")
-// 	}
+	// Create a sub filesystem that contains the swagger files
+	swaggerFiles, err := fs.Sub(swagger, "doc/swagger")
+	if err != nil {
+		log.Fatalf("cannot create sub filesystem: %s", err)
+	}
 
-// 	log.Printf("start HTTP gateway server at %s", listener.Addr().String())
-// 	err = http.Serve(listener, mux)
-// 	if err != nil {
-// 		log.Fatal("cannot start HTTP gateway server")
-// 	}
-// }
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.FS(swaggerFiles))))
 
-// // func runGinServer(config util.Config, store db.Store) {
-// // 	server, err := api.NewServer(config, store)
-// // 	if err != nil {
-// // 		log.Fatal("cannot create server")
-// // 	}
+	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener")
+	}
 
-// // 	err = server.Start(config.HTTPServerAddress)
-// // 	if err != nil {
-// // 		log.Fatal("cannot start server:", err)
-// // 	}
-// // }
+	log.Printf("start HTTP gateway server at %s", listener.Addr().String())
+	err = http.Serve(listener, mux)
+	if err != nil {
+		log.Fatal("cannot start HTTP gateway server")
+	}
+}

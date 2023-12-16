@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"desserted-backend/util"
+	"github.com/PlatosCodes/desserted/backend/util"
 
 	"github.com/stretchr/testify/require"
 )
