@@ -44,7 +44,7 @@ migratedown1:
 new_migration:
 	migrate create -ext sql -dir db/migration -seq $(name)
 
-# Database seeding -- CHANGE TO seed.sql before deploying
+# Database seeding
 seeddb:
 	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
 
@@ -69,6 +69,10 @@ dropdb_test:
 	docker exec -it ${CONTAINER_NAME} dropdb --username=${POSTGRES_USER} ${TEST_DB_NAME}
 
 # Seed the test database
+seeddb_local_test:
+	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${TEST_DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
+
+# Seed the database used with Github Actions
 seeddb_test:
     PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${TEST_DB_NAME} -a -f ${LOCAL_DB_PATH}/seed.sql
 
@@ -78,7 +82,7 @@ resetdb_test:
 	@make createdb_test
 	@make citext
 	@make migrateup_test
-	@make seeddb_test
+	@make seeddb_local_test
 
 sqlc:
 	sqlc generate

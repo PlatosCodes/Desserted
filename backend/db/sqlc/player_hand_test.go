@@ -91,7 +91,7 @@ func TestAddCardToHand(t *testing.T) {
 	require.NotEmpty(t, player1_hand)
 	require.Len(t, player1_hand, 1)
 
-	require.Equal(t, cardID, player1_hand[0])
+	require.Equal(t, cardID, player1_hand[0].CardID)
 }
 
 func TestGetPlayerHand(t *testing.T) {
@@ -112,7 +112,10 @@ func TestGetPlayerHand(t *testing.T) {
 	require.NotEmpty(t, player1_hand)
 	require.Len(t, player1_hand, 1)
 
-	require.Equal(t, cardID, player1_hand[0])
+	for i, card_id := range player1_hand {
+		require.Equal(t, card_id, player1_hand[i])
+	}
+
 }
 
 func TestRecordPlayerCard(t *testing.T) {
