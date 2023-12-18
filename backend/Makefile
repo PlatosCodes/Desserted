@@ -70,7 +70,7 @@ dropdb_test:
 
 # Seed the test database
 seeddb_test:
-	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${TEST_DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
+	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
 
 resetdb_test:
 	@echo "Resetting test database..."
