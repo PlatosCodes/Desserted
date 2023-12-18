@@ -6,10 +6,18 @@ VALUES ($1, $2);
 SELECT * FROM player_game 
 WHERE player_game_id = $1;
 
--- name: UpdatePlayerGame :exec
+-- name: UpdatePlayerScore :one
 UPDATE player_game 
-SET player_score = $1, player_status = $2 
-WHERE player_game_id = $3;
+SET player_score = $1
+WHERE player_game_id = $2
+RETURNING *;
+
+-- name: UpdatePlayerStatus :exec
+UPDATE player_game 
+SET player_status = $1
+WHERE player_game_id = $2
+RETURNING *;
+;
 
 -- Check if a player has reached the winning condition
 -- name: CheckWinCondition :one

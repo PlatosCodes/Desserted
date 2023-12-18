@@ -99,6 +99,25 @@ func (q *Queries) GetPlayerHand(ctx context.Context, playerGameID int64) ([]GetP
 	return items, nil
 }
 
+const isCardInPlayerHand = `-- name: IsCardInPlayerHand :one
+SELECT EXISTS (
+  SELECT 1 FROM player_hand
+  WHERE player_game_id = $1 and card_id = $2
+) AS in_hand
+`
+
+type IsCardInPlayerHandParams struct {
+	PlayerGameID int64 `json:"player_game_id"`
+	CardID       int64 `json:"card_id"`
+}
+
+func (q *Queries) IsCardInPlayerHand(ctx context.Context, arg IsCardInPlayerHandParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isCardInPlayerHand, arg.PlayerGameID, arg.CardID)
+	var in_hand bool
+	err := row.Scan(&in_hand)
+	return in_hand, err
+}
+
 const recordPlayedCard = `-- name: RecordPlayedCard :exec
 INSERT INTO played_cards (player_game_id, card_id) 
 VALUES ($1, $2)

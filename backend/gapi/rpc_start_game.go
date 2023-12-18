@@ -43,7 +43,7 @@ func (server *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (
 
 	var player_ids []int64
 	for _, player := range players {
-		player_ids = append(player_ids, player.PlayerID)
+		player_ids = append(player_ids, player.PlayerGameID)
 	}
 
 	// Start the game using the start game transactional method

@@ -19,3 +19,9 @@ VALUES ($1, $2);
 -- name: GetPlayedCards :many
 SELECT * FROM played_cards
 WHERE player_game_id = $1;
+
+-- name: IsCardInPlayerHand :one
+SELECT EXISTS (
+  SELECT 1 FROM player_hand
+  WHERE player_game_id = $1 and card_id = $2
+) AS in_hand;

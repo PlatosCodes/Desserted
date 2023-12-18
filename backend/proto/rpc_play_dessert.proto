@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+import "player_game.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message PlayDessertRequest {
+  int64 player_game_id = 1;
+  string dessert_name = 2;
+  repeated int64 card_ids = 3;
+}
+
+message PlayDessertResponse {
+  int64 dessert_played_id = 1;
+  PlayerGame player_game = 2;
+}

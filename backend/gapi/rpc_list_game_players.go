@@ -49,10 +49,8 @@ func (server *Server) ListGamePlayers(ctx context.Context, req *pb.ListGamePlaye
 			PlayerGame:   player.PlayerGameID,
 			PlayerId:     player.PlayerID,
 			GameId:       player.GameID,
-			PlayerScore:  player.PlayerScore.Int64,
+			PlayerScore:  player.PlayerScore.Int32,
 			PlayerStatus: player.PlayerStatus.String,
-			HandCards:    player.HandCards.String,
-			PlayedCards:  player.PlayedCards.String,
 		})
 
 	}

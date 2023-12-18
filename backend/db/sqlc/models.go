@@ -61,10 +61,8 @@ type PlayerGame struct {
 	PlayerGameID int64          `json:"player_game_id"`
 	PlayerID     int64          `json:"player_id"`
 	GameID       int64          `json:"game_id"`
-	PlayerScore  sql.NullInt64  `json:"player_score"`
+	PlayerScore  sql.NullInt32  `json:"player_score"`
 	PlayerStatus sql.NullString `json:"player_status"`
-	HandCards    sql.NullString `json:"hand_cards"`
-	PlayedCards  sql.NullString `json:"played_cards"`
 }
 
 type PlayerHand struct {

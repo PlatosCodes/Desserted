@@ -273,6 +273,40 @@
         ]
       }
     },
+    "/v1/play_dessert": {
+      "post": {
+        "summary": "Play a dessert",
+        "description": "Use this API to play a dessert",
+        "operationId": "Desserted_PlayDessert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbPlayDessertResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbPlayDessertRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/start_game": {
       "post": {
         "summary": "Start the game",
@@ -494,6 +528,37 @@
         }
       }
     },
+    "pbPlayDessertRequest": {
+      "type": "object",
+      "properties": {
+        "playerGameId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dessertName": {
+          "type": "string"
+        },
+        "cardIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "pbPlayDessertResponse": {
+      "type": "object",
+      "properties": {
+        "dessertPlayedId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "playerGame": {
+          "$ref": "#/definitions/pbPlayerGame"
+        }
+      }
+    },
     "pbPlayerGame": {
       "type": "object",
       "properties": {
@@ -510,16 +575,10 @@
           "format": "int64"
         },
         "playerScore": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "playerStatus": {
-          "type": "string"
-        },
-        "handCards": {
-          "type": "string"
-        },
-        "playedCards": {
           "type": "string"
         }
       }

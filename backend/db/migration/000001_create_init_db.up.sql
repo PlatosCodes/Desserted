@@ -33,10 +33,8 @@ CREATE TABLE player_game (
   player_game_id BIGSERIAL PRIMARY KEY,
   player_id BIGINT NOT NULL,
   game_id BIGINT NOT NULL,
-  player_score BIGINT DEFAULT 0,
+  player_score INT DEFAULT 0,
   player_status VARCHAR(10) DEFAULT 'active',
-  hand_cards TEXT,
-  played_cards TEXT,
   FOREIGN KEY (player_id) REFERENCES users(id),
   FOREIGN KEY (game_id) REFERENCES games(game_id)
 );

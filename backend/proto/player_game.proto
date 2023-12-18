@@ -8,8 +8,6 @@ message PlayerGame {
     int64 player_game = 1;
     int64 player_id = 2;
     int64 game_id = 3;
-    int64 player_score = 4;
+    int32 player_score = 4;
     string player_status = 5;
-    string hand_cards = 6;
-    string played_cards = 7;
 }

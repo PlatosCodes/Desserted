@@ -13,6 +13,7 @@ import "rpc_accept_game_invite.proto";
 import "rpc_list_game_players.proto";
 import "rpc_start_game.proto";
 import "rpc_get_player_hand.proto";
+import "rpc_play_dessert.proto";
 import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -131,5 +132,15 @@ service Desserted {
         description: "Use this API to get a player's hand";
         summary: "Get the player's hand";
       };
-    };      
+    };
+    rpc PlayDessert (PlayDessertRequest) returns (PlayDessertResponse) {
+      option (google.api.http) = {    
+          post: "/v1/play_dessert"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to play a dessert";
+        summary: "Play a dessert";
+      };
+    };
 }

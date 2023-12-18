@@ -11,3 +11,8 @@ WHERE player_game_id = $1;
 SELECT dessert_id 
 FROM desserts
 WHERE name = $1;
+
+-- name: GetDessertByName :one
+SELECT * 
+FROM desserts
+WHERE name = $1;

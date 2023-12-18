@@ -32,12 +32,12 @@ WHERE player_game_id = $1 AND player_score >= $2
 
 type CheckWinConditionParams struct {
 	PlayerGameID int64         `json:"player_game_id"`
-	PlayerScore  sql.NullInt64 `json:"player_score"`
+	PlayerScore  sql.NullInt32 `json:"player_score"`
 }
 
 type CheckWinConditionRow struct {
 	PlayerID    int64         `json:"player_id"`
-	PlayerScore sql.NullInt64 `json:"player_score"`
+	PlayerScore sql.NullInt32 `json:"player_score"`
 }
 
 // Check if a player has reached the winning condition
@@ -49,7 +49,7 @@ func (q *Queries) CheckWinCondition(ctx context.Context, arg CheckWinConditionPa
 }
 
 const getPlayerGame = `-- name: GetPlayerGame :one
-SELECT player_game_id, player_id, game_id, player_score, player_status, hand_cards, played_cards FROM player_game 
+SELECT player_game_id, player_id, game_id, player_score, player_status FROM player_game 
 WHERE player_game_id = $1
 `
 
@@ -62,14 +62,12 @@ func (q *Queries) GetPlayerGame(ctx context.Context, playerGameID int64) (Player
 		&i.GameID,
 		&i.PlayerScore,
 		&i.PlayerStatus,
-		&i.HandCards,
-		&i.PlayedCards,
 	)
 	return i, err
 }
 
 const listPlayerGames = `-- name: ListPlayerGames :many
-SELECT player_game_id, player_id, game_id, player_score, player_status, hand_cards, played_cards FROM player_game 
+SELECT player_game_id, player_id, game_id, player_score, player_status FROM player_game 
 WHERE player_id = $1
 `
 
@@ -88,8 +86,6 @@ func (q *Queries) ListPlayerGames(ctx context.Context, playerID int64) ([]Player
 			&i.GameID,
 			&i.PlayerScore,
 			&i.PlayerStatus,
-			&i.HandCards,
-			&i.PlayedCards,
 		); err != nil {
 			return nil, err
 		}
@@ -104,19 +100,44 @@ func (q *Queries) ListPlayerGames(ctx context.Context, playerID int64) ([]Player
 	return items, nil
 }
 
-const updatePlayerGame = `-- name: UpdatePlayerGame :exec
+const updatePlayerScore = `-- name: UpdatePlayerScore :one
 UPDATE player_game 
-SET player_score = $1, player_status = $2 
-WHERE player_game_id = $3
+SET player_score = $1
+WHERE player_game_id = $2
+RETURNING player_game_id, player_id, game_id, player_score, player_status
 `
 
-type UpdatePlayerGameParams struct {
-	PlayerScore  sql.NullInt64  `json:"player_score"`
+type UpdatePlayerScoreParams struct {
+	PlayerScore  sql.NullInt32 `json:"player_score"`
+	PlayerGameID int64         `json:"player_game_id"`
+}
+
+func (q *Queries) UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) (PlayerGame, error) {
+	row := q.db.QueryRowContext(ctx, updatePlayerScore, arg.PlayerScore, arg.PlayerGameID)
+	var i PlayerGame
+	err := row.Scan(
+		&i.PlayerGameID,
+		&i.PlayerID,
+		&i.GameID,
+		&i.PlayerScore,
+		&i.PlayerStatus,
+	)
+	return i, err
+}
+
+const updatePlayerStatus = `-- name: UpdatePlayerStatus :exec
+UPDATE player_game 
+SET player_status = $1
+WHERE player_game_id = $2
+RETURNING player_game_id, player_id, game_id, player_score, player_status
+`
+
+type UpdatePlayerStatusParams struct {
 	PlayerStatus sql.NullString `json:"player_status"`
 	PlayerGameID int64          `json:"player_game_id"`
 }
 
-func (q *Queries) UpdatePlayerGame(ctx context.Context, arg UpdatePlayerGameParams) error {
-	_, err := q.db.ExecContext(ctx, updatePlayerGame, arg.PlayerScore, arg.PlayerStatus, arg.PlayerGameID)
+func (q *Queries) UpdatePlayerStatus(ctx context.Context, arg UpdatePlayerStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updatePlayerStatus, arg.PlayerStatus, arg.PlayerGameID)
 	return err
 }

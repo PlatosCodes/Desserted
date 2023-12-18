@@ -28,6 +28,7 @@ type Querier interface {
 	EndGame(ctx context.Context, gameID int64) error
 	// Get card by ID
 	GetCardByID(ctx context.Context, cardID int64) (Card, error)
+	GetDessertByName(ctx context.Context, name string) (Dessert, error)
 	GetDessertIDByName(ctx context.Context, name string) (int64, error)
 	GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int64) ([]int64, error)
 	GetGameByID(ctx context.Context, gameID int64) (Game, error)
@@ -38,6 +39,7 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
+	IsCardInPlayerHand(ctx context.Context, arg IsCardInPlayerHandParams) (bool, error)
 	IsUserGameCreator(ctx context.Context, arg IsUserGameCreatorParams) (bool, error)
 	ListActiveGames(ctx context.Context, arg ListActiveGamesParams) ([]Game, error)
 	// List all cards
@@ -53,7 +55,8 @@ type Querier interface {
 	RemoveCardFromPlayerHand(ctx context.Context, arg RemoveCardFromPlayerHandParams) error
 	StartGame(ctx context.Context, gameID int64) error
 	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
-	UpdatePlayerGame(ctx context.Context, arg UpdatePlayerGameParams) error
+	UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) (PlayerGame, error)
+	UpdatePlayerStatus(ctx context.Context, arg UpdatePlayerStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

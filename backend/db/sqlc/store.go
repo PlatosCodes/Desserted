@@ -13,7 +13,7 @@ import (
 type Store interface {
 	Querier
 	RegisterTx(ctx context.Context, arg CreateUserParams) (RegisterTxResult, error)
-	StartGameTx(ctx context.Context, arg StartGameTxParams) (StartGameTxResult, error) // Add this line
+	StartGameTx(ctx context.Context, arg StartGameTxParams) (StartGameTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
