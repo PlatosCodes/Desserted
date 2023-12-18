@@ -5,7 +5,7 @@ POSTGRES_USER := root
 POSTGRES_PASSWORD := bluecomet
 DB_NAME := desserted
 TEST_DB_NAME := desserted-test
-CONTAINER_NAME := postgres-desserted
+CONTAINER_NAME := postgres
 CONTAINER_VOLUME_PATH := /data
 LOCAL_DB_PATH := /Users/alexmerola/Developer/desserted/backend/db
 DB_URL := postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable
@@ -48,6 +48,7 @@ new_migration:
 seeddb:
 	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
 
+# Change the seed file before deploying
 resetdb:
 	@echo "Resetting database..."
 	@make dropdb || true
@@ -68,8 +69,12 @@ dropdb_test:
 	docker exec -it ${CONTAINER_NAME} dropdb --username=${POSTGRES_USER} ${TEST_DB_NAME}
 
 # Seed the test database
-seeddb_test:
+seeddb_local_test:
 	docker exec -it ${CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${TEST_DB_NAME} -a -f ${CONTAINER_VOLUME_PATH}/seed.sql
+
+# Seed the database used with Github Actions
+seeddb_test:
+    PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${TEST_DB_NAME} -a -f ${LOCAL_DB_PATH}/seed.sql
 
 resetdb_test:
 	@echo "Resetting test database..."
@@ -77,7 +82,7 @@ resetdb_test:
 	@make createdb_test
 	@make citext
 	@make migrateup_test
-	@make seeddb_test
+	@make seeddb_local_test
 
 sqlc:
 	sqlc generate

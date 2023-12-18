@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message PlayerGame {
+    int64 player_game = 1;
+    int64 player_id = 2;
+    int64 game_id = 3;
+    int32 player_score = 4;
+    string player_status = 5;
+}

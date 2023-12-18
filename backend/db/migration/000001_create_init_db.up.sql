@@ -19,29 +19,13 @@ CREATE INDEX idx_user_username ON users(username);
 -- Represents a game session
 CREATE TABLE games (
   game_id BIGSERIAL PRIMARY KEY,
-  status VARCHAR(10) NOT NULL DEFAULT 'active',
+  status VARCHAR(10) NOT NULL DEFAULT 'waiting',
   created_by BIGINT NOT NULL,
   start_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   end_time TIMESTAMPTZ,
   FOREIGN KEY (created_by) REFERENCES users(id)
 );
 CREATE INDEX idx_games_status ON games(status);
-
--- Table: PlayerGame
--- Associates users with their game sessions and tracks their progress
-CREATE TABLE player_game (
-  player_game_id BIGSERIAL PRIMARY KEY,
-  player_id BIGINT NOT NULL,
-  game_id BIGINT NOT NULL,
-  player_score BIGINT DEFAULT 0,
-  player_status VARCHAR(10) DEFAULT 'active',
-  hand_cards TEXT,
-  played_cards TEXT,
-  FOREIGN KEY (player_id) REFERENCES users(id),
-  FOREIGN KEY (game_id) REFERENCES games(game_id)
-);
-CREATE INDEX idx_playergame_player_id ON player_game(player_id);
-CREATE INDEX idx_playergame_game_id ON player_game(game_id);
 
 -- Table: Cards
 -- Details of each card used in the game
@@ -51,13 +35,33 @@ CREATE TABLE cards (
   name VARCHAR NOT NULL
 );
 
--- Table: Desserts
--- Stores information about desserts
-CREATE TABLE desserts (
-  dessert_id BIGSERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  points INT NOT NULL
+-- Table: GameDeck
+-- Stores the deck of cards for each game
+CREATE TABLE game_deck (
+  game_deck_id BIGSERIAL PRIMARY KEY,
+  game_id BIGINT NOT NULL,
+  card_id BIGINT NOT NULL,
+  order_index INT NOT NULL,
+  FOREIGN KEY (game_id) REFERENCES games(game_id),
+  FOREIGN KEY (card_id) REFERENCES cards(card_id)
 );
+CREATE INDEX idx_game_deck_game_id ON game_deck(game_id);
+CREATE INDEX idx_game_deck_order ON game_deck(order_index);
+
+-- Table: PlayerGame
+-- Associates users with their game sessions and tracks their progress
+CREATE TABLE player_game (
+  player_game_id BIGSERIAL PRIMARY KEY,
+  player_id BIGINT NOT NULL,
+  game_id BIGINT NOT NULL,
+  player_score INT DEFAULT 0,
+  player_status VARCHAR(10) DEFAULT 'active',
+  FOREIGN KEY (player_id) REFERENCES users(id),
+  FOREIGN KEY (game_id) REFERENCES games(game_id)
+);
+ALTER TABLE player_game ADD CONSTRAINT unique_player_game UNIQUE (player_id, game_id);
+CREATE INDEX idx_playergame_player_id ON player_game(player_id);
+CREATE INDEX idx_playergame_game_id ON player_game(game_id);
 
 -- Table: PlayerHand
 -- Tracks the cards in each player's hand for a game
@@ -80,6 +84,14 @@ CREATE TABLE played_cards (
   FOREIGN KEY (card_id) REFERENCES cards(card_id)
 );
 
+-- Table: Desserts
+-- Stores information about desserts
+CREATE TABLE desserts (
+  dessert_id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  points INT NOT NULL
+);
+
 -- Table: DessertPlayed
 -- Records desserts created by players in each game
 CREATE TABLE dessert_played (
@@ -92,6 +104,20 @@ CREATE TABLE dessert_played (
   FOREIGN KEY (dessert_id) REFERENCES desserts(dessert_id)
 );
 CREATE INDEX idx_dessertplayed_timestamp ON dessert_played(timestamp);
+
+-- Table: GameInvites
+-- Records game invitations created by players who created a game
+CREATE TABLE game_invitations (
+  game_invitation_id BIGSERIAL PRIMARY KEY,
+  inviter_player_id BIGINT NOT NULL,
+  invitee_username VARCHAR(255) NOT NULL,
+  game_id BIGINT NOT NULL,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  FOREIGN KEY (inviter_player_id) REFERENCES users(id),
+  FOREIGN KEY (invitee_username) REFERENCES users(username),
+  FOREIGN KEY (game_id) REFERENCES games(game_id)
+);
+CREATE INDEX idx_invitee_username ON game_invitations(invitee_username);
 
 COMMENT ON TABLE "users" IS 'Stores user account information';
 

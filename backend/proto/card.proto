@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message Card {
+    int64 card_id = 1;
+    string type = 2;
+    string name = 3;
+}

@@ -72,7 +72,6 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int64) (Game, error) {
 
 const listActiveGames = `-- name: ListActiveGames :many
 SELECT game_id, status, created_by, start_time, end_time FROM games 
-WHERE status = 'active' 
 LIMIT $1 OFFSET $2
 `
 
@@ -111,7 +110,7 @@ func (q *Queries) ListActiveGames(ctx context.Context, arg ListActiveGamesParams
 }
 
 const listGamePlayers = `-- name: ListGamePlayers :many
-SELECT player_game_id, player_id, game_id, player_score, player_status, hand_cards, played_cards FROM player_game 
+SELECT player_game_id, player_id, game_id, player_score, player_status FROM player_game 
 WHERE game_id = $1 
 LIMIT $2 OFFSET $3
 `
@@ -137,8 +136,6 @@ func (q *Queries) ListGamePlayers(ctx context.Context, arg ListGamePlayersParams
 			&i.GameID,
 			&i.PlayerScore,
 			&i.PlayerStatus,
-			&i.HandCards,
-			&i.PlayedCards,
 		); err != nil {
 			return nil, err
 		}
@@ -151,6 +148,16 @@ func (q *Queries) ListGamePlayers(ctx context.Context, arg ListGamePlayersParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const startGame = `-- name: StartGame :exec
+UPDATE games SET status = "active" 
+WHERE game_id = $1
+`
+
+func (q *Queries) StartGame(ctx context.Context, gameID int64) error {
+	_, err := q.db.ExecContext(ctx, startGame, gameID)
+	return err
 }
 
 const updateGameStatus = `-- name: UpdateGameStatus :exec

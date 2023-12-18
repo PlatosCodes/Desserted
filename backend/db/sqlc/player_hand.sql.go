@@ -58,24 +58,37 @@ func (q *Queries) GetPlayedCards(ctx context.Context, playerGameID int64) ([]Pla
 }
 
 const getPlayerHand = `-- name: GetPlayerHand :many
-SELECT card_id 
+SELECT player_hand.player_hand_id, player_hand.player_game_id, player_hand.card_id, cards.name
 FROM player_hand 
-WHERE player_game_id = $1
+JOIN cards ON player_hand.card_id = cards.card_id
+WHERE player_hand.player_game_id = $1
 `
 
-func (q *Queries) GetPlayerHand(ctx context.Context, playerGameID int64) ([]int64, error) {
+type GetPlayerHandRow struct {
+	PlayerHandID int64  `json:"player_hand_id"`
+	PlayerGameID int64  `json:"player_game_id"`
+	CardID       int64  `json:"card_id"`
+	Name         string `json:"name"`
+}
+
+func (q *Queries) GetPlayerHand(ctx context.Context, playerGameID int64) ([]GetPlayerHandRow, error) {
 	rows, err := q.db.QueryContext(ctx, getPlayerHand, playerGameID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []int64{}
+	items := []GetPlayerHandRow{}
 	for rows.Next() {
-		var card_id int64
-		if err := rows.Scan(&card_id); err != nil {
+		var i GetPlayerHandRow
+		if err := rows.Scan(
+			&i.PlayerHandID,
+			&i.PlayerGameID,
+			&i.CardID,
+			&i.Name,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, card_id)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -84,6 +97,25 @@ func (q *Queries) GetPlayerHand(ctx context.Context, playerGameID int64) ([]int6
 		return nil, err
 	}
 	return items, nil
+}
+
+const isCardInPlayerHand = `-- name: IsCardInPlayerHand :one
+SELECT EXISTS (
+  SELECT 1 FROM player_hand
+  WHERE player_game_id = $1 and card_id = $2
+) AS in_hand
+`
+
+type IsCardInPlayerHandParams struct {
+	PlayerGameID int64 `json:"player_game_id"`
+	CardID       int64 `json:"card_id"`
+}
+
+func (q *Queries) IsCardInPlayerHand(ctx context.Context, arg IsCardInPlayerHandParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isCardInPlayerHand, arg.PlayerGameID, arg.CardID)
+	var in_hand bool
+	err := row.Scan(&in_hand)
+	return in_hand, err
 }
 
 const recordPlayedCard = `-- name: RecordPlayedCard :exec

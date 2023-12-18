@@ -9,6 +9,19 @@ import (
 	"context"
 )
 
+const getDessertByName = `-- name: GetDessertByName :one
+SELECT dessert_id, name, points 
+FROM desserts
+WHERE name = $1
+`
+
+func (q *Queries) GetDessertByName(ctx context.Context, name string) (Dessert, error) {
+	row := q.db.QueryRowContext(ctx, getDessertByName, name)
+	var i Dessert
+	err := row.Scan(&i.DessertID, &i.Name, &i.Points)
+	return i, err
+}
+
 const getDessertIDByName = `-- name: GetDessertIDByName :one
 SELECT dessert_id 
 FROM desserts

@@ -39,25 +39,29 @@ func createActiveGame(t *testing.T) (player1_game_id int64, player2_game_id int6
 	return players[0].PlayerGameID, players[1].PlayerGameID, game
 }
 
-func createRandomPlayerHand(t *testing.T, player1_game_id int64) []int64 {
+func createRandomPlayerHand(t *testing.T, player1_game_id int64) []GetPlayerHandRow {
 	for i := 0; i < 5; i++ {
 		cardID := util.RandomCard()
 
-		add_card_params := AddCardToPlayerHandParams{
+		addCardParams := AddCardToPlayerHandParams{
 			PlayerGameID: player1_game_id,
 			CardID:       cardID,
 		}
 
-		err := testQueries.AddCardToPlayerHand(context.Background(), add_card_params)
+		err := testQueries.AddCardToPlayerHand(context.Background(), addCardParams)
 		require.NoError(t, err)
 	}
 
-	player1_hand, err := testQueries.GetPlayerHand(context.Background(), player1_game_id)
+	player1Hand, err := testQueries.GetPlayerHand(context.Background(), player1_game_id)
 	require.NoError(t, err)
-	require.NotEmpty(t, player1_hand)
-	require.Len(t, player1_hand, 5)
+	require.NotEmpty(t, player1Hand)
+	require.Len(t, player1Hand, 5)
 
-	return player1_hand
+	for _, hand := range player1Hand {
+		require.NotEmpty(t, hand.Name, "Card name should not be empty")
+	}
+
+	return player1Hand
 }
 
 func TestCreateActiveGame(t *testing.T) {
@@ -87,7 +91,7 @@ func TestAddCardToHand(t *testing.T) {
 	require.NotEmpty(t, player1_hand)
 	require.Len(t, player1_hand, 1)
 
-	require.Equal(t, cardID, player1_hand[0])
+	require.Equal(t, cardID, player1_hand[0].CardID)
 }
 
 func TestGetPlayerHand(t *testing.T) {
@@ -108,7 +112,10 @@ func TestGetPlayerHand(t *testing.T) {
 	require.NotEmpty(t, player1_hand)
 	require.Len(t, player1_hand, 1)
 
-	require.Equal(t, cardID, player1_hand[0])
+	for i, card_id := range player1_hand {
+		require.Equal(t, card_id, player1_hand[i])
+	}
+
 }
 
 func TestRecordPlayerCard(t *testing.T) {
@@ -117,7 +124,7 @@ func TestRecordPlayerCard(t *testing.T) {
 
 	played_card := RecordPlayedCardParams{
 		PlayerGameID: player1_game_id,
-		CardID:       player1_hand[0],
+		CardID:       player1_hand[0].CardID,
 	}
 
 	err := testQueries.RecordPlayedCard(context.Background(), played_card)
@@ -135,7 +142,7 @@ func TestRemovePlayerCardHand(t *testing.T) {
 	player1_game_id, _, _ := createActiveGame(t)
 	player_hand := createRandomPlayerHand(t, player1_game_id)
 
-	play_card := player_hand[0]
+	play_card := player_hand[0].CardID
 
 	err := testQueries.RemoveCardFromPlayerHand(context.Background(), RemoveCardFromPlayerHandParams{
 		PlayerGameID: player1_game_id,
