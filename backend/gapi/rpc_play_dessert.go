@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -115,6 +116,13 @@ func (server *Server) PlayDessert(ctx context.Context, req *pb.PlayDessertReques
 		return nil, status.Errorf(codes.Internal, "error updated player's score: %s", err)
 	}
 
+	winning_condition, err := server.Store.IsGameWon(ctx, playerGame.PlayerGameID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error checking if game was won: %v", err)
+	}
+
+	log.Println(winning_condition.Bool)
+
 	// Convert to pb.PlayDessertResponse
 	return &pb.PlayDessertResponse{
 		DessertPlayedId: dessert.DessertID,
@@ -125,5 +133,8 @@ func (server *Server) PlayDessert(ctx context.Context, req *pb.PlayDessertReques
 			PlayerScore:  updated_player_game.PlayerScore.Int32,
 			PlayerStatus: updated_player_game.PlayerStatus.String,
 		},
+		// Game is won
+		GameOver: winning_condition.Bool,
 	}, nil
+
 }

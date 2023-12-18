@@ -25,29 +25,6 @@ func (q *Queries) AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams
 	return err
 }
 
-const checkWinCondition = `-- name: CheckWinCondition :one
-SELECT player_id, player_score FROM player_game 
-WHERE player_game_id = $1 AND player_score >= $2
-`
-
-type CheckWinConditionParams struct {
-	PlayerGameID int64         `json:"player_game_id"`
-	PlayerScore  sql.NullInt32 `json:"player_score"`
-}
-
-type CheckWinConditionRow struct {
-	PlayerID    int64         `json:"player_id"`
-	PlayerScore sql.NullInt32 `json:"player_score"`
-}
-
-// Check if a player has reached the winning condition
-func (q *Queries) CheckWinCondition(ctx context.Context, arg CheckWinConditionParams) (CheckWinConditionRow, error) {
-	row := q.db.QueryRowContext(ctx, checkWinCondition, arg.PlayerGameID, arg.PlayerScore)
-	var i CheckWinConditionRow
-	err := row.Scan(&i.PlayerID, &i.PlayerScore)
-	return i, err
-}
-
 const getPlayerGame = `-- name: GetPlayerGame :one
 SELECT player_game_id, player_id, game_id, player_score, player_status FROM player_game 
 WHERE player_game_id = $1
@@ -64,6 +41,24 @@ func (q *Queries) GetPlayerGame(ctx context.Context, playerGameID int64) (Player
 		&i.PlayerStatus,
 	)
 	return i, err
+}
+
+const isGameWon = `-- name: IsGameWon :one
+SELECT EXISTS (
+  SELECT 1 FROM player_game
+  WHERE player_score >= 100 AND player_game_id = $1
+) OR NOT EXISTS (
+  SELECT 1 FROM game_deck
+  WHERE game_id = $1
+) AS is_game_won
+`
+
+// Check if a player has reached the winning condition
+func (q *Queries) IsGameWon(ctx context.Context, playerGameID int64) (sql.NullBool, error) {
+	row := q.db.QueryRowContext(ctx, isGameWon, playerGameID)
+	var is_game_won sql.NullBool
+	err := row.Scan(&is_game_won)
+	return is_game_won, err
 }
 
 const listPlayerGames = `-- name: ListPlayerGames :many

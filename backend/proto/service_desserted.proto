@@ -14,6 +14,7 @@ import "rpc_list_game_players.proto";
 import "rpc_start_game.proto";
 import "rpc_get_player_hand.proto";
 import "rpc_play_dessert.proto";
+import "rpc_draw_card.proto";
 import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -141,6 +142,16 @@ service Desserted {
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
         description: "Use this API to play a dessert";
         summary: "Play a dessert";
+      };
+    };
+    rpc DrawCard (DrawCardRequest) returns (DrawCardResponse) {
+      option (google.api.http) = {    
+          post: "/v1/draw_card"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to draw a card";
+        summary: "Draw a card";
       };
     };
 }

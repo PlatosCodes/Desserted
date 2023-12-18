@@ -5,7 +5,7 @@ POSTGRES_USER := root
 POSTGRES_PASSWORD := bluecomet
 DB_NAME := desserted
 TEST_DB_NAME := desserted-test
-CONTAINER_NAME := postgres-desserted
+CONTAINER_NAME := postgres
 CONTAINER_VOLUME_PATH := /data
 LOCAL_DB_PATH := /Users/alexmerola/Developer/desserted/backend/db
 DB_URL := postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable

@@ -2,6 +2,10 @@
 -- name: ListCards :many
 SELECT * FROM cards;
 
+-- List all cards
+-- name: ListCardIDs :many
+SELECT card_id FROM cards;
+
 -- Get card by ID
 -- name: GetCardByID :one
 SELECT * FROM cards 

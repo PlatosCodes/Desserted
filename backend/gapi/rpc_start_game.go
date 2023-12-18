@@ -46,10 +46,16 @@ func (server *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (
 		player_ids = append(player_ids, player.PlayerGameID)
 	}
 
+	cardIDs, err := server.Store.ListCardIDs(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to list card ids: %v", err)
+	}
+
 	// Start the game using the start game transactional method
 	startGameResult, err := server.Store.StartGameTx(ctx, db.StartGameTxParams{
 		GameID:    req.GetGameId(),
 		PlayerIDs: player_ids,
+		CardIDs:   cardIDs,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to start game: %v", err)

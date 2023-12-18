@@ -124,6 +124,40 @@
         ]
       }
     },
+    "/v1/draw_card": {
+      "post": {
+        "summary": "Draw a card",
+        "description": "Use this API to draw a card",
+        "operationId": "Desserted_DrawCard",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDrawCardResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbDrawCardRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/get_player_hand": {
       "get": {
         "summary": "Get the player's hand",
@@ -428,6 +462,28 @@
         }
       }
     },
+    "pbDrawCardRequest": {
+      "type": "object",
+      "properties": {
+        "gameId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "playerGameId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbDrawCardResponse": {
+      "type": "object",
+      "properties": {
+        "cardId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "pbGame": {
       "type": "object",
       "properties": {
@@ -556,6 +612,9 @@
         },
         "playerGame": {
           "$ref": "#/definitions/pbPlayerGame"
+        },
+        "gameOver": {
+          "type": "boolean"
         }
       }
     },

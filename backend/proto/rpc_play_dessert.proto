@@ -15,4 +15,5 @@ message PlayDessertRequest {
 message PlayDessertResponse {
   int64 dessert_played_id = 1;
   PlayerGame player_game = 2;
+  bool game_over = 3;
 }

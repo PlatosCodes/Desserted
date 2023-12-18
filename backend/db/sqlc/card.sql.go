@@ -22,6 +22,34 @@ func (q *Queries) GetCardByID(ctx context.Context, cardID int64) (Card, error) {
 	return i, err
 }
 
+const listCardIDs = `-- name: ListCardIDs :many
+SELECT card_id FROM cards
+`
+
+// List all cards
+func (q *Queries) ListCardIDs(ctx context.Context) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, listCardIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var card_id int64
+		if err := rows.Scan(&card_id); err != nil {
+			return nil, err
+		}
+		items = append(items, card_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listCards = `-- name: ListCards :many
 SELECT card_id, type, name FROM cards
 `

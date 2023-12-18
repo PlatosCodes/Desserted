@@ -41,6 +41,13 @@ type Game struct {
 	EndTime   sql.NullTime `json:"end_time"`
 }
 
+type GameDeck struct {
+	GameDeckID int64 `json:"game_deck_id"`
+	GameID     int64 `json:"game_id"`
+	CardID     int64 `json:"card_id"`
+	OrderIndex int32 `json:"order_index"`
+}
+
 type GameInvitation struct {
 	GameInvitationID int64     `json:"game_invitation_id"`
 	InviterPlayerID  int64     `json:"inviter_player_id"`

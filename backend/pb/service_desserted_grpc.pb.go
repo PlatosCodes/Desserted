@@ -30,6 +30,7 @@ const (
 	Desserted_StartGame_FullMethodName          = "/pb.Desserted/StartGame"
 	Desserted_GetPlayerHand_FullMethodName      = "/pb.Desserted/GetPlayerHand"
 	Desserted_PlayDessert_FullMethodName        = "/pb.Desserted/PlayDessert"
+	Desserted_DrawCard_FullMethodName           = "/pb.Desserted/DrawCard"
 )
 
 // DessertedClient is the client API for Desserted service.
@@ -59,6 +60,7 @@ type DessertedClient interface {
 	StartGame(ctx context.Context, in *StartGameRequest, opts ...grpc.CallOption) (*StartGameResponse, error)
 	GetPlayerHand(ctx context.Context, in *GetPlayerHandRequest, opts ...grpc.CallOption) (*GetPlayerHandResponse, error)
 	PlayDessert(ctx context.Context, in *PlayDessertRequest, opts ...grpc.CallOption) (*PlayDessertResponse, error)
+	DrawCard(ctx context.Context, in *DrawCardRequest, opts ...grpc.CallOption) (*DrawCardResponse, error)
 }
 
 type dessertedClient struct {
@@ -159,6 +161,15 @@ func (c *dessertedClient) PlayDessert(ctx context.Context, in *PlayDessertReques
 	return out, nil
 }
 
+func (c *dessertedClient) DrawCard(ctx context.Context, in *DrawCardRequest, opts ...grpc.CallOption) (*DrawCardResponse, error) {
+	out := new(DrawCardResponse)
+	err := c.cc.Invoke(ctx, Desserted_DrawCard_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DessertedServer is the server API for Desserted service.
 // All implementations must embed UnimplementedDessertedServer
 // for forward compatibility
@@ -186,6 +197,7 @@ type DessertedServer interface {
 	StartGame(context.Context, *StartGameRequest) (*StartGameResponse, error)
 	GetPlayerHand(context.Context, *GetPlayerHandRequest) (*GetPlayerHandResponse, error)
 	PlayDessert(context.Context, *PlayDessertRequest) (*PlayDessertResponse, error)
+	DrawCard(context.Context, *DrawCardRequest) (*DrawCardResponse, error)
 	mustEmbedUnimplementedDessertedServer()
 }
 
@@ -222,6 +234,9 @@ func (UnimplementedDessertedServer) GetPlayerHand(context.Context, *GetPlayerHan
 }
 func (UnimplementedDessertedServer) PlayDessert(context.Context, *PlayDessertRequest) (*PlayDessertResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PlayDessert not implemented")
+}
+func (UnimplementedDessertedServer) DrawCard(context.Context, *DrawCardRequest) (*DrawCardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DrawCard not implemented")
 }
 func (UnimplementedDessertedServer) mustEmbedUnimplementedDessertedServer() {}
 
@@ -416,6 +431,24 @@ func _Desserted_PlayDessert_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Desserted_DrawCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DrawCardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).DrawCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_DrawCard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).DrawCard(ctx, req.(*DrawCardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Desserted_ServiceDesc is the grpc.ServiceDesc for Desserted service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -462,6 +495,10 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PlayDessert",
 			Handler:    _Desserted_PlayDessert_Handler,
+		},
+		{
+			MethodName: "DrawCard",
+			Handler:    _Desserted_DrawCard_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
