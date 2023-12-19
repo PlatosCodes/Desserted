@@ -27,6 +27,7 @@ const (
 	Desserted_InvitePlayerToGame_FullMethodName = "/pb.Desserted/InvitePlayerToGame"
 	Desserted_AcceptGameInvite_FullMethodName   = "/pb.Desserted/AcceptGameInvite"
 	Desserted_ListGamePlayers_FullMethodName    = "/pb.Desserted/ListGamePlayers"
+	Desserted_GetPlayerGame_FullMethodName      = "/pb.Desserted/GetPlayerGame"
 	Desserted_StartGame_FullMethodName          = "/pb.Desserted/StartGame"
 	Desserted_GetPlayerHand_FullMethodName      = "/pb.Desserted/GetPlayerHand"
 	Desserted_PlayDessert_FullMethodName        = "/pb.Desserted/PlayDessert"
@@ -57,6 +58,7 @@ type DessertedClient interface {
 	//	  };
 	//	};
 	ListGamePlayers(ctx context.Context, in *ListGamePlayersRequest, opts ...grpc.CallOption) (*ListGamePlayersResponse, error)
+	GetPlayerGame(ctx context.Context, in *GetPlayerGameRequest, opts ...grpc.CallOption) (*GetPlayerGameResponse, error)
 	StartGame(ctx context.Context, in *StartGameRequest, opts ...grpc.CallOption) (*StartGameResponse, error)
 	GetPlayerHand(ctx context.Context, in *GetPlayerHandRequest, opts ...grpc.CallOption) (*GetPlayerHandResponse, error)
 	PlayDessert(ctx context.Context, in *PlayDessertRequest, opts ...grpc.CallOption) (*PlayDessertResponse, error)
@@ -134,6 +136,15 @@ func (c *dessertedClient) ListGamePlayers(ctx context.Context, in *ListGamePlaye
 	return out, nil
 }
 
+func (c *dessertedClient) GetPlayerGame(ctx context.Context, in *GetPlayerGameRequest, opts ...grpc.CallOption) (*GetPlayerGameResponse, error) {
+	out := new(GetPlayerGameResponse)
+	err := c.cc.Invoke(ctx, Desserted_GetPlayerGame_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *dessertedClient) StartGame(ctx context.Context, in *StartGameRequest, opts ...grpc.CallOption) (*StartGameResponse, error) {
 	out := new(StartGameResponse)
 	err := c.cc.Invoke(ctx, Desserted_StartGame_FullMethodName, in, out, opts...)
@@ -194,6 +205,7 @@ type DessertedServer interface {
 	//	  };
 	//	};
 	ListGamePlayers(context.Context, *ListGamePlayersRequest) (*ListGamePlayersResponse, error)
+	GetPlayerGame(context.Context, *GetPlayerGameRequest) (*GetPlayerGameResponse, error)
 	StartGame(context.Context, *StartGameRequest) (*StartGameResponse, error)
 	GetPlayerHand(context.Context, *GetPlayerHandRequest) (*GetPlayerHandResponse, error)
 	PlayDessert(context.Context, *PlayDessertRequest) (*PlayDessertResponse, error)
@@ -225,6 +237,9 @@ func (UnimplementedDessertedServer) AcceptGameInvite(context.Context, *AcceptGam
 }
 func (UnimplementedDessertedServer) ListGamePlayers(context.Context, *ListGamePlayersRequest) (*ListGamePlayersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListGamePlayers not implemented")
+}
+func (UnimplementedDessertedServer) GetPlayerGame(context.Context, *GetPlayerGameRequest) (*GetPlayerGameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPlayerGame not implemented")
 }
 func (UnimplementedDessertedServer) StartGame(context.Context, *StartGameRequest) (*StartGameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartGame not implemented")
@@ -377,6 +392,24 @@ func _Desserted_ListGamePlayers_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Desserted_GetPlayerGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlayerGameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).GetPlayerGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_GetPlayerGame_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).GetPlayerGame(ctx, req.(*GetPlayerGameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Desserted_StartGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StartGameRequest)
 	if err := dec(in); err != nil {
@@ -483,6 +516,10 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListGamePlayers",
 			Handler:    _Desserted_ListGamePlayers_Handler,
+		},
+		{
+			MethodName: "GetPlayerGame",
+			Handler:    _Desserted_GetPlayerGame_Handler,
 		},
 		{
 			MethodName: "StartGame",

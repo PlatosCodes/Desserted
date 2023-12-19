@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+import "player_game.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message GetPlayerGameRequest {
+    int64 player_game_id = 1;
+  }
+  
+  message GetPlayerGameResponse {
+    PlayerGame player = 1;
+  }

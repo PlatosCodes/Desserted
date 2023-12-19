@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"context"
+	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -14,8 +15,12 @@ import (
 )
 
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	log.Println("new user33:", req)
+
 	violations := validateCreateUserRequest(req)
 	if violations != nil {
+		log.Println("new user22:", req)
+
 		return nil, invalidArgumentError(violations)
 	}
 	hashedPassword, err := util.HashPassword(req.GetPassword())
@@ -28,6 +33,8 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		Password: hashedPassword,
 		Email:    req.GetEmail(),
 	}
+
+	log.Println("new user:", arg)
 
 	user, err := server.Store.RegisterTx(ctx, arg)
 	if err != nil {

@@ -17,3 +17,5 @@
 - `GET /api/game/score/{gameId}`: Retrieve the current score for all players.
 - `POST /api/game/usecard`: Use a special card.
 - `GET /api/game/end/{gameId}`: Check for game end conditions and final scores.
+
+...and more!
