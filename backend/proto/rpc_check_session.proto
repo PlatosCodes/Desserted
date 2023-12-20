@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+
+message CheckUserSessionRequest {
+    string session_id = 1;
+  }
+  
+  message CheckUserSessionResponse {
+    bool is_authenticated = 1;
+  }

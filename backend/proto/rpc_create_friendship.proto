@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package pb;
+
+import "friend.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message CreateFriendshipRequest {
+    int64 friender_id = 1;
+    int64 friendee_id = 2;
+}
+
+message CreateFriendshipResponse {
+    Friend friendship = 1;
+}

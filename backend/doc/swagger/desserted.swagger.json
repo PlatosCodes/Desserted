@@ -56,6 +56,74 @@
         ]
       }
     },
+    "/v1/check_session": {
+      "post": {
+        "summary": "Check user session",
+        "description": "Use this API to check session for a user",
+        "operationId": "Desserted_CheckUserSession",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCheckUserSessionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCheckUserSessionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
+    "/v1/create_friendship": {
+      "post": {
+        "summary": "Create new friendship",
+        "description": "Use this API to create a new friendship",
+        "operationId": "Desserted_CreateFriendship",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateFriendshipResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateFriendshipRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/create_game": {
       "post": {
         "summary": "Create new game",
@@ -306,6 +374,40 @@
         ]
       }
     },
+    "/v1/list_user_friends": {
+      "post": {
+        "summary": "List a user's friends",
+        "description": "Use this API to list a user's friends",
+        "operationId": "Desserted_ListUserFriends",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListUserFriendsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbListUserFriendsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/login_user": {
       "post": {
         "summary": "Login a user",
@@ -456,6 +558,43 @@
         }
       }
     },
+    "pbCheckUserSessionRequest": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        }
+      }
+    },
+    "pbCheckUserSessionResponse": {
+      "type": "object",
+      "properties": {
+        "isAuthenticated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbCreateFriendshipRequest": {
+      "type": "object",
+      "properties": {
+        "frienderId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "friendeeId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbCreateFriendshipResponse": {
+      "type": "object",
+      "properties": {
+        "friendship": {
+          "$ref": "#/definitions/pbFriend"
+        }
+      }
+    },
     "pbCreateGameRequest": {
       "type": "object",
       "properties": {
@@ -514,6 +653,27 @@
         "cardId": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "pbFriend": {
+      "type": "object",
+      "properties": {
+        "friendshipId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "frienderId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "friendeeId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "friendedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -588,6 +748,41 @@
           }
         }
       }
+    },
+    "pbListUserFriendsRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64",
+          "title": "The user ID for whom to list friends"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Maximum number of friendships to return"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Offset for pagination"
+        }
+      },
+      "title": "Request for listing user friendships"
+    },
+    "pbListUserFriendsResponse": {
+      "type": "object",
+      "properties": {
+        "friendships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbFriend"
+          },
+          "title": "List of friendships"
+        }
+      },
+      "title": "Response for listing user friendships"
     },
     "pbLoginUserRequest": {
       "type": "object",

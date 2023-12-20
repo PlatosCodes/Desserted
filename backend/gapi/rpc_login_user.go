@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -15,6 +16,7 @@ import (
 )
 
 func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
+	log.Println("Request: ", req)
 	violations := validateLoginRequest(req)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
@@ -78,6 +80,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		User:                  convertUser(user),
 	}
 
+	log.Println(rsp)
 	return rsp, nil
 }
 
