@@ -32,6 +32,13 @@ type DessertPlayed struct {
 	Timestamp       time.Time      `json:"timestamp"`
 }
 
+type Friend struct {
+	FriendshipID int64     `json:"friendship_id"`
+	FrienderID   int64     `json:"friender_id"`
+	FriendeeID   int64     `json:"friendee_id"`
+	FriendedAt   time.Time `json:"friended_at"`
+}
+
 // Represents a game session
 type Game struct {
 	GameID    int64        `json:"game_id"`

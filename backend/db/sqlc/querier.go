@@ -15,12 +15,14 @@ type Querier interface {
 	AcceptGameInvitation(ctx context.Context, arg AcceptGameInvitationParams) error
 	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) error
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
+	CreateFriendship(ctx context.Context, arg CreateFriendshipParams) (Friend, error)
 	CreateGame(ctx context.Context, createdBy int64) (Game, error)
 	CreateGameInvitation(ctx context.Context, arg CreateGameInvitationParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Declare the winner of the game
 	DeclareWinner(ctx context.Context, gameID int64) (int64, error)
+	DeleteFriendship(ctx context.Context, friendshipID int64) error
 	DeleteGameInvitation(ctx context.Context, arg DeleteGameInvitationParams) error
 	DeleteUser(ctx context.Context, id int64) error
 	DoesInvitationExist(ctx context.Context, arg DoesInvitationExistParams) (bool, error)
@@ -31,6 +33,7 @@ type Querier interface {
 	GetDessertByName(ctx context.Context, name string) (Dessert, error)
 	GetDessertIDByName(ctx context.Context, name string) (int64, error)
 	GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int64) ([]int64, error)
+	GetFriendshipByID(ctx context.Context, friendshipID int64) (Friend, error)
 	GetGameByID(ctx context.Context, gameID int64) (Game, error)
 	GetGameDeck(ctx context.Context, gameID int64) (GameDeck, error)
 	GetPlayedCards(ctx context.Context, playerGameID int64) ([]PlayedCard, error)
@@ -56,6 +59,7 @@ type Querier interface {
 	ListGameInvitationsForUser(ctx context.Context, inviteeUsername string) ([]GameInvitation, error)
 	ListGamePlayers(ctx context.Context, arg ListGamePlayersParams) ([]PlayerGame, error)
 	ListPlayerGames(ctx context.Context, playerID int64) ([]PlayerGame, error)
+	ListUserFriends(ctx context.Context, arg ListUserFriendsParams) ([]Friend, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	RecordDessertPlayed(ctx context.Context, arg RecordDessertPlayedParams) error
 	RecordPlayedCard(ctx context.Context, arg RecordPlayedCardParams) error

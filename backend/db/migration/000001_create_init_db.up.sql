@@ -119,6 +119,19 @@ CREATE TABLE game_invitations (
 );
 CREATE INDEX idx_invitee_username ON game_invitations(invitee_username);
 
+-- Table: Friends
+-- Records friends
+CREATE TABLE friends (
+  friendship_id BIGSERIAL PRIMARY KEY,
+  friender_id BIGINT NOT NULL,
+  friendee_id BIGINT NOT NULL,
+  friended_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  FOREIGN KEY (friender_id) REFERENCES users(id),
+  FOREIGN KEY (friendee_id) REFERENCES users(id)
+);
+CREATE INDEX idx_friender_id ON users(id);
+CREATE INDEX idx_friendee_id ON users(id);
+
 COMMENT ON TABLE "users" IS 'Stores user account information';
 
 COMMENT ON TABLE "games" IS 'Represents a game session';

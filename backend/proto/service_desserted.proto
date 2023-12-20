@@ -5,7 +5,10 @@ package pb;
 import "google/api/annotations.proto";
 import "rpc_create_user.proto";
 import "rpc_login_user.proto";
+import "rpc_check_session.proto";
 import "rpc_update_user.proto";
+import "rpc_create_friendship.proto";
+import "rpc_list_user_friendships.proto";
 import "rpc_create_game.proto";
 import "rpc_invite_player_to_game.proto";
 import "rpc_accept_game_invite.proto";
@@ -56,6 +59,16 @@ service Desserted {
           summary: "Login a user";
         };
     };
+    rpc CheckUserSession (CheckUserSessionRequest) returns (CheckUserSessionResponse) {
+      option (google.api.http) = {
+          post: "/v1/check_session"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to check session for a user";
+        summary: "Check user session";
+      };
+    };
     // Updates a user's password
     rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
       option (google.api.http) = {    
@@ -65,6 +78,26 @@ service Desserted {
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
         description: "Use this API to update a user";
         summary: "Update a user";
+      };
+    };
+    rpc CreateFriendship (CreateFriendshipRequest) returns (CreateFriendshipResponse) {
+      option (google.api.http) = {    
+          post: "/v1/create_friendship"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to create a new friendship";
+        summary: "Create new friendship";
+      };
+    };
+    rpc ListUserFriends (ListUserFriendsRequest) returns (ListUserFriendsResponse) {
+      option (google.api.http) = {    
+          post: "/v1/list_user_friends"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list a user's friends";
+        summary: "List a user's friends";
       };
     };
     rpc CreateGame (CreateGameRequest) returns (CreateGameResponse) {

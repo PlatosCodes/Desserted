@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pb;
+
+import "friend.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+// Request for listing user friendships
+message ListUserFriendsRequest {
+  int64 userId = 1; // The user ID for whom to list friends
+  int32 limit = 2;  // Maximum number of friendships to return
+  int32 offset = 3; // Offset for pagination
+}
+
+// Response for listing user friendships
+message ListUserFriendsResponse {
+  repeated Friend friendships = 1; // List of friendships
+}

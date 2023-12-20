@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message Session {
+    string session_id = 1;
+    string username = 2;
+    string refresh_token = 3;
+    string user_agent = 4;
+    string client_up = 5;
+    bool is_blocked = 6;
+    google.protobuf.Timestamp expires_at = 7;
+    google.protobuf.Timestamp  created_at = 8;
+}
