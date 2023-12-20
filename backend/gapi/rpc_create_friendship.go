@@ -14,14 +14,14 @@ import (
 // CreateFriendship creates a new friendship between two users.
 func (server *Server) CreateFriendship(ctx context.Context, req *pb.CreateFriendshipRequest) (*pb.CreateFriendshipResponse, error) {
 	// Ensure that both user IDs are valid and not the same
-	if req.GetFrienderId() == req.GetFriendeeId() || req.GetFrienderId() == 0 || req.GetFriendeeId() == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid user IDs")
+	if req.GetFrienderId() <= 0 || len(req.GetFriendeeUsername()) == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid users")
 	}
 
 	// Insert the new friendship into the database
 	friendship, err := server.Store.CreateFriendship(ctx, db.CreateFriendshipParams{
 		FrienderID: req.GetFrienderId(),
-		FriendeeID: req.GetFriendeeId(),
+		Username:   req.GetFriendeeUsername(),
 	})
 	if err != nil {
 		log.Printf("Failed to create friendship: %v", err)

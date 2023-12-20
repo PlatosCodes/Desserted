@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+import "friend_request.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message ListFriendRequestsRequest {
+    int64 user_id = 1;
+}
+
+message ListFriendRequestsResponse {
+    repeated FriendRequest friend_requests = 1;
+}

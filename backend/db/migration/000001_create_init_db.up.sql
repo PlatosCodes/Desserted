@@ -125,12 +125,14 @@ CREATE TABLE friends (
   friendship_id BIGSERIAL PRIMARY KEY,
   friender_id BIGINT NOT NULL,
   friendee_id BIGINT NOT NULL,
+  status VARCHAR(10) NOT NULL DEFAULT 'pending',
   friended_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  accepted_at TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01 00:00:00',
   FOREIGN KEY (friender_id) REFERENCES users(id),
   FOREIGN KEY (friendee_id) REFERENCES users(id)
 );
-CREATE INDEX idx_friender_id ON users(id);
-CREATE INDEX idx_friendee_id ON users(id);
+CREATE INDEX idx_friender_id ON friends(friender_id);
+CREATE INDEX idx_friendee_id ON friends(friendee_id);
 
 COMMENT ON TABLE "users" IS 'Stores user account information';
 

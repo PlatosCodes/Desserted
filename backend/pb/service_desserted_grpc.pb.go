@@ -20,21 +20,24 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Desserted_CreateUser_FullMethodName         = "/pb.Desserted/CreateUser"
-	Desserted_LoginUser_FullMethodName          = "/pb.Desserted/LoginUser"
-	Desserted_CheckUserSession_FullMethodName   = "/pb.Desserted/CheckUserSession"
-	Desserted_UpdateUser_FullMethodName         = "/pb.Desserted/UpdateUser"
-	Desserted_CreateFriendship_FullMethodName   = "/pb.Desserted/CreateFriendship"
-	Desserted_ListUserFriends_FullMethodName    = "/pb.Desserted/ListUserFriends"
-	Desserted_CreateGame_FullMethodName         = "/pb.Desserted/CreateGame"
-	Desserted_InvitePlayerToGame_FullMethodName = "/pb.Desserted/InvitePlayerToGame"
-	Desserted_AcceptGameInvite_FullMethodName   = "/pb.Desserted/AcceptGameInvite"
-	Desserted_ListGamePlayers_FullMethodName    = "/pb.Desserted/ListGamePlayers"
-	Desserted_GetPlayerGame_FullMethodName      = "/pb.Desserted/GetPlayerGame"
-	Desserted_StartGame_FullMethodName          = "/pb.Desserted/StartGame"
-	Desserted_GetPlayerHand_FullMethodName      = "/pb.Desserted/GetPlayerHand"
-	Desserted_PlayDessert_FullMethodName        = "/pb.Desserted/PlayDessert"
-	Desserted_DrawCard_FullMethodName           = "/pb.Desserted/DrawCard"
+	Desserted_CreateUser_FullMethodName          = "/pb.Desserted/CreateUser"
+	Desserted_LoginUser_FullMethodName           = "/pb.Desserted/LoginUser"
+	Desserted_Logout_FullMethodName              = "/pb.Desserted/Logout"
+	Desserted_CheckUserSession_FullMethodName    = "/pb.Desserted/CheckUserSession"
+	Desserted_UpdateUser_FullMethodName          = "/pb.Desserted/UpdateUser"
+	Desserted_CreateFriendship_FullMethodName    = "/pb.Desserted/CreateFriendship"
+	Desserted_ListUserFriends_FullMethodName     = "/pb.Desserted/ListUserFriends"
+	Desserted_ListFriendRequests_FullMethodName  = "/pb.Desserted/ListFriendRequests"
+	Desserted_AcceptFriendRequest_FullMethodName = "/pb.Desserted/AcceptFriendRequest"
+	Desserted_CreateGame_FullMethodName          = "/pb.Desserted/CreateGame"
+	Desserted_InvitePlayerToGame_FullMethodName  = "/pb.Desserted/InvitePlayerToGame"
+	Desserted_AcceptGameInvite_FullMethodName    = "/pb.Desserted/AcceptGameInvite"
+	Desserted_ListGamePlayers_FullMethodName     = "/pb.Desserted/ListGamePlayers"
+	Desserted_GetPlayerGame_FullMethodName       = "/pb.Desserted/GetPlayerGame"
+	Desserted_StartGame_FullMethodName           = "/pb.Desserted/StartGame"
+	Desserted_GetPlayerHand_FullMethodName       = "/pb.Desserted/GetPlayerHand"
+	Desserted_PlayDessert_FullMethodName         = "/pb.Desserted/PlayDessert"
+	Desserted_DrawCard_FullMethodName            = "/pb.Desserted/DrawCard"
 )
 
 // DessertedClient is the client API for Desserted service.
@@ -45,11 +48,15 @@ type DessertedClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	// Logs in a user
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
+	// Logs out a user
+	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CheckUserSession(ctx context.Context, in *CheckUserSessionRequest, opts ...grpc.CallOption) (*CheckUserSessionResponse, error)
 	// Updates a user's password
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	CreateFriendship(ctx context.Context, in *CreateFriendshipRequest, opts ...grpc.CallOption) (*CreateFriendshipResponse, error)
 	ListUserFriends(ctx context.Context, in *ListUserFriendsRequest, opts ...grpc.CallOption) (*ListUserFriendsResponse, error)
+	ListFriendRequests(ctx context.Context, in *ListFriendRequestsRequest, opts ...grpc.CallOption) (*ListFriendRequestsResponse, error)
+	AcceptFriendRequest(ctx context.Context, in *AcceptFriendRequestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateGame(ctx context.Context, in *CreateGameRequest, opts ...grpc.CallOption) (*CreateGameResponse, error)
 	InvitePlayerToGame(ctx context.Context, in *InvitePlayerToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AcceptGameInvite(ctx context.Context, in *AcceptGameInviteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -97,6 +104,15 @@ func (c *dessertedClient) LoginUser(ctx context.Context, in *LoginUserRequest, o
 	return out, nil
 }
 
+func (c *dessertedClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Desserted_Logout_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *dessertedClient) CheckUserSession(ctx context.Context, in *CheckUserSessionRequest, opts ...grpc.CallOption) (*CheckUserSessionResponse, error) {
 	out := new(CheckUserSessionResponse)
 	err := c.cc.Invoke(ctx, Desserted_CheckUserSession_FullMethodName, in, out, opts...)
@@ -127,6 +143,24 @@ func (c *dessertedClient) CreateFriendship(ctx context.Context, in *CreateFriend
 func (c *dessertedClient) ListUserFriends(ctx context.Context, in *ListUserFriendsRequest, opts ...grpc.CallOption) (*ListUserFriendsResponse, error) {
 	out := new(ListUserFriendsResponse)
 	err := c.cc.Invoke(ctx, Desserted_ListUserFriends_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) ListFriendRequests(ctx context.Context, in *ListFriendRequestsRequest, opts ...grpc.CallOption) (*ListFriendRequestsResponse, error) {
+	out := new(ListFriendRequestsResponse)
+	err := c.cc.Invoke(ctx, Desserted_ListFriendRequests_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) AcceptFriendRequest(ctx context.Context, in *AcceptFriendRequestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Desserted_AcceptFriendRequest_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -222,11 +256,15 @@ type DessertedServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	// Logs in a user
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
+	// Logs out a user
+	Logout(context.Context, *LogoutRequest) (*emptypb.Empty, error)
 	CheckUserSession(context.Context, *CheckUserSessionRequest) (*CheckUserSessionResponse, error)
 	// Updates a user's password
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	CreateFriendship(context.Context, *CreateFriendshipRequest) (*CreateFriendshipResponse, error)
 	ListUserFriends(context.Context, *ListUserFriendsRequest) (*ListUserFriendsResponse, error)
+	ListFriendRequests(context.Context, *ListFriendRequestsRequest) (*ListFriendRequestsResponse, error)
+	AcceptFriendRequest(context.Context, *AcceptFriendRequestRequest) (*emptypb.Empty, error)
 	CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error)
 	InvitePlayerToGame(context.Context, *InvitePlayerToGameRequest) (*emptypb.Empty, error)
 	AcceptGameInvite(context.Context, *AcceptGameInviteRequest) (*emptypb.Empty, error)
@@ -259,6 +297,9 @@ func (UnimplementedDessertedServer) CreateUser(context.Context, *CreateUserReque
 func (UnimplementedDessertedServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
 }
+func (UnimplementedDessertedServer) Logout(context.Context, *LogoutRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
 func (UnimplementedDessertedServer) CheckUserSession(context.Context, *CheckUserSessionRequest) (*CheckUserSessionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckUserSession not implemented")
 }
@@ -270,6 +311,12 @@ func (UnimplementedDessertedServer) CreateFriendship(context.Context, *CreateFri
 }
 func (UnimplementedDessertedServer) ListUserFriends(context.Context, *ListUserFriendsRequest) (*ListUserFriendsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserFriends not implemented")
+}
+func (UnimplementedDessertedServer) ListFriendRequests(context.Context, *ListFriendRequestsRequest) (*ListFriendRequestsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListFriendRequests not implemented")
+}
+func (UnimplementedDessertedServer) AcceptFriendRequest(context.Context, *AcceptFriendRequestRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AcceptFriendRequest not implemented")
 }
 func (UnimplementedDessertedServer) CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGame not implemented")
@@ -347,6 +394,24 @@ func _Desserted_LoginUser_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Desserted_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_Logout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Desserted_CheckUserSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CheckUserSessionRequest)
 	if err := dec(in); err != nil {
@@ -415,6 +480,42 @@ func _Desserted_ListUserFriends_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DessertedServer).ListUserFriends(ctx, req.(*ListUserFriendsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_ListFriendRequests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFriendRequestsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).ListFriendRequests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_ListFriendRequests_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).ListFriendRequests(ctx, req.(*ListFriendRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_AcceptFriendRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AcceptFriendRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).AcceptFriendRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_AcceptFriendRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).AcceptFriendRequest(ctx, req.(*AcceptFriendRequestRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -597,6 +698,10 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Desserted_LoginUser_Handler,
 		},
 		{
+			MethodName: "Logout",
+			Handler:    _Desserted_Logout_Handler,
+		},
+		{
 			MethodName: "CheckUserSession",
 			Handler:    _Desserted_CheckUserSession_Handler,
 		},
@@ -611,6 +716,14 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListUserFriends",
 			Handler:    _Desserted_ListUserFriends_Handler,
+		},
+		{
+			MethodName: "ListFriendRequests",
+			Handler:    _Desserted_ListFriendRequests_Handler,
+		},
+		{
+			MethodName: "AcceptFriendRequest",
+			Handler:    _Desserted_AcceptFriendRequest_Handler,
 		},
 		{
 			MethodName: "CreateGame",

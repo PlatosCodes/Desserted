@@ -12,9 +12,11 @@ import (
 )
 
 type Querier interface {
+	AcceptFriendRequest(ctx context.Context, arg AcceptFriendRequestParams) error
 	AcceptGameInvitation(ctx context.Context, arg AcceptGameInvitationParams) error
 	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) error
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
+	BlockSession(ctx context.Context, id uuid.UUID) error
 	CreateFriendship(ctx context.Context, arg CreateFriendshipParams) (Friend, error)
 	CreateGame(ctx context.Context, createdBy int64) (Game, error)
 	CreateGameInvitation(ctx context.Context, arg CreateGameInvitationParams) error
@@ -58,6 +60,7 @@ type Querier interface {
 	ListCardsByType(ctx context.Context, type_ string) ([]Card, error)
 	ListGameInvitationsForUser(ctx context.Context, inviteeUsername string) ([]GameInvitation, error)
 	ListGamePlayers(ctx context.Context, arg ListGamePlayersParams) ([]PlayerGame, error)
+	ListPendingFriendRequests(ctx context.Context, friendeeID int64) ([]ListPendingFriendRequestsRow, error)
 	ListPlayerGames(ctx context.Context, playerID int64) ([]PlayerGame, error)
 	ListUserFriends(ctx context.Context, arg ListUserFriendsParams) ([]Friend, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)

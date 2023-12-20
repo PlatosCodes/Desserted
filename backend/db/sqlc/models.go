@@ -36,7 +36,9 @@ type Friend struct {
 	FriendshipID int64     `json:"friendship_id"`
 	FrienderID   int64     `json:"friender_id"`
 	FriendeeID   int64     `json:"friendee_id"`
+	Status       string    `json:"status"`
 	FriendedAt   time.Time `json:"friended_at"`
+	AcceptedAt   time.Time `json:"accepted_at"`
 }
 
 // Represents a game session
