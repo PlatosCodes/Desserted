@@ -510,6 +510,41 @@
         ]
       }
     },
+    "/v1/logout": {
+      "post": {
+        "summary": "Logout a user",
+        "description": "Use this API to logout a user",
+        "operationId": "Desserted_Logout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbLogoutRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/play_dessert": {
       "post": {
         "summary": "Play a dessert",
@@ -931,6 +966,14 @@
         },
         "user": {
           "$ref": "#/definitions/pbUser"
+        }
+      }
+    },
+    "pbLogoutRequest": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string"
         }
       }
     },

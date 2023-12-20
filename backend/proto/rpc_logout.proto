@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message LogoutRequest {
+    string session_id = 1;
+}

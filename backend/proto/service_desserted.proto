@@ -5,6 +5,7 @@ package pb;
 import "google/api/annotations.proto";
 import "rpc_create_user.proto";
 import "rpc_login_user.proto";
+import "rpc_logout.proto";
 import "rpc_check_session.proto";
 import "rpc_update_user.proto";
 import "rpc_create_friendship.proto";
@@ -60,6 +61,17 @@ service Desserted {
           description: "Use this API to login a user";
           summary: "Login a user";
         };
+    };
+    // Logs out a user
+    rpc Logout (LogoutRequest) returns (google.protobuf.Empty) {
+      option (google.api.http) = {
+          post: "/v1/logout"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to logout a user";
+        summary: "Logout a user";
+      };
     };
     rpc CheckUserSession (CheckUserSessionRequest) returns (CheckUserSessionResponse) {
       option (google.api.http) = {

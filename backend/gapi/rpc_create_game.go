@@ -2,7 +2,6 @@ package gapi
 
 import (
 	"context"
-	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -17,7 +16,6 @@ func (server *Server) CreateGame(ctx context.Context, req *pb.CreateGameRequest)
 	if err != nil {
 		return nil, unauthenticatedError(err)
 	}
-	log.Println("req:", req.GetCreatedBy())
 
 	creatorID := req.GetCreatedBy()
 	if creatorID < 1 {
