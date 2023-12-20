@@ -21,6 +21,41 @@
     "application/json"
   ],
   "paths": {
+    "/v1/accept_friend_request": {
+      "post": {
+        "summary": "Accept a friend request",
+        "description": "Use this API to accept a friend request",
+        "operationId": "Desserted_AcceptFriendRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbAcceptFriendRequestRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/accept_game_invite": {
       "post": {
         "summary": "Accept invite the game",
@@ -327,6 +362,39 @@
         ]
       }
     },
+    "/v1/list_friend_requests/{userId}": {
+      "get": {
+        "summary": "List a user's friend requests",
+        "description": "Use this API to list a user's pending friend requests",
+        "operationId": "Desserted_ListFriendRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListFriendRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/list_game_players": {
       "get": {
         "summary": "List the game's players",
@@ -546,6 +614,21 @@
     }
   },
   "definitions": {
+    "pbAcceptFriendRequestRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64",
+          "title": "ID of the user accepting the request"
+        },
+        "friendshipId": {
+          "type": "string",
+          "format": "int64",
+          "title": "ID of the friendship to accept"
+        }
+      }
+    },
     "pbAcceptGameInviteRequest": {
       "type": "object",
       "properties": {
@@ -581,9 +664,8 @@
           "type": "string",
           "format": "int64"
         },
-        "friendeeId": {
-          "type": "string",
-          "format": "int64"
+        "friendeeUsername": {
+          "type": "string"
         }
       }
     },
@@ -677,6 +759,26 @@
         }
       }
     },
+    "pbFriendRequest": {
+      "type": "object",
+      "properties": {
+        "friendshipId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "frienderId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "frienderUsername": {
+          "type": "string"
+        },
+        "friendedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "pbGame": {
       "type": "object",
       "properties": {
@@ -734,6 +836,18 @@
         "gameId": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "pbListFriendRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "friendRequests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbFriendRequest"
+          }
         }
       }
     },

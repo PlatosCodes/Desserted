@@ -9,6 +9,8 @@ import "rpc_check_session.proto";
 import "rpc_update_user.proto";
 import "rpc_create_friendship.proto";
 import "rpc_list_user_friendships.proto";
+import "rpc_list_friend_requests.proto";
+import "rpc_accept_friend_request.proto";
 import "rpc_create_game.proto";
 import "rpc_invite_player_to_game.proto";
 import "rpc_accept_game_invite.proto";
@@ -99,6 +101,25 @@ service Desserted {
         description: "Use this API to list a user's friends";
         summary: "List a user's friends";
       };
+    };
+    rpc ListFriendRequests (ListFriendRequestsRequest) returns (ListFriendRequestsResponse) {
+      option (google.api.http) = {
+          get: "/v1/list_friend_requests/{user_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list a user's pending friend requests";
+        summary: "List a user's friend requests";
+      };
+    };
+    rpc AcceptFriendRequest (AcceptFriendRequestRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/accept_friend_request"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to accept a friend request";
+          summary: "Accept a friend request";
+        };
     };
     rpc CreateGame (CreateGameRequest) returns (CreateGameResponse) {
       option (google.api.http) = {    

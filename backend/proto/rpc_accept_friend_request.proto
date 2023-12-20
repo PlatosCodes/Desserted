@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message AcceptFriendRequestRequest {
+    int64 user_id = 1; // ID of the user accepting the request
+    int64 friendship_id = 2; // ID of the friendship to accept
+}

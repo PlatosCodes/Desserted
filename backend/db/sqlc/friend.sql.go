@@ -7,32 +7,51 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
+const acceptFriendRequest = `-- name: AcceptFriendRequest :exec
+UPDATE friends
+SET status = 'accepted', accepted_at = NOW()
+WHERE friendee_id = $1 and friendship_id = $2 AND status = 'pending'
+`
+
+type AcceptFriendRequestParams struct {
+	FriendeeID   int64 `json:"friendee_id"`
+	FriendshipID int64 `json:"friendship_id"`
+}
+
+func (q *Queries) AcceptFriendRequest(ctx context.Context, arg AcceptFriendRequestParams) error {
+	_, err := q.db.ExecContext(ctx, acceptFriendRequest, arg.FriendeeID, arg.FriendshipID)
+	return err
+}
+
 const createFriendship = `-- name: CreateFriendship :one
-INSERT INTO friends (friender_id, friendee_id) 
-SELECT $1, $2
-WHERE EXISTS (
-  SELECT 1 FROM users WHERE id = $1
-) AND EXISTS (
-  SELECT 1 FROM users WHERE id = $2
+INSERT INTO friends (friender_id, friendee_id)
+SELECT $1, users.id
+FROM users
+WHERE users.username = $2 AND NOT EXISTS (
+    SELECT 1 FROM friends
+    WHERE friender_id = $1 AND friendee_id = users.id
 )
-RETURNING friendship_id, friender_id, friendee_id, friended_at
+RETURNING friendship_id, friender_id, friendee_id, status, friended_at, accepted_at
 `
 
 type CreateFriendshipParams struct {
-	FrienderID int64 `json:"friender_id"`
-	FriendeeID int64 `json:"friendee_id"`
+	FrienderID int64  `json:"friender_id"`
+	Username   string `json:"username"`
 }
 
 func (q *Queries) CreateFriendship(ctx context.Context, arg CreateFriendshipParams) (Friend, error) {
-	row := q.db.QueryRowContext(ctx, createFriendship, arg.FrienderID, arg.FriendeeID)
+	row := q.db.QueryRowContext(ctx, createFriendship, arg.FrienderID, arg.Username)
 	var i Friend
 	err := row.Scan(
 		&i.FriendshipID,
 		&i.FrienderID,
 		&i.FriendeeID,
+		&i.Status,
 		&i.FriendedAt,
+		&i.AcceptedAt,
 	)
 	return i, err
 }
@@ -47,7 +66,7 @@ func (q *Queries) DeleteFriendship(ctx context.Context, friendshipID int64) erro
 }
 
 const getFriendshipByID = `-- name: GetFriendshipByID :one
-SELECT friendship_id, friender_id, friendee_id, friended_at FROM friends
+SELECT friendship_id, friender_id, friendee_id, status, friended_at, accepted_at FROM friends
 WHERE friendship_id = $1 LIMIT 1
 `
 
@@ -58,14 +77,58 @@ func (q *Queries) GetFriendshipByID(ctx context.Context, friendshipID int64) (Fr
 		&i.FriendshipID,
 		&i.FrienderID,
 		&i.FriendeeID,
+		&i.Status,
 		&i.FriendedAt,
+		&i.AcceptedAt,
 	)
 	return i, err
 }
 
+const listPendingFriendRequests = `-- name: ListPendingFriendRequests :many
+SELECT users.id, users.username, friends.friendship_id, friends.friended_at
+FROM friends
+JOIN users ON friends.friender_id = users.id
+WHERE friends.friendee_id = $1 AND friends.status = 'pending'
+`
+
+type ListPendingFriendRequestsRow struct {
+	ID           int64     `json:"id"`
+	Username     string    `json:"username"`
+	FriendshipID int64     `json:"friendship_id"`
+	FriendedAt   time.Time `json:"friended_at"`
+}
+
+func (q *Queries) ListPendingFriendRequests(ctx context.Context, friendeeID int64) ([]ListPendingFriendRequestsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPendingFriendRequests, friendeeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPendingFriendRequestsRow{}
+	for rows.Next() {
+		var i ListPendingFriendRequestsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FriendshipID,
+			&i.FriendedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserFriends = `-- name: ListUserFriends :many
-SELECT friendship_id, friender_id, friendee_id, friended_at FROM friends
-WHERE friender_id = $1 OR friendee_id = $1
+SELECT friendship_id, friender_id, friendee_id, status, friended_at, accepted_at FROM friends
+WHERE (friender_id = $1 OR friendee_id = $1) AND status = 'accepted'
 ORDER BY friended_at
 LIMIT $2
 OFFSET $3
@@ -90,7 +153,9 @@ func (q *Queries) ListUserFriends(ctx context.Context, arg ListUserFriendsParams
 			&i.FriendshipID,
 			&i.FrienderID,
 			&i.FriendeeID,
+			&i.Status,
 			&i.FriendedAt,
+			&i.AcceptedAt,
 		); err != nil {
 			return nil, err
 		}
