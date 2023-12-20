@@ -1,4 +1,4 @@
-// GameBoard.js
+// //src/components/GameBoard.js
 import React from 'react';
 import styled from 'styled-components';
 import Hand from './Hand';

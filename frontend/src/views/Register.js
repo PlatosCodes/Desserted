@@ -1,3 +1,4 @@
+// src/views/Register.ks
 import React, { useState } from 'react';
 import apiService from '../services/apiService';
 import { useNavigate, Link } from 'react-router-dom';

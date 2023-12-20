@@ -1,3 +1,4 @@
+// /src/services/apiService.js 
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import Cookie from 'js-cookie';
@@ -14,6 +15,8 @@ axiosRetry(axiosInstance, { retries: 3, retryDelay: axiosRetry.exponentialDelay 
 
 axiosInstance.interceptors.request.use(config => {
     const token = Cookie.get('access_token');
+    console.log("Token:", token); // Add this line to log the token
+
     if (token && !config.url.endsWith('/check_session')) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -97,6 +100,7 @@ const apiService = {
             handleRequestError(error, 'updating user');
         }
     },
+    
 
     createGame: async (gameData) => {
         try {
@@ -107,9 +111,44 @@ const apiService = {
         }
     },
 
-    invitePlayerToGame: async (inviteData) => {
+    createFriendship: async ({ frienderId, friendeeUsername }) => {
         try {
-            const response = await axiosInstance.post('/v1/invite_player_to_game', inviteData);
+            const response = await axiosInstance.post('/v1/create_friendship', { frienderId, friendeeUsername });
+            return response.data;
+        } catch (error) {
+            handleRequestError(error, 'creating friendship');
+        }
+    },
+
+    listFriendRequests: async (userId) => {
+        try {
+            const response = await axiosInstance.get(`/v1/list_friend_requests/${userId}`);
+            return response.data.friendRequests;
+        } catch (error) {
+            handleRequestError(error, 'listing friend requests');
+        }
+    },
+    
+    acceptFriendRequest: async ({ userId, friendshipId }) => {
+        try {
+            await axiosInstance.post('/v1/accept_friend_request', { userId, friendshipId });
+        } catch (error) {
+            handleRequestError(error, 'accepting friend request');
+        }
+    },
+
+    listUserFriends: async ({ user_id, limit = 10, offset = 0 }) => {
+        try {
+            const response = await axiosInstance.get(`/v1/list_user_friends/${user_id}?limit=${limit}&offset=${offset}`);
+            return response.data;
+        } catch (error) {
+            handleRequestError(error, 'listing user friends');
+        }
+    },
+
+    invitePlayerToGame: async ({ inviterPlayerId, inviteeUsername, gameId }) => {
+        try {
+            const response = await axiosInstance.post('/v1/invite_player_to_game', { inviterPlayerId, inviteeUsername, gameId });
             return response.data;
         } catch (error) {
             handleRequestError(error, 'inviting player to game');
@@ -143,10 +182,10 @@ const apiService = {
         }
     },
 
-    getPlayerHand: async () => {
+    getPlayerHand: async (playerGameId) => {
         try {
-            const response = await axiosInstance.get('/v1/get_player_hand');
-            return response.data;
+            const response = await axiosInstance.get(`/v1/get_player_hand?playerGameId=${playerGameId}`);
+            return response.data.playerHand;
         } catch (error) {
             handleRequestError(error, 'getting player hand');
         }
@@ -161,9 +200,9 @@ const apiService = {
         }
     },
 
-    drawCard: async (drawData) => {
+    drawCard: async ({ gameId, playerGameId }) => {
         try {
-            const response = await axiosInstance.post('/v1/draw_card', drawData);
+            const response = await axiosInstance.post('/v1/draw_card', { gameId, playerGameId });
             return response.data;
         } catch (error) {
             handleRequestError(error, 'drawing a card');

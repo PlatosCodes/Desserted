@@ -1,3 +1,5 @@
+Ok excellent. Here is my updated codebase. I'd like you to again extends the functionality of my frontend to be more complete in regards to the functionality of my backend. In particular, I need updated src/views/. 
+
 {
   "swagger": "2.0",
   "info": {
@@ -442,8 +444,8 @@
         ]
       }
     },
-    "/v1/list_user_friends/{userId}": {
-      "get": {
+    "/v1/list_user_friends": {
+      "post": {
         "summary": "List a user's friends",
         "description": "Use this API to list a user's friends",
         "operationId": "Desserted_ListUserFriends",
@@ -463,28 +465,12 @@
         },
         "parameters": [
           {
-            "name": "userId",
-            "description": "The user ID for whom to list friends",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "limit",
-            "description": "Maximum number of friendships to return",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "description": "Offset for pagination",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "schema": {
+              "$ref": "#/definitions/pbListUserFriendsRequest"
+            }
           }
         ],
         "tags": [
@@ -914,6 +900,27 @@
         }
       }
     },
+    "pbListUserFriendsRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64",
+          "title": "The user ID for whom to list friends"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Maximum number of friendships to return"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Offset for pagination"
+        }
+      },
+      "title": "Request for listing user friendships"
+    },
     "pbListUserFriendsResponse": {
       "type": "object",
       "properties": {
@@ -1146,3 +1153,239 @@
     }
   }
 }
+
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "rpc_create_user.proto";
+import "rpc_login_user.proto";
+import "rpc_logout.proto";
+import "rpc_check_session.proto";
+import "rpc_update_user.proto";
+import "rpc_create_friendship.proto";
+import "rpc_list_user_friendships.proto";
+import "rpc_list_friend_requests.proto";
+import "rpc_accept_friend_request.proto";
+import "rpc_create_game.proto";
+import "rpc_invite_player_to_game.proto";
+import "rpc_accept_game_invite.proto";
+// import "rpc_add_player_to_game.proto";
+import "rpc_list_game_players.proto";
+import "rpc_get_player_game.proto";
+import "rpc_start_game.proto";
+import "rpc_get_player_hand.proto";
+import "rpc_play_dessert.proto";
+import "rpc_draw_card.proto";
+import "google/protobuf/empty.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Desserted API";
+    version: "1.0";
+    contact: {
+      name: "Alex Merola";
+      url: "https://github.com/PlatosCodes";
+      email: "codingplato@gmail.com";
+    };
+  };
+};
+
+service Desserted {
+      // Creates a new user
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+        option (google.api.http) = {    
+            post: "/v1/create_user"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to create a new user";
+          summary: "Create new user";
+        };
+    };
+    // Logs in a user
+    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
+        option (google.api.http) = {    
+            post: "/v1/login_user"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to login a user";
+          summary: "Login a user";
+        };
+    };
+    // Logs out a user
+    rpc Logout (LogoutRequest) returns (google.protobuf.Empty) {
+      option (google.api.http) = {
+          post: "/v1/logout"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to logout a user";
+        summary: "Logout a user";
+      };
+    };
+    rpc CheckUserSession (CheckUserSessionRequest) returns (CheckUserSessionResponse) {
+      option (google.api.http) = {
+          post: "/v1/check_session"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to check session for a user";
+        summary: "Check user session";
+      };
+    };
+    // Updates a user's password
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
+      option (google.api.http) = {    
+          patch: "/v1/update_user"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to update a user";
+        summary: "Update a user";
+      };
+    };
+    rpc CreateFriendship (CreateFriendshipRequest) returns (CreateFriendshipResponse) {
+      option (google.api.http) = {    
+          post: "/v1/create_friendship"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to create a new friendship";
+        summary: "Create new friendship";
+      };
+    };
+    rpc ListUserFriends (ListUserFriendsRequest) returns (ListUserFriendsResponse) {
+      option (google.api.http) = {    
+          post: "/v1/list_user_friends"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list a user's friends";
+        summary: "List a user's friends";
+      };
+    };
+    rpc ListFriendRequests (ListFriendRequestsRequest) returns (ListFriendRequestsResponse) {
+      option (google.api.http) = {
+          get: "/v1/list_friend_requests/{user_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list a user's pending friend requests";
+        summary: "List a user's friend requests";
+      };
+    };
+    rpc AcceptFriendRequest (AcceptFriendRequestRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/accept_friend_request"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to accept a friend request";
+          summary: "Accept a friend request";
+        };
+    };
+    rpc CreateGame (CreateGameRequest) returns (CreateGameResponse) {
+      option (google.api.http) = {    
+          post: "/v1/create_game"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to create a new game";
+        summary: "Create new game";
+      };
+    };
+    rpc InvitePlayerToGame (InvitePlayerToGameRequest) returns (google.protobuf.Empty) {
+      option (google.api.http) = {    
+          post: "/v1/invite_player_to_game"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to invite a player to the game";
+        summary: "Invite player to the game";
+      };
+    };   
+    rpc AcceptGameInvite (AcceptGameInviteRequest) returns (google.protobuf.Empty) {
+      option (google.api.http) = {    
+          post: "/v1/accept_game_invite"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to accept an invitation to a game";
+        summary: "Accept invite the game";
+      };
+    };   
+    // rpc AddPlayerToGame (AddPlayerToGameRequest) returns (google.protobuf.Empty) {
+    //   option (google.api.http) = {    
+    //       post: "/v1/add_player_to_game"
+    //       body: "*"
+    //   };
+    //   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //     description: "Use this API to add player to the game";
+    //     summary: "Add player to the game";
+    //   };
+    // };   
+    rpc ListGamePlayers (ListGamePlayersRequest) returns (ListGamePlayersResponse) {
+      option (google.api.http) = {    
+          get: "/v1/list_game_players"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list the players of the game";
+        summary: "List the game's players";
+      };
+    };      
+    rpc GetPlayerGame (GetPlayerGameRequest) returns (GetPlayerGameResponse) {
+      option (google.api.http) = {    
+          get: "/v1/get_player_game/{player_game_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to get data for a player's game";
+        summary: "Get the player's game data";
+      };
+    };      
+    rpc StartGame (StartGameRequest) returns (StartGameResponse) {
+      option (google.api.http) = {    
+          post: "/v1/start_game"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to start a game";
+        summary: "Start the game";
+      };
+    };   
+    rpc GetPlayerHand (GetPlayerHandRequest) returns (GetPlayerHandResponse) {
+      option (google.api.http) = {    
+          get: "/v1/get_player_hand"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to get a player's hand";
+        summary: "Get the player's hand";
+      };
+    };
+    rpc PlayDessert (PlayDessertRequest) returns (PlayDessertResponse) {
+      option (google.api.http) = {    
+          post: "/v1/play_dessert"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to play a dessert";
+        summary: "Play a dessert";
+      };
+    };
+    rpc DrawCard (DrawCardRequest) returns (DrawCardResponse) {
+      option (google.api.http) = {    
+          post: "/v1/draw_card"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to draw a card";
+        summary: "Draw a card";
+      };
+    };
+}
+
+and my frontend so far:

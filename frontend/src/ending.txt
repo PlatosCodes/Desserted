@@ -1,0 +1,4 @@
+//
+Please provide more code which extends the functionality of my frontend to be more complete in regards to the functionality of my backend -- again, specifically in the /src/views/. Please also use the MOST UP TO DATE methods of REACT following BEST PRACTICES in all code. Simply respond in markdown format with the new code. Thanks for your hard work and trying your best!
+I want YOU to handle success or error, etc. using best practices and MOST modern methods and most PROFESSIONAL ways of doing things, in this current day. 
+DO NOT SIMPLY LEAVE OUT AN IMPLEMENTATION and comment it out....YOU are writing the complete and comprehensive code in the best way you know how using best practices and MOST modern methods and most PROFESSIONAL ways of doing things, in this current day. 

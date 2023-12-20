@@ -1,3 +1,4 @@
+// src/components/Header.js
 import React, {useEffect, useState} from 'react';
 import { styled } from '@mui/material/styles';
 import { AppBar, Toolbar, Typography, Button, BottomNavigation, BottomNavigationAction } from '@mui/material';
@@ -74,7 +75,6 @@ const Header = () => {
         setValue(location.pathname);
     }, [location.pathname]);
 
-
     const handleCakeIconClick = () => {
         sessionStorage.removeItem("cakeListCurrentPage");
         navigate("/dashboard");
@@ -116,7 +116,7 @@ const Header = () => {
                 >
                 <BottomNavigationAction label="Dashboard" value="/dashboard" icon={<LibraryAddCheckIcon />} component={Link} to="/dashboard" />
                 <BottomNavigationAction label="Cakes" value="/dashboard" icon={<CakeIcon />} component={Link} onClick={handleCakeIconClick} to="/dashboard" />
-                <BottomNavigationAction label="Profile" value="/dashboard" icon={<StarIcon />} component={Link} to="/user_profile" />
+                <BottomNavigationAction label="Profile" value="/dashboard" icon={<StarIcon />} component={Link} to="/dashboard" />
             </BottomNavigation>
                 )}
         </StyledAppBar>

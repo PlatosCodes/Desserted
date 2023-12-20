@@ -1,3 +1,4 @@
+// src/views/Login.js
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Grid, Paper } from '@mui/material';
 import { Helmet } from 'react-helmet';
@@ -53,12 +54,12 @@ const Login = () => {
 
     try {
       const response = await apiService.loginUser(formData);
+
       const { access_token, session_id, user } = response;
-      
       if (access_token && session_id) {
-        Cookie.set('token', access_token);
+        Cookie.set('access_token', access_token);
         Cookie.set('session_id', session_id);
-        dispatch(loginUser(user));
+        dispatch(loginUser({ session_id, access_token, user }));
         localStorage.setItem('userData', JSON.stringify(user));
         localStorage.setItem('isAuthenticated', 'true');
         navigate('/dashboard');

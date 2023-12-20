@@ -1,4 +1,4 @@
-// errorUtils.js
+// src/utils/errorUtils.js
 export function logErrorToService(error, componentStack = null) {
     // If componentStack is provided, you can log it too
     if (componentStack) {

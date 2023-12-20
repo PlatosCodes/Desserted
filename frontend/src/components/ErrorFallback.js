@@ -1,4 +1,4 @@
-// ErrorFallback.js
+// src/components/ErrorFallback.js
 import React from 'react';
 import { Button, Container, Typography } from '@mui/material';
 

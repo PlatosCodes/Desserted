@@ -1,56 +1,33 @@
-// MainGameView.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import GameBoard from '../components/GameBoard';
-import Score from '../components/Score';
+import { useApi } from '../hooks/useApi';
 import apiService from '../services/apiService';
 import { Container, Typography, CircularProgress } from '@mui/material';
+import { useGame } from '../context/GameContext';
 
 const MainGameView = () => {
-    const [gameData, setGameData] = useState(null); // Renamed for clarity
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null); // State for handling errors
+    const { gameState, updateGameState } = useGame();
+    const { request } = useApi(apiService.getGameDetails);
 
     useEffect(() => {
-        // Fetch initial game state
-        const fetchGameData = async () => {
-            setLoading(true);
-            try {
-                const data = await apiService.getGameDetails(); // Ensure this method is implemented
-                setGameData(data);
-            } catch (error) {
-                console.error('Error fetching game data:', error);
-                setError('Failed to load game data.');
-            }
-            setLoading(false);
-        };
-        fetchGameData();
-    }, []);
+        if (!gameState) {
+            // Fetch initial game state
+            const fetchGameData = async () => {
+                const data = await request();
+                updateGameState(data);
+            };
+            fetchGameData();
+        }
+    }, [gameState, request, updateGameState]);
 
-    if (loading) {
+    if (!gameState) {
         return <Container><CircularProgress /></Container>;
-    }
-
-    if (error) {
-        return (
-            <Container>
-                <Typography color="error">{error}</Typography>
-            </Container>
-        );
-    }
-
-    if (!gameData) {
-        return (
-            <Container>
-                <Typography variant="h6">Game data not found.</Typography>
-            </Container>
-        );
     }
 
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Main Game</Typography>
-            <Score playerScore={gameData.playerScore} />
-            <GameBoard players={gameData.players} />
+            <GameBoard players={gameState.players} />
         </Container>
     );
 };

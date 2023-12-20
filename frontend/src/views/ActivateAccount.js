@@ -1,4 +1,4 @@
-// ActivateAccount.js
+// src/views/ActivateAccount.js
 import React, { useEffect, useState } from 'react';
 import { Typography, Container, Paper, makeStyles } from '@mui/materials/styles';
 import axiosInstance from '../services/apiService';

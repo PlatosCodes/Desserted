@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Container, Paper } from '@mui/material';
+// src/views/UserProfile.js
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { TextField, Button, Paper, Typography, Container } from '@mui/material';
+import { updateUserProfile } from '../features/user/userSlice';
+import { selectUser } from '../features/user/userSlice';
 import { styled } from '@mui/material/styles';
-import axiosInstance from '../services/apiService';
 
 // Styled components
 const StyledContainer = styled(Container)(({ theme }) => ({
@@ -12,31 +15,35 @@ const StyledContainer = styled(Container)(({ theme }) => ({
   marginTop: theme.spacing(8),
 }));
 
-const UserProfile = ({ userId }) => {
-    const [user, setUser] = useState(null);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const response = await axiosInstance.get(`/users/${userId}`);
-                setUser(response.data);
-            } catch (err) {
-                console.error(err);
-                // Finish handling error gracefully here...
-            }
-        }
+// Need to implement this in backend first -- but after I decide what belongs here. For now, placeholder stuff
 
-        fetchUser();
-    }, [userId]);
 
-    if (!user) return <Typography>Loading...</Typography>;
+const UserProfile = () => {
+    const user = useSelector(selectUser);
+    const [formData, setFormData] = useState({ username: user?.username, email: user?.email, password: '' });
+    const dispatch = useDispatch();
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        dispatch(updateUserProfile(formData));
+    };
 
     return (
-        <StyledContainer component={Paper} maxWidth="sm">
-            <Typography variant="h4">{user.username}'s Profile</Typography>
-            <Typography variant="h6">Email: {user.email}</Typography>
-        </StyledContainer>
+        <Paper>
+            <Typography variant="h4">Update Profile</Typography>
+            <form onSubmit={handleSubmit}>
+                <TextField label="Username" name="username" value={formData.username} onChange={handleChange} />
+                <TextField label="Email" name="email" value={formData.email} onChange={handleChange} />
+                <TextField label="Password" name="password" type="password" value={formData.password} onChange={handleChange} />
+                <Button type="submit">Update</Button>
+            </form>
+        </Paper>
     );
-}
+};
 
 export default UserProfile;

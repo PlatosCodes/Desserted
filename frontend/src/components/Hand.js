@@ -1,4 +1,4 @@
-// Hand.js
+// src/components/Hand.js
 import React from 'react';
 import styled from 'styled-components';
 import Card from './Card';

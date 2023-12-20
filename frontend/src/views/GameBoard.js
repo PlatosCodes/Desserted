@@ -1,4 +1,4 @@
-// GameBoard.js
+// src/views/GameBoard.js
 import React from 'react';
 import { Grid, Paper, Typography } from '@mui/material';
 

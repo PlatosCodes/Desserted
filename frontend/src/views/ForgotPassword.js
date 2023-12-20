@@ -1,4 +1,4 @@
-// ForgotPassword.js
+// src/views/ForgotPassword.js
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Container, Paper, makeStyles } from '@mui/material';
 import axiosInstance from '../services/apiService';
