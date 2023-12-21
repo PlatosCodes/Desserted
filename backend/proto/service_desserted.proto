@@ -7,6 +7,7 @@ import "rpc_create_user.proto";
 import "rpc_login_user.proto";
 import "rpc_logout.proto";
 import "rpc_check_session.proto";
+import "rpc_renew_access.proto";
 import "rpc_update_user.proto";
 import "rpc_create_friendship.proto";
 import "rpc_list_user_friendships.proto";
@@ -83,6 +84,17 @@ service Desserted {
         summary: "Check user session";
       };
     };
+    rpc RenewAccess (RenewAccessRequest) returns (RenewAccessResponse) {
+      option (google.api.http) = {
+          post: "/v1/renew_access"
+          body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to renew access token for a user";
+        summary: "Renew access token";
+      };
+    };
+    
     // Updates a user's password
     rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
       option (google.api.http) = {    

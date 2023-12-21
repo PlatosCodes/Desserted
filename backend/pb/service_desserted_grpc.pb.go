@@ -24,6 +24,7 @@ const (
 	Desserted_LoginUser_FullMethodName           = "/pb.Desserted/LoginUser"
 	Desserted_Logout_FullMethodName              = "/pb.Desserted/Logout"
 	Desserted_CheckUserSession_FullMethodName    = "/pb.Desserted/CheckUserSession"
+	Desserted_RenewAccess_FullMethodName         = "/pb.Desserted/RenewAccess"
 	Desserted_UpdateUser_FullMethodName          = "/pb.Desserted/UpdateUser"
 	Desserted_CreateFriendship_FullMethodName    = "/pb.Desserted/CreateFriendship"
 	Desserted_ListUserFriends_FullMethodName     = "/pb.Desserted/ListUserFriends"
@@ -51,6 +52,7 @@ type DessertedClient interface {
 	// Logs out a user
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CheckUserSession(ctx context.Context, in *CheckUserSessionRequest, opts ...grpc.CallOption) (*CheckUserSessionResponse, error)
+	RenewAccess(ctx context.Context, in *RenewAccessRequest, opts ...grpc.CallOption) (*RenewAccessResponse, error)
 	// Updates a user's password
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	CreateFriendship(ctx context.Context, in *CreateFriendshipRequest, opts ...grpc.CallOption) (*CreateFriendshipResponse, error)
@@ -116,6 +118,15 @@ func (c *dessertedClient) Logout(ctx context.Context, in *LogoutRequest, opts ..
 func (c *dessertedClient) CheckUserSession(ctx context.Context, in *CheckUserSessionRequest, opts ...grpc.CallOption) (*CheckUserSessionResponse, error) {
 	out := new(CheckUserSessionResponse)
 	err := c.cc.Invoke(ctx, Desserted_CheckUserSession_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) RenewAccess(ctx context.Context, in *RenewAccessRequest, opts ...grpc.CallOption) (*RenewAccessResponse, error) {
+	out := new(RenewAccessResponse)
+	err := c.cc.Invoke(ctx, Desserted_RenewAccess_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -259,6 +270,7 @@ type DessertedServer interface {
 	// Logs out a user
 	Logout(context.Context, *LogoutRequest) (*emptypb.Empty, error)
 	CheckUserSession(context.Context, *CheckUserSessionRequest) (*CheckUserSessionResponse, error)
+	RenewAccess(context.Context, *RenewAccessRequest) (*RenewAccessResponse, error)
 	// Updates a user's password
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	CreateFriendship(context.Context, *CreateFriendshipRequest) (*CreateFriendshipResponse, error)
@@ -302,6 +314,9 @@ func (UnimplementedDessertedServer) Logout(context.Context, *LogoutRequest) (*em
 }
 func (UnimplementedDessertedServer) CheckUserSession(context.Context, *CheckUserSessionRequest) (*CheckUserSessionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckUserSession not implemented")
+}
+func (UnimplementedDessertedServer) RenewAccess(context.Context, *RenewAccessRequest) (*RenewAccessResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenewAccess not implemented")
 }
 func (UnimplementedDessertedServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
@@ -426,6 +441,24 @@ func _Desserted_CheckUserSession_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DessertedServer).CheckUserSession(ctx, req.(*CheckUserSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_RenewAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenewAccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).RenewAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_RenewAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).RenewAccess(ctx, req.(*RenewAccessRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -704,6 +737,10 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckUserSession",
 			Handler:    _Desserted_CheckUserSession_Handler,
+		},
+		{
+			MethodName: "RenewAccess",
+			Handler:    _Desserted_RenewAccess_Handler,
 		},
 		{
 			MethodName: "UpdateUser",

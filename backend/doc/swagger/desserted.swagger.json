@@ -595,6 +595,40 @@
         ]
       }
     },
+    "/v1/renew_access": {
+      "post": {
+        "summary": "Renew access token",
+        "description": "Use this API to renew access token for a user",
+        "operationId": "Desserted_RenewAccess",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbRenewAccessResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbRenewAccessRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/start_game": {
       "post": {
         "summary": "Start the game",
@@ -1047,6 +1081,26 @@
         },
         "cardName": {
           "type": "string"
+        }
+      }
+    },
+    "pbRenewAccessRequest": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string"
+        }
+      }
+    },
+    "pbRenewAccessResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "accessTokenExpiresAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
