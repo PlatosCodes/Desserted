@@ -8,3 +8,10 @@ pkg/
 
 # Environment files
 .env
+
+./frontend/src/first.txt
+./frontend/src/end.txt
+
+*.txt
+
+websocket/

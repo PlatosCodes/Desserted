@@ -13,65 +13,69 @@ const acceptGameInvitation = `-- name: AcceptGameInvitation :exec
 INSERT INTO player_game (player_id, game_id)
 SELECT users.id, game_invitations.game_id
 FROM users
-INNER JOIN game_invitations ON users.username = game_invitations.invitee_username
-WHERE users.username = $1 AND game_invitations.game_id = $2
+INNER JOIN game_invitations ON users.id = game_invitations.invitee_player_id
+WHERE users.id = $1 AND game_invitations.game_id = $2
 `
 
 type AcceptGameInvitationParams struct {
-	Username string `json:"username"`
-	GameID   int64  `json:"game_id"`
+	ID     int64 `json:"id"`
+	GameID int64 `json:"game_id"`
 }
 
 func (q *Queries) AcceptGameInvitation(ctx context.Context, arg AcceptGameInvitationParams) error {
-	_, err := q.db.ExecContext(ctx, acceptGameInvitation, arg.Username, arg.GameID)
+	_, err := q.db.ExecContext(ctx, acceptGameInvitation, arg.ID, arg.GameID)
 	return err
 }
 
-const createGameInvitation = `-- name: CreateGameInvitation :exec
-INSERT INTO game_invitations (inviter_player_id, invitee_username, game_id)
-VALUES ($1, $2, $3)
+const createGameInvitationWithUsername = `-- name: CreateGameInvitationWithUsername :exec
+INSERT INTO game_invitations (inviter_player_id, invitee_player_id, game_id)
+VALUES (
+    $1, 
+    (SELECT id FROM users WHERE username = $2),
+    $3
+)
 `
 
-type CreateGameInvitationParams struct {
+type CreateGameInvitationWithUsernameParams struct {
 	InviterPlayerID int64  `json:"inviter_player_id"`
-	InviteeUsername string `json:"invitee_username"`
+	Username        string `json:"username"`
 	GameID          int64  `json:"game_id"`
 }
 
-func (q *Queries) CreateGameInvitation(ctx context.Context, arg CreateGameInvitationParams) error {
-	_, err := q.db.ExecContext(ctx, createGameInvitation, arg.InviterPlayerID, arg.InviteeUsername, arg.GameID)
+func (q *Queries) CreateGameInvitationWithUsername(ctx context.Context, arg CreateGameInvitationWithUsernameParams) error {
+	_, err := q.db.ExecContext(ctx, createGameInvitationWithUsername, arg.InviterPlayerID, arg.Username, arg.GameID)
 	return err
 }
 
 const deleteGameInvitation = `-- name: DeleteGameInvitation :exec
 DELETE FROM game_invitations
-WHERE invitee_username = $1 AND game_id = $2
+WHERE invitee_player_id = $1 AND game_id = $2
 `
 
 type DeleteGameInvitationParams struct {
-	InviteeUsername string `json:"invitee_username"`
-	GameID          int64  `json:"game_id"`
+	InviteePlayerID int64 `json:"invitee_player_id"`
+	GameID          int64 `json:"game_id"`
 }
 
 func (q *Queries) DeleteGameInvitation(ctx context.Context, arg DeleteGameInvitationParams) error {
-	_, err := q.db.ExecContext(ctx, deleteGameInvitation, arg.InviteeUsername, arg.GameID)
+	_, err := q.db.ExecContext(ctx, deleteGameInvitation, arg.InviteePlayerID, arg.GameID)
 	return err
 }
 
 const doesInvitationExist = `-- name: DoesInvitationExist :one
 SELECT EXISTS (
     SELECT 1 FROM game_invitations
-    WHERE invitee_username = $1 AND game_id = $2
+    WHERE invitee_player_id = $1 AND game_id = $2
 ) AS exists
 `
 
 type DoesInvitationExistParams struct {
-	InviteeUsername string `json:"invitee_username"`
-	GameID          int64  `json:"game_id"`
+	InviteePlayerID int64 `json:"invitee_player_id"`
+	GameID          int64 `json:"game_id"`
 }
 
 func (q *Queries) DoesInvitationExist(ctx context.Context, arg DoesInvitationExistParams) (bool, error) {
-	row := q.db.QueryRowContext(ctx, doesInvitationExist, arg.InviteeUsername, arg.GameID)
+	row := q.db.QueryRowContext(ctx, doesInvitationExist, arg.InviteePlayerID, arg.GameID)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -97,12 +101,12 @@ func (q *Queries) IsUserGameCreator(ctx context.Context, arg IsUserGameCreatorPa
 }
 
 const listGameInvitationsForUser = `-- name: ListGameInvitationsForUser :many
-SELECT game_invitation_id, inviter_player_id, invitee_username, game_id, timestamp FROM game_invitations
-WHERE invitee_username = $1
+SELECT game_invitation_id, inviter_player_id, invitee_player_id, game_id, invitation_status, timestamp FROM game_invitations
+WHERE invitee_player_id = $1
 `
 
-func (q *Queries) ListGameInvitationsForUser(ctx context.Context, inviteeUsername string) ([]GameInvitation, error) {
-	rows, err := q.db.QueryContext(ctx, listGameInvitationsForUser, inviteeUsername)
+func (q *Queries) ListGameInvitationsForUser(ctx context.Context, inviteePlayerID int64) ([]GameInvitation, error) {
+	rows, err := q.db.QueryContext(ctx, listGameInvitationsForUser, inviteePlayerID)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +117,9 @@ func (q *Queries) ListGameInvitationsForUser(ctx context.Context, inviteeUsernam
 		if err := rows.Scan(
 			&i.GameInvitationID,
 			&i.InviterPlayerID,
-			&i.InviteeUsername,
+			&i.InviteePlayerID,
 			&i.GameID,
+			&i.InvitationStatus,
 			&i.Timestamp,
 		); err != nil {
 			return nil, err

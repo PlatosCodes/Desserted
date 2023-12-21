@@ -10,5 +10,6 @@ message Friend {
     int64 friendship_id = 1;
     int64 friender_id = 2;
     int64 friendee_id = 3;
-    google.protobuf.Timestamp friended_at = 4;
+    string friend_username = 4;
+    google.protobuf.Timestamp friended_at = 5;
 }

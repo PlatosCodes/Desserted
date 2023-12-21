@@ -1,15 +1,15 @@
 // src/views/Login.js
 import React, { useState } from 'react';
-import { TextField, Button, Typography, Grid, Paper } from '@mui/material';
-import { Helmet } from 'react-helmet';
-import { useNavigate, Link } from 'react-router-dom';
+import { useMutation } from 'react-query';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../features/user/userSlice';
-import axiosInstance from '../services/apiService';
-import './../dessert-animation.css';
-import { styled } from '@mui/material/styles';
+import { TextField, Button, Typography, Grid, Paper, Alert } from '@mui/material';
+import { Helmet } from 'react-helmet';
+import { useNavigate, Link } from 'react-router-dom';
 import apiService from '../services/apiService';
-import Cookie from 'js-cookie'
+import Cookie from 'js-cookie';
+import '../dessert-animation.css';
+import { styled } from '@mui/material/styles';
 
 // Styled components
 const StyledGrid = styled(Grid)(({ theme }) => ({
@@ -39,40 +39,36 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ username: '', password: '' });
-  const [error, setError] = useState(null);
+
+  // React Query mutation for login
+  const loginMutation = useMutation(apiService.loginUser, {
+    onSuccess: (response) => {
+      const { access_token, refresh_token, session_id, user } = response;
+      Cookie.set('access_token', access_token);
+      Cookie.set('refresh_token', refresh_token);
+      Cookie.set('session_id', session_id);
+      dispatch(loginUser({ session_id, access_token, user }));
+      localStorage.setItem('userData', JSON.stringify(user));
+      localStorage.setItem('isAuthenticated', 'true');
+      navigate('/dashboard');
+    },
+    onError: (error) => {
+      console.error('Login Error:', error);
+    },
+  });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.username || !formData.password) {
-        setError('Please enter your username and password.');
-        return;
+      loginMutation.setError('Please enter your username and password.');
+      return;
     }
-
-    try {
-      const response = await apiService.loginUser(formData);
-
-      const { access_token, session_id, user } = response;
-      if (access_token && session_id) {
-        Cookie.set('access_token', access_token);
-        Cookie.set('session_id', session_id);
-        dispatch(loginUser({ session_id, access_token, user }));
-        localStorage.setItem('userData', JSON.stringify(user));
-        localStorage.setItem('isAuthenticated', 'true');
-        navigate('/dashboard');
-      } else {
-          // Handle the error if session_id or access_token is missing
-          setError('Login failed. Please try again.');
-      }
-    } catch (err) {
-        console.error(err);
-        setError(err?.response?.data?.error || 'An unexpected error occurred.');
-    }
+    loginMutation.mutate(formData);
   };
-
 
   return (
     <StyledGrid container justifyContent="center" alignItems="center">
@@ -85,7 +81,11 @@ const Login = () => {
           <Typography variant="h2" align="center">Desserted</Typography>
           <main>
             <Typography variant="h4" align="center">Login</Typography>
-            {error && <Typography color="error">{error}</Typography>}
+            {loginMutation.isError && (
+              <Alert severity="error">
+                {loginMutation.error?.response?.data?.error || 'An unexpected error occurred.'}
+              </Alert>
+            )}           
             <form onSubmit={handleSubmit} style={{ width: '100%', marginTop: 1, textAlign: "center"}}>
               <FormRow>
                 <TextField label="Username" name="username" value={formData.username} onChange={handleChange} sx={{ flex: 1, m: 0.5 }} />

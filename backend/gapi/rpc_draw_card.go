@@ -17,10 +17,10 @@ func (server *Server) DrawCard(ctx context.Context, req *pb.DrawCardRequest) (*p
 		return nil, unauthenticatedError(err)
 	}
 
-	gameID, _ := req.GetGameId(), req.GetPlayerGameId()
+	gameID, playerGameID := req.GetGameId(), req.GetPlayerGameId()
 
 	// Validate the player's participation in the game.
-	playerGame, err := server.Store.GetPlayerGame(ctx, gameID)
+	playerGame, err := server.Store.GetPlayerGame(ctx, playerGameID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error validating player in game: %v", err)
 	}

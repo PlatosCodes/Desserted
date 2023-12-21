@@ -43,11 +43,13 @@ type Friend struct {
 
 // Represents a game session
 type Game struct {
-	GameID    int64        `json:"game_id"`
-	Status    string       `json:"status"`
-	CreatedBy int64        `json:"created_by"`
-	StartTime time.Time    `json:"start_time"`
-	EndTime   sql.NullTime `json:"end_time"`
+	GameID          int64         `json:"game_id"`
+	Status          string        `json:"status"`
+	CreatedBy       int64         `json:"created_by"`
+	CurrentTurn     int32         `json:"current_turn"`
+	CurrentPlayerID sql.NullInt64 `json:"current_player_id"`
+	StartTime       time.Time     `json:"start_time"`
+	EndTime         sql.NullTime  `json:"end_time"`
 }
 
 type GameDeck struct {
@@ -60,8 +62,9 @@ type GameDeck struct {
 type GameInvitation struct {
 	GameInvitationID int64     `json:"game_invitation_id"`
 	InviterPlayerID  int64     `json:"inviter_player_id"`
-	InviteeUsername  string    `json:"invitee_username"`
+	InviteePlayerID  int64     `json:"invitee_player_id"`
 	GameID           int64     `json:"game_id"`
+	InvitationStatus string    `json:"invitation_status"`
 	Timestamp        time.Time `json:"timestamp"`
 }
 

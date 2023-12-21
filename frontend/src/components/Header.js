@@ -77,7 +77,7 @@ const Header = () => {
 
     const handleCakeIconClick = () => {
         sessionStorage.removeItem("cakeListCurrentPage");
-        navigate("/dashboard");
+        navigate("/create_game");
       };
       
     const handleLogout = async () => {
@@ -115,7 +115,7 @@ const Header = () => {
                 className={classes.bottomNav}
                 >
                 <BottomNavigationAction label="Dashboard" value="/dashboard" icon={<LibraryAddCheckIcon />} component={Link} to="/dashboard" />
-                <BottomNavigationAction label="Cakes" value="/dashboard" icon={<CakeIcon />} component={Link} onClick={handleCakeIconClick} to="/dashboard" />
+                <BottomNavigationAction label="Create Game" value="/dashboard" icon={<CakeIcon />} component={Link} onClick={handleCakeIconClick} to="/create_game" />
                 <BottomNavigationAction label="Profile" value="/dashboard" icon={<StarIcon />} component={Link} to="/dashboard" />
             </BottomNavigation>
                 )}

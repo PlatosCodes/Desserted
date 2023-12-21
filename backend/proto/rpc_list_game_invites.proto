@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+import "game_invitation.proto";
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message ListGameInvitesRequest {
+    int64 user_id = 1;
+}
+
+message ListGameInvitesResponse {
+    repeated GameInvitation game_invite = 1;
+}

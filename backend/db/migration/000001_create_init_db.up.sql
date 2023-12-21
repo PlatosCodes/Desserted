@@ -21,9 +21,13 @@ CREATE TABLE games (
   game_id BIGSERIAL PRIMARY KEY,
   status VARCHAR(10) NOT NULL DEFAULT 'waiting',
   created_by BIGINT NOT NULL,
+  current_turn INT NOT NULL DEFAULT 0,
+  current_player_id BIGINT, 
   start_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   end_time TIMESTAMPTZ,
+  FOREIGN KEY (created_by) REFERENCES users(id),
   FOREIGN KEY (created_by) REFERENCES users(id)
+
 );
 CREATE INDEX idx_games_status ON games(status);
 
@@ -105,19 +109,20 @@ CREATE TABLE dessert_played (
 );
 CREATE INDEX idx_dessertplayed_timestamp ON dessert_played(timestamp);
 
--- Table: GameInvites
+-- Table: GameInvitations
 -- Records game invitations created by players who created a game
 CREATE TABLE game_invitations (
   game_invitation_id BIGSERIAL PRIMARY KEY,
   inviter_player_id BIGINT NOT NULL,
-  invitee_username VARCHAR(255) NOT NULL,
+  invitee_player_id BIGINT NOT NULL,
   game_id BIGINT NOT NULL,
+  invitation_status VARCHAR(10) NOT NULL DEFAULT 'pending',
   timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   FOREIGN KEY (inviter_player_id) REFERENCES users(id),
-  FOREIGN KEY (invitee_username) REFERENCES users(username),
+  FOREIGN KEY (invitee_player_id) REFERENCES users(id),
   FOREIGN KEY (game_id) REFERENCES games(game_id)
 );
-CREATE INDEX idx_invitee_username ON game_invitations(invitee_username);
+
 
 -- Table: Friends
 -- Records friends

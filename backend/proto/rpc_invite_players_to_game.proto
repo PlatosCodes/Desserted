@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+message InvitePlayersToGameRequest {
+  int64 inviter_player_id = 1;
+  repeated string invitee_usernames = 2;
+  int64 game_id = 3;
+}

@@ -331,7 +331,7 @@
       "post": {
         "summary": "Invite player to the game",
         "description": "Use this API to invite a player to the game",
-        "operationId": "Desserted_InvitePlayerToGame",
+        "operationId": "Desserted_InvitePlayersToGame",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -353,8 +353,41 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pbInvitePlayerToGameRequest"
+              "$ref": "#/definitions/pbInvitePlayersToGameRequest"
             }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
+    "/v1/list_active_player_games/{playerId}": {
+      "get": {
+        "summary": "List the player's active games",
+        "description": "Use this API to list the active games for a player",
+        "operationId": "Desserted_ListActivePlayerGames",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListPlayerGamesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -372,6 +405,39 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/pbListFriendRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
+    "/v1/list_game_invites/{userId}": {
+      "get": {
+        "summary": "List a user's game invitations",
+        "description": "Use this API to list a user's pending game invitations",
+        "operationId": "Desserted_ListGameInvites",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListGameInvitesResponse"
             }
           },
           "default": {
@@ -435,6 +501,39 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
+    "/v1/list_player_games": {
+      "get": {
+        "summary": "List the player's games",
+        "description": "Use this API to list the games for a player",
+        "operationId": "Desserted_ListPlayerGames",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListPlayerGamesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -717,8 +816,9 @@
     "pbAcceptGameInviteRequest": {
       "type": "object",
       "properties": {
-        "inviteeUsername": {
-          "type": "string"
+        "inviteePlayerId": {
+          "type": "string",
+          "format": "int64"
         },
         "gameId": {
           "type": "string",
@@ -838,6 +938,9 @@
           "type": "string",
           "format": "int64"
         },
+        "friendUsername": {
+          "type": "string"
+        },
         "friendedAt": {
           "type": "string",
           "format": "date-time"
@@ -888,6 +991,34 @@
         }
       }
     },
+    "pbGameInvitation": {
+      "type": "object",
+      "properties": {
+        "gameInvitationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "inviterPlayerId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "inviteePlayerId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gameId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "invitationStatus": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "pbGetPlayerGameResponse": {
       "type": "object",
       "properties": {
@@ -908,15 +1039,18 @@
         }
       }
     },
-    "pbInvitePlayerToGameRequest": {
+    "pbInvitePlayersToGameRequest": {
       "type": "object",
       "properties": {
         "inviterPlayerId": {
           "type": "string",
           "format": "int64"
         },
-        "inviteeUsername": {
-          "type": "string"
+        "inviteeUsernames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "gameId": {
           "type": "string",
@@ -936,10 +1070,34 @@
         }
       }
     },
+    "pbListGameInvitesResponse": {
+      "type": "object",
+      "properties": {
+        "gameInvite": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbGameInvitation"
+          }
+        }
+      }
+    },
     "pbListGamePlayersResponse": {
       "type": "object",
       "properties": {
         "players": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbPlayerGame"
+          }
+        }
+      }
+    },
+    "pbListPlayerGamesResponse": {
+      "type": "object",
+      "properties": {
+        "playerGames": {
           "type": "array",
           "items": {
             "type": "object",

@@ -3,7 +3,6 @@ package gapi
 import (
 	"context"
 	"database/sql"
-	"log"
 
 	"github.com/PlatosCodes/desserted/backend/pb"
 	"google.golang.org/grpc/codes"
@@ -13,12 +12,25 @@ import (
 
 // ListFriendRequests lists all pending friend requests for a user.
 func (server *Server) ListFriendRequests(ctx context.Context, req *pb.ListFriendRequestsRequest) (*pb.ListFriendRequestsResponse, error) {
-	user_id := req.GetUserId()
-	if user_id == 0 {
+	// Authenticate and authorize the user
+	authPayload, err := server.authorizeUser(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
+
+	userID := req.GetUserId()
+
+	// Validate the request
+	if userID == 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "user ID is required")
 	}
 
-	friendRequests, err := server.Store.ListPendingFriendRequests(ctx, user_id)
+	// Ensure that the requestor is the player in question or has appropriate permissions
+	if userID != authPayload.UserID {
+		return nil, status.Errorf(codes.PermissionDenied, "you do not have permission to view this game data")
+	}
+
+	friendRequests, err := server.Store.ListPendingFriendRequests(ctx, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, status.Errorf(codes.NotFound, "friend requests not found")
@@ -35,10 +47,6 @@ func (server *Server) ListFriendRequests(ctx context.Context, req *pb.ListFriend
 			FriendedAt:       timestamppb.New(fr.FriendedAt),
 		})
 	}
-
-	log.Println("HEY PAL:", &pb.ListFriendRequestsResponse{
-		FriendRequests: pbFriendRequests,
-	})
 
 	return &pb.ListFriendRequestsResponse{
 		FriendRequests: pbFriendRequests,

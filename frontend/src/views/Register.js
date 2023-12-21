@@ -1,9 +1,10 @@
-// src/views/Register.ks
+// src/views/Register.js
 import React, { useState } from 'react';
-import apiService from '../services/apiService';
+import { useMutation } from 'react-query';
 import { useNavigate, Link } from 'react-router-dom';
-import { TextField, Button, Grid, Container, Typography, Paper } from '@mui/material';
+import { TextField, Button, Grid, Container, Typography, Paper, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import apiService from '../services/apiService';
 
 // Styled components
 const StyledContainer = styled(Container)(({ theme }) => ({
@@ -18,65 +19,86 @@ const Title = styled(Typography)(({ theme }) => ({
 }));
 
 const Register = () => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-    const validateForm = () => {
-        if (!username || !email || !password) {
-          setError("All fields are required!");
-          return false;
+  const registerMutation = useMutation(apiService.createUser, {
+    onSuccess: () => {
+      navigate('/login');
+    },
+    onError: (error) => {
+      // Extracting error response from Axios
+      const serverResponse = error.response?.data;
+
+      // Handling specific error types
+      if (serverResponse?.field_violations) {
+        // For field-specific errors
+        const fieldErrors = serverResponse.field_violations.map(violation => `${violation.field}: ${violation.description}`).join(', ');
+        setError(fieldErrors);
+      } else if (serverResponse?.error) {
+        // For general error messages from server
+        setError(serverResponse.error);
+      } else if (error.response?.status === 409) {
+        // Handling unique constraint violations
+        if (error.response.data.message.includes("users_username_key")) {
+          setError('Username already exists.');
+        } else if (error.response.data.message.includes("users_email_key")) {
+          setError('Email already registered.');
+        } else {
+          setError('An unexpected error occurred.');
         }
-        const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
-        if (!email.match(emailRegex)) {
-          setError("Please enter a valid email!");
-          return false;
-        }
-        return true;
-    };
-      
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const isValid = validateForm();
-      if (!isValid) return;
-      
-      try {
-          await apiService.createUser({ username, email, password });
-          setSuccessMessage("Registration successful! Please check your email for a verification link.");
-          setUsername('');
-          setEmail('');
-          setPassword('');
-          navigate('/login');
-      } catch (err) {
-          console.log("Error:", err)
-          setError(err.response && err.response.data && err.response.data.error ? err.response.data.error : 'An unexpected error occurred.');
+      } else if (error.response?.status === 400) {
+        console.log("yo",error.response.data.message)
+        setError('Invalid password. Please make sure password is between 6 and 100 characters.');
+      } else {
+        setError('An unexpected error occurred.');
       }
+    },
+  });
+
+  const validateForm = () => {
+    if (!username || !email || !password) {
+      setError("All fields are required!");
+      return false;
+    }
+    const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
+    if (!email.match(emailRegex)) {
+      setError("Please enter a valid email!");
+      return false;
+    }
+    return true;
   };
-    
-    return (
-        <StyledContainer component={Paper} maxWidth="xs">
-          <Title variant="h4">Register</Title>
-          {successMessage && <Typography color="primary">{successMessage}</Typography>}
-          {error && <Typography color="error">{error}</Typography>}
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField fullWidth label="Username" variant="outlined" value={username} onChange={(e) => setUsername(e.target.value)} />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField fullWidth label="Password" variant="outlined" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField fullWidth label="Email" variant="outlined" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </Grid>
-            <Grid item xs={12}>
-              <Button variant="contained" color="primary" onClick={handleSubmit}>Register</Button>
-            </Grid>
-          </Grid>
-        </StyledContainer>
-    );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      registerMutation.mutate({ username, email, password });
+    }
+  };
+
+  return (
+    <StyledContainer component={Paper} maxWidth="xs">
+      <Title variant="h4">Register</Title>
+      {error && <Alert severity="error">{error}</Alert>}
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <TextField fullWidth label="Username" variant="outlined" value={username} onChange={(e) => setUsername(e.target.value)} />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField fullWidth label="Password" variant="outlined" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField fullWidth label="Email" variant="outlined" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </Grid>
+        <Grid item xs={12}>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>Register</Button>
+        </Grid>
+      </Grid>
+    </StyledContainer>
+  );
 }
 
 export default Register;

@@ -28,18 +28,6 @@ func (server *Server) PlayDessert(ctx context.Context, req *pb.PlayDessertReques
 		return nil, status.Errorf(codes.PermissionDenied, "you are not authorized to play in this game")
 	}
 
-	// // Fetch the player hand
-	// playerHand, err := server.Store.GetPlayerHand(ctx, playerGame.PlayerGameID)
-	// if err != nil {
-	// 	if pqErr, ok := err.(*pq.Error); ok {
-	// 		switch pqErr.Code.Name() {
-	// 		case "not_found":
-	// 			return nil, status.Errorf(codes.NotFound, "cannot find hand for player: %s", err)
-	// 		}
-	// 	}
-	// 	return nil, status.Errorf(codes.Internal, "internal server error: %s", err)
-	// }
-
 	cardIDs := req.GetCardIds()
 
 	ingredientsList := []string{}

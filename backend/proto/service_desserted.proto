@@ -14,10 +14,12 @@ import "rpc_list_user_friendships.proto";
 import "rpc_list_friend_requests.proto";
 import "rpc_accept_friend_request.proto";
 import "rpc_create_game.proto";
-import "rpc_invite_player_to_game.proto";
+import "rpc_invite_players_to_game.proto";
 import "rpc_accept_game_invite.proto";
+import "rpc_list_game_invites.proto";
 // import "rpc_add_player_to_game.proto";
 import "rpc_list_game_players.proto";
+import "rpc_list_player_games.proto";
 import "rpc_get_player_game.proto";
 import "rpc_start_game.proto";
 import "rpc_get_player_hand.proto";
@@ -154,7 +156,7 @@ service Desserted {
         summary: "Create new game";
       };
     };
-    rpc InvitePlayerToGame (InvitePlayerToGameRequest) returns (google.protobuf.Empty) {
+    rpc InvitePlayersToGame (InvitePlayersToGameRequest) returns (google.protobuf.Empty) {
       option (google.api.http) = {    
           post: "/v1/invite_player_to_game"
           body: "*"
@@ -163,7 +165,16 @@ service Desserted {
         description: "Use this API to invite a player to the game";
         summary: "Invite player to the game";
       };
-    };   
+    };  
+    rpc ListGameInvites (ListGameInvitesRequest) returns (ListGameInvitesResponse) {
+      option (google.api.http) = {
+          get: "/v1/list_game_invites/{user_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list a user's pending game invitations";
+        summary: "List a user's game invitations";
+      };
+    };
     rpc AcceptGameInvite (AcceptGameInviteRequest) returns (google.protobuf.Empty) {
       option (google.api.http) = {    
           post: "/v1/accept_game_invite"
@@ -192,7 +203,25 @@ service Desserted {
         description: "Use this API to list the players of the game";
         summary: "List the game's players";
       };
-    };      
+    };    
+    rpc ListPlayerGames (ListPlayerGamesRequest) returns (ListPlayerGamesResponse) {
+      option (google.api.http) = {    
+          get: "/v1/list_player_games"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list the games for a player";
+        summary: "List the player's games";
+      };
+    };     
+    rpc ListActivePlayerGames (ListPlayerGamesRequest) returns (ListPlayerGamesResponse) {
+      option (google.api.http) = {    
+          get: "/v1/list_active_player_games/{player_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list the active games for a player";
+        summary: "List the player's active games";
+      };
+    };     
     rpc GetPlayerGame (GetPlayerGameRequest) returns (GetPlayerGameResponse) {
       option (google.api.http) = {    
           get: "/v1/get_player_game/{player_game_id}"

@@ -2,6 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Card from './Card';
+import { handleCardSelect } from './PlayArea'
 
 const HandContainer = styled.div`
   display: flex;
@@ -22,10 +23,10 @@ const HandContainer = styled.div`
   }
 `;
 
-const Hand = ({ cards }) => (
-  <HandContainer aria-label="Player's hand">
+const Hand = ({ cards, onCardSelect }) => (
+  <HandContainer>
     {cards.map(card => (
-      <Card key={card.id} {...card} />
+      <Card key={card.id} card={card} onSelect={() => onCardSelect(card.id)} />
     ))}
   </HandContainer>
 );

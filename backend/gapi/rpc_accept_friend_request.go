@@ -12,6 +12,12 @@ import (
 
 // AcceptFriendRequest updates the status of a friend request to accepted.
 func (server *Server) AcceptFriendRequest(ctx context.Context, req *pb.AcceptFriendRequestRequest) (*emptypb.Empty, error) {
+	// Authenticate and authorize the user
+	authPayload, err := server.authorizeUser(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
+
 	user_id := req.GetUserId()
 	friendship_id := req.GetFriendshipId()
 
@@ -19,7 +25,12 @@ func (server *Server) AcceptFriendRequest(ctx context.Context, req *pb.AcceptFri
 		return nil, status.Errorf(codes.InvalidArgument, "user ID and friendship ID are required")
 	}
 
-	err := server.Store.AcceptFriendRequest(ctx, db.AcceptFriendRequestParams{
+	// Ensure that the requestor is the player in question or has appropriate permissions
+	if user_id != authPayload.UserID {
+		return nil, status.Errorf(codes.PermissionDenied, "you do not have permission to view this game data")
+	}
+
+	err = server.Store.AcceptFriendRequest(ctx, db.AcceptFriendRequestParams{
 		FriendeeID:   user_id,
 		FriendshipID: friendship_id,
 	})
