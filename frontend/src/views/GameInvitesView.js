@@ -36,7 +36,7 @@ const GameInvitesView = () => {
   const handleAcceptInvite = async (inviteId, gameId) => {
     try {
       await apiService.acceptGameInvite({ invitee_player_id: inviteId, game_id: gameId });
-      setGameInvites(prev => prev.filter(invite => invite.game_invitation_id !== gameId));
+      setGameInvites(prev => prev.filter(invite => invite.game_id !== gameId));
     } catch (err) {
       setError(err.message || 'Error accepting invite.');
     }
@@ -50,7 +50,7 @@ const GameInvitesView = () => {
       {error && <Alert severity="error">{error}</Alert>}
       <List>
         {gameInvites.map(invite => (
-          <ListItem key={invite.game_invitation_id}>
+          <ListItem key={invite.game_id}>
             <ListItemText primary={`Game invite from player ID: ${invite.invitee_player_id} for game ID: ${invite.game_id}`} />
             <Button variant="contained" color="primary" onClick={() => handleAcceptInvite(invite.invitee_player_id, invite.game_id)}>
               Accept

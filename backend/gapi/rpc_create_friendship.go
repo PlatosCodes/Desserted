@@ -13,9 +13,19 @@ import (
 
 // CreateFriendship creates a new friendship between two users.
 func (server *Server) CreateFriendship(ctx context.Context, req *pb.CreateFriendshipRequest) (*pb.CreateFriendshipResponse, error) {
+	// Authenticate and authorize the user
+	authPayload, err := server.authorizeUser(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
+
 	// Ensure that both user IDs are valid and not the same
 	if req.GetFrienderId() <= 0 || len(req.GetFriendeeUsername()) == 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid users")
+	}
+
+	if req.GetFrienderId() != authPayload.UserID {
+		return nil, status.Errorf(codes.PermissionDenied, "you can only create friendships for yourself")
 	}
 
 	// Insert the new friendship into the database

@@ -12,12 +12,25 @@ import (
 
 // ListGameInvites lists all pending game invitations for a user.
 func (server *Server) ListGameInvites(ctx context.Context, req *pb.ListGameInvitesRequest) (*pb.ListGameInvitesResponse, error) {
-	user_id := req.GetUserId()
-	if user_id == 0 {
+	// Authenticate and authorize the user
+	authPayload, err := server.authorizeUser(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
+
+	userID := req.GetUserId()
+
+	// Validate the request
+	if userID == 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "user ID is required")
 	}
 
-	gameInvitations, err := server.Store.ListGameInvitationsForUser(ctx, user_id)
+	// Ensure that the requestor is the player in question or has appropriate permissions
+	if userID != authPayload.UserID {
+		return nil, status.Errorf(codes.PermissionDenied, "you do not have permission to view this game data")
+	}
+
+	gameInvitations, err := server.Store.ListGameInvitationsForUser(ctx, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, status.Errorf(codes.NotFound, "friend requests not found")

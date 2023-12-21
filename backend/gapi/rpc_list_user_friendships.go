@@ -12,9 +12,22 @@ import (
 
 // ListUserFriends lists the friendships of a given user.
 func (server *Server) ListUserFriends(ctx context.Context, req *pb.ListUserFriendsRequest) (*pb.ListUserFriendsResponse, error) {
+	// Authenticate and authorize the user
+	authPayload, err := server.authorizeUser(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
+
+	userID := req.GetUserId()
+
 	// Validate the request
-	if req.GetUserId() == 0 {
+	if userID == 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "user ID is required")
+	}
+
+	// Ensure that the requestor is the player in question or has appropriate permissions
+	if userID != authPayload.UserID {
+		return nil, status.Errorf(codes.PermissionDenied, "you do not have permission to view this game data")
 	}
 
 	// Fetch the friendships from the database
