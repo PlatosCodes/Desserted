@@ -19,7 +19,7 @@ type Querier interface {
 	BlockSession(ctx context.Context, id uuid.UUID) error
 	CreateFriendship(ctx context.Context, arg CreateFriendshipParams) (Friend, error)
 	CreateGame(ctx context.Context, createdBy int64) (Game, error)
-	CreateGameInvitation(ctx context.Context, arg CreateGameInvitationParams) error
+	CreateGameInvitationWithUsername(ctx context.Context, arg CreateGameInvitationWithUsernameParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Declare the winner of the game
@@ -58,7 +58,7 @@ type Querier interface {
 	ListCards(ctx context.Context) ([]Card, error)
 	// List cards by type
 	ListCardsByType(ctx context.Context, type_ string) ([]Card, error)
-	ListGameInvitationsForUser(ctx context.Context, inviteeUsername string) ([]GameInvitation, error)
+	ListGameInvitationsForUser(ctx context.Context, inviteePlayerID int64) ([]GameInvitation, error)
 	ListGamePlayers(ctx context.Context, arg ListGamePlayersParams) ([]PlayerGame, error)
 	ListPendingFriendRequests(ctx context.Context, friendeeID int64) ([]ListPendingFriendRequestsRow, error)
 	ListPlayerGames(ctx context.Context, playerID int64) ([]PlayerGame, error)

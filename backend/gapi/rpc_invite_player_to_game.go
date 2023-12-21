@@ -38,13 +38,13 @@ func (server *Server) InvitePlayerToGame(ctx context.Context, req *pb.InvitePlay
 		return nil, status.Errorf(codes.PermissionDenied, "you are not authorized to invite players to this game")
 	}
 
-	arg := db.CreateGameInvitationParams{
+	arg := db.CreateGameInvitationWithUsernameParams{
 		InviterPlayerID: inviter,
-		InviteeUsername: req.GetInviteeUsername(),
+		Username:        req.GetInviteeUsername(),
 		GameID:          req.GetGameId(),
 	}
 
-	err = server.Store.CreateGameInvitation(ctx, arg)
+	err = server.Store.CreateGameInvitationWithUsername(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {

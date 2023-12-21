@@ -18,15 +18,17 @@ func (server *Server) AcceptGameInvite(ctx context.Context, req *pb.AcceptGameIn
 		return nil, unauthenticatedError(err)
 	}
 
+	invitee, gameID := req.GetInviteePlayerId(), req.GetGameId()
+
 	// Validate if the user is the invitee
-	if authPayload.Username != req.GetInviteeUsername() {
+	if authPayload.UserID != invitee {
 		return nil, status.Errorf(codes.PermissionDenied, "you can only accept invitations for yourself")
 	}
 
 	// Check if the invitation exists
 	invitationExists, err := server.Store.DoesInvitationExist(ctx, db.DoesInvitationExistParams{
-		InviteeUsername: req.GetInviteeUsername(),
-		GameID:          req.GetGameId(),
+		InviteePlayerID: invitee,
+		GameID:          gameID,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error checking invitation existence: %v", err)
@@ -37,8 +39,8 @@ func (server *Server) AcceptGameInvite(ctx context.Context, req *pb.AcceptGameIn
 
 	// Accept the game invitation
 	err = server.Store.AcceptGameInvitation(ctx, db.AcceptGameInvitationParams{
-		Username: req.GetInviteeUsername(),
-		GameID:   req.GetGameId(),
+		ID:     invitee,
+		GameID: gameID,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error accepting invitation: %v", err)
@@ -46,8 +48,8 @@ func (server *Server) AcceptGameInvite(ctx context.Context, req *pb.AcceptGameIn
 
 	// Delete the invitation after accepting it
 	err = server.Store.DeleteGameInvitation(ctx, db.DeleteGameInvitationParams{
-		InviteeUsername: req.GetInviteeUsername(),
-		GameID:          req.GetGameId(),
+		InviteePlayerID: invitee,
+		GameID:          gameID,
 	})
 	if err != nil {
 		// Log the error but do not fail the operation

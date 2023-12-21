@@ -60,8 +60,9 @@ type GameDeck struct {
 type GameInvitation struct {
 	GameInvitationID int64     `json:"game_invitation_id"`
 	InviterPlayerID  int64     `json:"inviter_player_id"`
-	InviteeUsername  string    `json:"invitee_username"`
+	InviteePlayerID  int64     `json:"invitee_player_id"`
 	GameID           int64     `json:"game_id"`
+	InvitationStatus string    `json:"invitation_status"`
 	Timestamp        time.Time `json:"timestamp"`
 }
 

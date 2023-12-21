@@ -3,7 +3,6 @@ package gapi
 import (
 	"context"
 	"database/sql"
-	"log"
 
 	"github.com/PlatosCodes/desserted/backend/pb"
 	"google.golang.org/grpc/codes"
@@ -35,10 +34,6 @@ func (server *Server) ListFriendRequests(ctx context.Context, req *pb.ListFriend
 			FriendedAt:       timestamppb.New(fr.FriendedAt),
 		})
 	}
-
-	log.Println("HEY PAL:", &pb.ListFriendRequestsResponse{
-		FriendRequests: pbFriendRequests,
-	})
 
 	return &pb.ListFriendRequestsResponse{
 		FriendRequests: pbFriendRequests,
