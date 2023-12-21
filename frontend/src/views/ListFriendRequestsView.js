@@ -1,60 +1,59 @@
 // src/views/ListFriendRequestsView.js
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { Container, Typography, CircularProgress, Alert, Snackbar } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../features/user/userSlice';
 import apiService from '../services/apiService';
 import FriendRequestList from '../components/FriendRequestList';
-import { Snackbar, Alert } from '@mui/material';
-import { useSelector } from 'react-redux'
-import { selectUser } from '../features/user/userSlice';
 
 const ListFriendRequestsView = () => {
-    const [friendRequests, setFriendRequests] = useState([]);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-
     const user = useSelector(selectUser);
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const fetchFriendRequests = async () => {
-            try {
-                const response = await apiService.listFriendRequests(user.id);
-                if (response && Array.isArray(response)) { 
-                    setFriendRequests(response);
-                }
-            } catch (error) {
-                console.error('Error fetching friend requests:', error);
-                setSnackbarMessage('Failed to fetch friend requests.');
-                setSnackbarSeverity('error');
-                setSnackbarOpen(true);
-            }
-        };
-    
-        fetchFriendRequests();
-    }, [user.id]);
-    
+    // Fetching friend requests
+    const { data: friendRequests, isLoading, isError, error, isSuccess } = useQuery(
+        ['friendRequests', user.id],
+        () => apiService.listFriendRequests(user.id),
+        { enabled: !!user.id }
+    );
 
-    const handleAccept = async (friendshipId) => {
-        try {
-            await apiService.acceptFriendRequest({ userId: user.id, friendshipId });
-            setSnackbarMessage('Friend request accepted successfully!');
-            setSnackbarSeverity('success');
-            setFriendRequests(prevRequests => prevRequests.filter(request => request.friendshipId !== friendshipId));
-        } catch (error) {
-            setSnackbarMessage('Failed to accept friend request.');
-            setSnackbarSeverity('error');
-        }
-        setSnackbarOpen(true);
+    // Mutation for accepting friend requests
+    const acceptFriendRequestMutation = useMutation(apiService.acceptFriendRequest, {
+        onSuccess: (_, { friendshipId }) => {
+            // Update the cache for friendRequests
+            queryClient.setQueryData(['friendRequests', user.id], (oldData) => {
+                return oldData.filter(request => request.friendshipId !== friendshipId);
+            });
+        },
+    });
+
+    // Function to handle the acceptance of a friend request
+    const handleAccept = (friendshipId) => {
+        acceptFriendRequestMutation.mutate({ userId: user.id, friendshipId });
     };
 
+    if (isLoading) return <CircularProgress />;
+
+    if (isError) return <Alert severity="error">{error.message}</Alert>;
+
     return (
-        <>
-            <FriendRequestList friendRequests={friendRequests} onAccept={handleAccept} />
-            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
-                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </>
+        <Container>
+            <Typography variant="h4" style={{ marginBottom: 16 }}>Friend Requests</Typography>
+            {isSuccess && friendRequests.length === 0 && (
+                <Typography variant="subtitle1">No new friend requests.</Typography>
+            )}
+            {isSuccess && friendRequests.length > 0 && (
+                <FriendRequestList friendRequests={friendRequests} onAccept={handleAccept} />
+            )}
+            {acceptFriendRequestMutation.isError && (
+                <Snackbar
+                    open={acceptFriendRequestMutation.isError}
+                    autoHideDuration={6000}
+                    message="Error accepting friend request"
+                />
+            )}
+        </Container>
     );
 };
 

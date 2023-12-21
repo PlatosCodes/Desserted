@@ -1,9 +1,11 @@
 // src/views/UserProfile.js
 import React, { useState } from 'react';
+import { useMutation } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { TextField, Button, Paper, Typography, Container } from '@mui/material';
+import { TextField, Button, Paper, Typography, Alert, Container } from '@mui/material';
 import { updateUserProfile } from '../features/user/userSlice';
 import { selectUser } from '../features/user/userSlice';
+import apiService from '../services/apiService';
 import { styled } from '@mui/material/styles';
 
 // Styled components
@@ -15,14 +17,11 @@ const StyledContainer = styled(Container)(({ theme }) => ({
   marginTop: theme.spacing(8),
 }));
 
-
-// Need to implement this in backend first -- but after I decide what belongs here. For now, placeholder stuff
-
-
 const UserProfile = () => {
     const user = useSelector(selectUser);
     const [formData, setFormData] = useState({ username: user?.username, email: user?.email, password: '' });
     const dispatch = useDispatch();
+    const updateProfileMutation = useMutation(apiService.updateUser);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,6 +29,7 @@ const UserProfile = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        updateProfileMutation.mutate(formData);
         dispatch(updateUserProfile(formData));
     };
 
@@ -42,8 +42,12 @@ const UserProfile = () => {
                 <TextField label="Password" name="password" type="password" value={formData.password} onChange={handleChange} />
                 <Button type="submit">Update</Button>
             </form>
+            {updateProfileMutation.isError && (
+                <Alert severity="error">{updateProfileMutation.error.message}</Alert>
+            )}
         </Paper>
     );
 };
 
 export default UserProfile;
+        

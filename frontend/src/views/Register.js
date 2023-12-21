@@ -1,9 +1,11 @@
 // src/views/Register.ks
 import React, { useState } from 'react';
-import apiService from '../services/apiService';
+import { useMutation } from 'react-query';
 import { useNavigate, Link } from 'react-router-dom';
-import { TextField, Button, Grid, Container, Typography, Paper } from '@mui/material';
+import { TextField, Button, Grid, Container, Typography, Paper, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import apiService from '../services/apiService';
+
 
 // Styled components
 const StyledContainer = styled(Container)(({ theme }) => ({
@@ -18,49 +20,44 @@ const Title = styled(Typography)(({ theme }) => ({
 }));
 
 const Register = () => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-    const validateForm = () => {
-        if (!username || !email || !password) {
-          setError("All fields are required!");
-          return false;
-        }
-        const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
-        if (!email.match(emailRegex)) {
-          setError("Please enter a valid email!");
-          return false;
-        }
-        return true;
-    };
-      
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const isValid = validateForm();
-      if (!isValid) return;
-      
-      try {
-          await apiService.createUser({ username, email, password });
-          setSuccessMessage("Registration successful! Please check your email for a verification link.");
-          setUsername('');
-          setEmail('');
-          setPassword('');
+  const registerMutation = useMutation(apiService.createUser, {
+      onSuccess: () => {
           navigate('/login');
-      } catch (err) {
-          console.log("Error:", err)
-          setError(err.response && err.response.data && err.response.data.error ? err.response.data.error : 'An unexpected error occurred.');
+      },
+      onError: (error) => {
+          console.error("Error:", error);
+      },
+  });
+
+  const validateForm = () => {
+      if (!username || !email || !password) {
+        registerMutation.setError("All fields are required!");
+        return false;
+      }
+      const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
+      if (!email.match(emailRegex)) {
+        registerMutation.setError("Please enter a valid email!");
+        return false;
+      }
+      return true;
+  };
+
+  const handleSubmit = (e) => {
+      e.preventDefault();
+      if (validateForm()) {
+          registerMutation.mutate({ username, email, password });
       }
   };
-    
-    return (
-        <StyledContainer component={Paper} maxWidth="xs">
+
+  return (
+      <StyledContainer component={Paper} maxWidth="xs">
           <Title variant="h4">Register</Title>
-          {successMessage && <Typography color="primary">{successMessage}</Typography>}
-          {error && <Typography color="error">{error}</Typography>}
+          {registerMutation.isError && <Alert severity="error">{registerMutation.error.message}</Alert>}
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField fullWidth label="Username" variant="outlined" value={username} onChange={(e) => setUsername(e.target.value)} />

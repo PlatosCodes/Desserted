@@ -1,48 +1,23 @@
 // src/views/GameInvitesView.js
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Container, Typography, CircularProgress, Button, List, ListItem, ListItemText, Alert } from '@mui/material';
-import apiService from '../services/apiService';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../features/user/userSlice';
+import { useGameInvites } from '../hooks/useGameInvites';
+import { useMutation } from 'react-query';
+import apiService from '../services/apiService';
 
 const GameInvitesView = () => {
-  const [gameInvites, setGameInvites] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const user = useSelector(selectUser);
+  const { data: gameInvites, isLoading, isError, error } = useGameInvites(user.id);
+  const acceptInviteMutation = useMutation(apiService.acceptGameInvite);
 
-  useEffect(() => {
-    const fetchGameInvites = async () => {
-      try {
-        console.log('Fetching game invites for user:', user);
-        const data = await apiService.listGameInvites({ user_id: user.id });
-        console.log('Fetched game invites:', data);
-        if (data && data.game_invite && Array.isArray(data.game_invite)) {
-          setGameInvites(data.game_invite);
-        }
-      } catch (err) {
-        console.error('Error fetching game invites:', err);
-        setError(err.message || 'Error fetching game invites.');
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchGameInvites();
-  }, [user.id]);
-  
-
-  const handleAcceptInvite = async (inviteId, gameId) => {
-    try {
-      await apiService.acceptGameInvite({ invitee_player_id: inviteId, game_id: gameId });
-      setGameInvites(prev => prev.filter(invite => invite.game_id !== gameId));
-    } catch (err) {
-      setError(err.message || 'Error accepting invite.');
-    }
+  const handleAcceptInvite = (inviteId, gameId) => {
+    acceptInviteMutation.mutate({ invitee_player_id: inviteId, game_id: gameId });
   };
 
-  if (loading) return <CircularProgress />;
+  if (isLoading) return <CircularProgress />;
+  if (isError) return <Alert severity="error">{error.message}</Alert>; 
 
   return (
     <Container>
@@ -63,3 +38,5 @@ const GameInvitesView = () => {
 };
 
 export default GameInvitesView;
+
+

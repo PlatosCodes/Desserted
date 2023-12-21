@@ -1,21 +1,51 @@
 // src/views/GameBoard.js
-import React from 'react';
-import { Grid, Paper, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Grid, Paper, Typography, Button } from '@mui/material';
+import Hand from '../components/Hand';
+import Scoreboard from '../components/Scoreboard';
+import PlayArea from '../components/PlayArea';
+import apiService from '../services/apiService';
+import { useGame } from '../context/GameContext';
 
-const GameBoard = ({ players }) => {
-    return (
-        <Grid container spacing={2}>
-            {/* Iterate over players or game elements */}
-            {players.map((player, index) => (
-                <Grid item key={index} xs={12} sm={6} md={4}>
-                    <Paper>
-                        <Typography variant="h6">{player.name}</Typography>
-                        {/* Display player-specific data */}
-                    </Paper>
-                </Grid>
-            ))}
-        </Grid>
-    );
+const GameBoard = () => {
+    // const { gameState } = useGame();
+    // const [playerHand, setPlayerHand] = useState([]);
+
+    // useEffect(() => {
+    //     // Fetch player hand and update state
+    //     const fetchPlayerHand = async () => {
+    //         try {
+    //             const handData = await apiService.getPlayerHand(/* playerId */);
+    //             setPlayerHand(handData);
+    //         } catch (error) {
+    //             console.error('Error fetching player hand:', error);
+    //         }
+    //     };
+    //     fetchPlayerHand();
+    // }, []);
+
+    // return (
+    //     <Container>
+    //         <Typography variant="h4" gutterBottom>Game Board</Typography>
+    //         <Grid container spacing={3}>
+    //             <Grid item xs={12} md={6}>
+    //                 <Scoreboard players={gameState.players} />
+    //             </Grid>
+    //             <Grid item xs={12} md={6}>
+    //             <PlayArea 
+    //                 playerGameId={playerGameId}
+    //                 playerHand={playerHand}
+    //                 refreshPlayerData={refreshPlayerData}
+    //             />
+    //             </Grid>
+    //             <Grid item xs={12}>
+    //                 <Paper elevation={3}>
+    //                     <Hand cards={playerHand} />
+    //                 </Paper>
+    //             </Grid>
+    //         </Grid>
+    //     </Container>
+    // );
 };
 
 export default GameBoard;

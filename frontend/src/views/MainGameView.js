@@ -1,33 +1,42 @@
+// src/views/MainGameView.js
 import React, { useEffect, useContext } from 'react';
-import GameBoard from '../components/GameBoard';
-import { useApi } from '../hooks/useApi';
-import apiService from '../services/apiService';
-import { Container, Typography, CircularProgress } from '@mui/material';
+import { Container, Typography, CircularProgress, Alert } from '@mui/material';
+import GameBoard from './GameBoard';
 import { useGame } from '../context/GameContext';
+import apiService from '../services/apiService';
 
 const MainGameView = () => {
-    const { gameState, updateGameState } = useGame();
-    const { request } = useApi(apiService.getGameDetails);
+    const { gameState, setGameState } = useContext(useGame);
 
     useEffect(() => {
+        const fetchGameData = async () => {
+            try {
+                const data = await apiService.getGameDetails();
+                setGameState(data);
+            } catch (error) {
+                // Error handling
+                console.error('Failed to fetch game data:', error);
+                setGameState({ ...gameState, error: 'Failed to load game data.' });
+            }
+        };
+
         if (!gameState) {
-            // Fetch initial game state
-            const fetchGameData = async () => {
-                const data = await request();
-                updateGameState(data);
-            };
             fetchGameData();
         }
-    }, [gameState, request, updateGameState]);
+    }, [gameState, setGameState]);
 
     if (!gameState) {
         return <Container><CircularProgress /></Container>;
     }
 
+    if (gameState.error) {
+        return <Container><Alert severity="error">{gameState.error}</Alert></Container>;
+    }
+
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Main Game</Typography>
-            <GameBoard players={gameState.players} />
+            <GameBoard />
         </Container>
     );
 };

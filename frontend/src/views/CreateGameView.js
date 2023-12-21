@@ -1,37 +1,34 @@
-import React, { useState, useEffect } from 'react';
+// src/views/CreateGameView.js
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../features/user/userSlice';
+import { useUserFriends } from '../hooks/useUserFriends.js';
+import { useMutation, useQueryClient } from 'react-query';
 import apiService from '../services/apiService';
-import { Button, Container, Typography, Alert, Checkbox, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { Button, Container, Typography, Alert, Snackbar, Checkbox, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const CreateGameView = () => {
     const user = useSelector(selectUser);
-    const [feedback, setFeedback] = useState('');
-    const [friends, setFriends] = useState([]);
+    const { data: friends, isLoading, isError, error } = useUserFriends(user.id);    
     const [selectedFriends, setSelectedFriends] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [feedback, setFeedback] = useState('');
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const fetchFriends = async () => {
-            if (!user || !user.id) {
-                setFeedback("User not logged in or User ID is missing");
-                setLoading(false);
-                return;
-            }
-            try {
-                const response = await apiService.listUserFriends({ user_id: user.id, limit: 10, offset: 0 });
-                setFriends(response.friendships || []);
-            } catch (err) {
-                setFeedback(err.message || 'Error fetching friends.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchFriends();
-    }, [user]);
+    const createGameMutation = useMutation(apiService.createGame, {
+        onSuccess: async (gameResponse) => {
+            const gameId = gameResponse.game.game_id;
+            await Promise.all(selectedFriends.map(username => 
+                apiService.invitePlayerToGame({ inviterPlayerId: user.id, inviteeUsernames: [username], gameId })
+            ));
+            queryClient.invalidateQueries(['userFriends', user.id]);
+            navigate('/dashboard');
+        },
+        onError: (error) => {
+            setFeedback('Failed to create the game. Please try again.');
+        }
+    });
 
     const handleCheckboxChange = (friendUsername) => {
         setSelectedFriends(prev => {
@@ -43,46 +40,44 @@ const CreateGameView = () => {
         });
     };
 
-    const handleCreateGame = async () => {
+    const handleCreateGame = () => {
         if (selectedFriends.length === 0) {
             setFeedback('Please select at least one friend to invite.');
             return;
         }
-
-        setLoading(true);
-        try {
-            const gameResponse = await apiService.createGame({ created_by: user.id });
-            const gameId = gameResponse.game.game_id; // Adjust according to actual response structure
-            await Promise.all(selectedFriends.map(username => 
-                apiService.invitePlayerToGame({ inviterPlayerId: user.id, inviteeUsernames: [username], gameId: gameId })
-            ));
-            setFeedback('Game created and friends invited successfully!');
-            navigate('/dashboard');
-        } catch (error) {
-            setFeedback('Failed to create the game or invite friends.');
-        } finally {
-            setLoading(false);
-        }
+        createGameMutation.mutate({ created_by: user.id });
     };
 
-    if (loading) return <CircularProgress />;
+    if (isLoading) return <CircularProgress />;
+    if (isError) return <Alert severity="error">{error.message}</Alert>;
 
     return (
         <Container>
             <Typography variant="h4">Create New Game</Typography>
-            <List>
-                {friends.map(friend => (
-                    <ListItem key={friend.friendshipId}>
-                        <Checkbox
-                            checked={selectedFriends.includes(friend.friend_username)}
-                            onChange={() => handleCheckboxChange(friend.friend_username)}
-                        />
-                        <ListItemText primary={friend.friend_username} />
-                    </ListItem>
-                ))}
-            </List>
-            <Button onClick={handleCreateGame} disabled={loading}>Create Game and Invite Friends</Button>
-            {feedback && <Alert severity="info">{feedback}</Alert>}
+            {error && <Alert severity="error">{error}</Alert>}
+            {friends?.length === 0 ? (
+                <Typography>No friends found.</Typography>
+            ) : (
+                <List>
+                    {friends?.map((friend, index) => (
+                        <ListItem key={friend.friendshipId}>
+                            <Checkbox
+                                checked={selectedFriends.includes(friend.friend_username)}
+                                onChange={() => handleCheckboxChange(friend.friend_username)}
+                            />
+                            <ListItemText primary={friend.friend_username} />
+                        </ListItem>
+                    ))}
+                </List>
+            )}
+            <Button onClick={handleCreateGame} disabled={isLoading}>Create Game and Invite Friends</Button>
+            {feedback && (
+                <Snackbar open={Boolean(feedback)} autoHideDuration={6000} onClose={() => setFeedback('')}>
+                    <Alert onClose={() => setFeedback('')} severity={createGameMutation.isError ? 'error' : 'info'}>
+                        {feedback}
+                    </Alert>
+                </Snackbar>
+            )}
         </Container>
     );
 };

@@ -176,13 +176,12 @@ const apiService = {
         }
     },
 
-
-    acceptGameInvite: async (inviteData) => {
+    acceptGameInvite: async ({ invitee_player_id, game_id }) => {
         try {
-            const response = await axiosInstance.post('/v1/accept_game_invite', inviteData);
+            const response = await axiosInstance.post('/v1/accept_game_invite', { invitee_player_id, game_id });
             return response.data;
         } catch (error) {
-            handleRequestError(error, 'accepting game invite');
+            throw error;
         }
     },
 
