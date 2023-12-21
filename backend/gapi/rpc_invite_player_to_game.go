@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"context"
+	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -11,11 +12,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (server *Server) InvitePlayerToGame(ctx context.Context, req *pb.InvitePlayerToGameRequest) (*emptypb.Empty, error) {
+func (server *Server) InvitePlayersToGame(ctx context.Context, req *pb.InvitePlayersToGameRequest) (*emptypb.Empty, error) {
 	authPayload, err := server.authorizeUser(ctx)
 	if err != nil {
 		return nil, unauthenticatedError(err)
 	}
+
+	log.Println("yooohooo:", req)
 
 	inviter := req.GetInviterPlayerId()
 
@@ -38,24 +41,29 @@ func (server *Server) InvitePlayerToGame(ctx context.Context, req *pb.InvitePlay
 		return nil, status.Errorf(codes.PermissionDenied, "you are not authorized to invite players to this game")
 	}
 
-	arg := db.CreateGameInvitationWithUsernameParams{
-		InviterPlayerID: inviter,
-		Username:        req.GetInviteeUsername(),
-		GameID:          req.GetGameId(),
-	}
+	invitees := req.GetInviteeUsernames()
 
-	err = server.Store.CreateGameInvitationWithUsername(ctx, arg)
-	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return nil, status.Errorf(codes.AlreadyExists, "player has already been invited to game: %s", err)
-			default:
-				return nil, status.Errorf(codes.Internal, "database error in inviting player to game: %s", err)
-			}
+	log.Println(invitees)
+
+	for _, username := range invitees {
+		arg := db.CreateGameInvitationWithUsernameParams{
+			InviterPlayerID: inviter,
+			Username:        username,
+			GameID:          req.GetGameId(),
 		}
-		return nil, status.Errorf(codes.Internal, "internal server error: %s", err)
+		if err := server.Store.CreateGameInvitationWithUsername(ctx, arg); err != nil {
+			if pqErr, ok := err.(*pq.Error); ok {
+				switch pqErr.Code.Name() {
+				case "unique_violation":
+					return nil, status.Errorf(codes.AlreadyExists, "player has already been invited to game: %s", err)
+				default:
+					return nil, status.Errorf(codes.Internal, "database error in inviting player to game: %s", err)
+				}
+			}
+			return nil, status.Errorf(codes.Internal, "internal server error: %s", err)
+		}
 	}
 
 	return &emptypb.Empty{}, nil
+
 }

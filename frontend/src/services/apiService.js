@@ -158,9 +158,9 @@ const apiService = {
         }
     },
 
-    invitePlayerToGame: async ({ inviterPlayerId, inviteeUsername, gameId }) => {
+    invitePlayerToGame: async ({ inviterPlayerId, inviteeUsernames, gameId }) => {
         try {
-            const response = await axiosInstance.post('/v1/invite_player_to_game', { inviterPlayerId, inviteeUsername, gameId });
+            const response = await axiosInstance.post('/v1/invite_player_to_game', { inviterPlayerId, inviteeUsernames, gameId });
             return response.data;
         } catch (error) {
             handleRequestError(error, 'inviting player to game');

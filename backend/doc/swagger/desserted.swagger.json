@@ -331,7 +331,7 @@
       "post": {
         "summary": "Invite player to the game",
         "description": "Use this API to invite a player to the game",
-        "operationId": "Desserted_InvitePlayerToGame",
+        "operationId": "Desserted_InvitePlayersToGame",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -353,7 +353,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pbInvitePlayerToGameRequest"
+              "$ref": "#/definitions/pbInvitePlayersToGameRequest"
             }
           }
         ],
@@ -872,6 +872,9 @@
           "type": "string",
           "format": "int64"
         },
+        "friendUsername": {
+          "type": "string"
+        },
         "friendedAt": {
           "type": "string",
           "format": "date-time"
@@ -970,15 +973,18 @@
         }
       }
     },
-    "pbInvitePlayerToGameRequest": {
+    "pbInvitePlayersToGameRequest": {
       "type": "object",
       "properties": {
         "inviterPlayerId": {
           "type": "string",
           "format": "int64"
         },
-        "inviteeUsername": {
-          "type": "string"
+        "inviteeUsernames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "gameId": {
           "type": "string",

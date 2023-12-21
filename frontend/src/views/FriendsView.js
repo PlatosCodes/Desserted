@@ -5,6 +5,12 @@ import { Container, Typography, CircularProgress, List, ListItem, ListItemText, 
 import { selectUser } from '../features/user/userSlice';
 import apiService from '../services/apiService';
 
+// Function to capitalize the first letter of a string
+const capitalizeFirstLetter = (str) => {
+  if (typeof str !== 'string') return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 const FriendsView = () => {
   const user = useSelector(selectUser);
   const [friends, setFriends] = useState([]);
@@ -47,7 +53,7 @@ const FriendsView = () => {
         <List>
           {friends.map((friend, index) => (
             <ListItem key={friend.friendshipId || index}>
-              <ListItemText primary={`Friend ID: ${friend.friendee_id}`} />
+              <ListItemText primary={`Friend ${index+1}: ${capitalizeFirstLetter(friend.friend_username)}`} />
             </ListItem>
           ))}
         </List>

@@ -14,7 +14,7 @@ import "rpc_list_user_friendships.proto";
 import "rpc_list_friend_requests.proto";
 import "rpc_accept_friend_request.proto";
 import "rpc_create_game.proto";
-import "rpc_invite_player_to_game.proto";
+import "rpc_invite_players_to_game.proto";
 import "rpc_accept_game_invite.proto";
 import "rpc_list_game_invites.proto";
 // import "rpc_add_player_to_game.proto";
@@ -155,7 +155,7 @@ service Desserted {
         summary: "Create new game";
       };
     };
-    rpc InvitePlayerToGame (InvitePlayerToGameRequest) returns (google.protobuf.Empty) {
+    rpc InvitePlayersToGame (InvitePlayersToGameRequest) returns (google.protobuf.Empty) {
       option (google.api.http) = {    
           post: "/v1/invite_player_to_game"
           body: "*"
