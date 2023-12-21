@@ -15,8 +15,6 @@ axiosRetry(axiosInstance, { retries: 3, retryDelay: axiosRetry.exponentialDelay 
 
 axiosInstance.interceptors.request.use(config => {
     const token = Cookie.get('access_token');
-    console.log("Token:", token); // Add this line to log the token
-
     if (token && !config.url.endsWith('/check_session')) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,19 +27,27 @@ axiosInstance.interceptors.response.use(
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
+            const refreshToken = Cookie.get('refresh_token');
+            if (!refreshToken) {
+                // Redirect to login or handle lack of refresh token
+                return Promise.reject(error);
+            }
             try {
-                const { data } = await axiosInstance.post('/renew_access');
+                const { data } = await axiosInstance.post('/renew_access', { refresh_token: refreshToken });
                 Cookie.set('access_token', data.access_token);
                 axiosInstance.defaults.headers.Authorization = `Bearer ${data.access_token}`;
+                originalRequest.headers['Authorization'] = `Bearer ${data.access_token}`;
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
                 console.error("Unable to refresh token", refreshError);
+                // Handle failed refresh (e.g., redirect to login)
                 return Promise.reject(refreshError);
             }
         }
         return Promise.reject(error);
     }
 );
+
 const handleRequestError = (error, action) => {
     console.error(`Error during ${action}:`, error?.response || error);
     throw error;
@@ -102,9 +108,9 @@ const apiService = {
     },
     
 
-    createGame: async (gameData) => {
+    createGame: async (created_by) => {
         try {
-            const response = await axiosInstance.post('/v1/create_game', gameData);
+            const response = await axiosInstance.post('/v1/create_game', created_by);
             return response.data;
         } catch (error) {
             handleRequestError(error, 'creating game');
@@ -120,10 +126,16 @@ const apiService = {
         }
     },
 
-    listFriendRequests: async (userId) => {
+    listFriendRequests: async (user_id) => {
         try {
-            const response = await axiosInstance.get(`/v1/list_friend_requests/${userId}`);
-            return response.data.friendRequests;
+            const response = await axiosInstance.get(`/v1/list_friend_requests/${user_id}`);
+            const friendRequests = response.data.friend_requests.map(fr => ({
+                friendshipId: fr.friendship_id,
+                frienderId: fr.friender_id,
+                frienderUsername: fr.friender_username,
+                friendedAt: new Date(fr.friended_at.seconds * 1000) // Convert to JavaScript Date object
+            }));
+            return friendRequests;
         } catch (error) {
             handleRequestError(error, 'listing friend requests');
         }
@@ -154,6 +166,16 @@ const apiService = {
             handleRequestError(error, 'inviting player to game');
         }
     },
+
+    listGameInvites: async ({ user_id }) => {
+        try {
+            const response = await axiosInstance.get(`/v1/list_game_invites/${user_id}`);
+            return response.data;
+        } catch (error) {
+            handleRequestError(error, 'listing user friends');
+        }
+    },
+
 
     acceptGameInvite: async (inviteData) => {
         try {

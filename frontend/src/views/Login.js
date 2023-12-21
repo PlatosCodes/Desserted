@@ -54,17 +54,16 @@ const Login = () => {
 
     try {
       const response = await apiService.loginUser(formData);
-
-      const { access_token, session_id, user } = response;
-      if (access_token && session_id) {
-        Cookie.set('access_token', access_token);
-        Cookie.set('session_id', session_id);
-        dispatch(loginUser({ session_id, access_token, user }));
-        localStorage.setItem('userData', JSON.stringify(user));
-        localStorage.setItem('isAuthenticated', 'true');
-        navigate('/dashboard');
+      const { access_token, refresh_token, session_id, user } = response;
+      if (access_token && refresh_token && session_id) {
+          Cookie.set('access_token', access_token);
+          Cookie.set('refresh_token', refresh_token); // Save refresh token
+          Cookie.set('session_id', session_id);
+          dispatch(loginUser({ session_id, access_token, user }));
+          localStorage.setItem('userData', JSON.stringify(user));
+          localStorage.setItem('isAuthenticated', 'true');
+          navigate('/dashboard');
       } else {
-          // Handle the error if session_id or access_token is missing
           setError('Login failed. Please try again.');
       }
     } catch (err) {
