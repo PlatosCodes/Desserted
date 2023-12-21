@@ -32,3 +32,8 @@ SELECT EXISTS (
 -- name: ListPlayerGames :many
 SELECT * FROM player_game 
 WHERE player_id = $1;
+
+-- name: ListActivePlayerGames :many
+SELECT * FROM player_game 
+INNER JOIN games ON player_game.game_id = games.game_id
+WHERE player_id = $1 AND (games.status = 'active' OR games.status = 'pending') ;

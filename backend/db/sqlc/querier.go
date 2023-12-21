@@ -52,6 +52,7 @@ type Querier interface {
 	IsGameWon(ctx context.Context, playerGameID int64) (sql.NullBool, error)
 	IsUserGameCreator(ctx context.Context, arg IsUserGameCreatorParams) (bool, error)
 	ListActiveGames(ctx context.Context, arg ListActiveGamesParams) ([]Game, error)
+	ListActivePlayerGames(ctx context.Context, playerID int64) ([]ListActivePlayerGamesRow, error)
 	// List all cards
 	ListCardIDs(ctx context.Context) ([]int64, error)
 	// List all cards
@@ -68,7 +69,8 @@ type Querier interface {
 	RecordPlayedCard(ctx context.Context, arg RecordPlayedCardParams) error
 	RemoveCardFromDeck(ctx context.Context, arg RemoveCardFromDeckParams) error
 	RemoveCardFromPlayerHand(ctx context.Context, arg RemoveCardFromPlayerHandParams) error
-	StartGame(ctx context.Context, gameID int64) error
+	StartGame(ctx context.Context, arg StartGameParams) error
+	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) error
 	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
 	UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) (PlayerGame, error)
 	UpdatePlayerStatus(ctx context.Context, arg UpdatePlayerStatusParams) error

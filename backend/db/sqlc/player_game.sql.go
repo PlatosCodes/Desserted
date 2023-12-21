@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const addPlayerToGame = `-- name: AddPlayerToGame :exec
@@ -59,6 +60,63 @@ func (q *Queries) IsGameWon(ctx context.Context, playerGameID int64) (sql.NullBo
 	var is_game_won sql.NullBool
 	err := row.Scan(&is_game_won)
 	return is_game_won, err
+}
+
+const listActivePlayerGames = `-- name: ListActivePlayerGames :many
+SELECT player_game_id, player_id, player_game.game_id, player_score, player_status, games.game_id, status, created_by, current_turn, current_player_id, start_time, end_time FROM player_game 
+INNER JOIN games ON player_game.game_id = games.game_id
+WHERE player_id = $1 AND (games.status = 'active' OR games.status = 'pending')
+`
+
+type ListActivePlayerGamesRow struct {
+	PlayerGameID    int64          `json:"player_game_id"`
+	PlayerID        int64          `json:"player_id"`
+	GameID          int64          `json:"game_id"`
+	PlayerScore     sql.NullInt32  `json:"player_score"`
+	PlayerStatus    sql.NullString `json:"player_status"`
+	GameID_2        int64          `json:"game_id_2"`
+	Status          string         `json:"status"`
+	CreatedBy       int64          `json:"created_by"`
+	CurrentTurn     int32          `json:"current_turn"`
+	CurrentPlayerID sql.NullInt64  `json:"current_player_id"`
+	StartTime       time.Time      `json:"start_time"`
+	EndTime         sql.NullTime   `json:"end_time"`
+}
+
+func (q *Queries) ListActivePlayerGames(ctx context.Context, playerID int64) ([]ListActivePlayerGamesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listActivePlayerGames, playerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListActivePlayerGamesRow{}
+	for rows.Next() {
+		var i ListActivePlayerGamesRow
+		if err := rows.Scan(
+			&i.PlayerGameID,
+			&i.PlayerID,
+			&i.GameID,
+			&i.PlayerScore,
+			&i.PlayerStatus,
+			&i.GameID_2,
+			&i.Status,
+			&i.CreatedBy,
+			&i.CurrentTurn,
+			&i.CurrentPlayerID,
+			&i.StartTime,
+			&i.EndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listPlayerGames = `-- name: ListPlayerGames :many

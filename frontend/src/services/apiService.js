@@ -185,6 +185,16 @@ const apiService = {
         }
     },
 
+    listActivePlayerGames: async ({ player_id }) => {
+        try {
+            const response = await axiosInstance.get(`/v1/list_active_player_games/${player_id}`);
+            return response.data.player_games;
+        } catch (error) {
+            throw error;
+        }
+    },
+    
+
     listGamePlayers: async () => {
         try {
             const response = await axiosInstance.get('/v1/list_game_players');

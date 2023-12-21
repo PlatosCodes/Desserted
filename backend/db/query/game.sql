@@ -17,7 +17,13 @@ SELECT * FROM games
 LIMIT $1 OFFSET $2;
 
 -- name: StartGame :exec
-UPDATE games SET status = "active" 
+UPDATE games
+SET status = 'active', current_turn = 1, current_player_id = $2
+WHERE game_id = $1;
+
+-- name: UpdateGameState :exec
+UPDATE games
+SET current_turn = $2, current_player_id = $3, last_action_time = NOW()
 WHERE game_id = $1;
 
 -- name: UpdateGameStatus :exec

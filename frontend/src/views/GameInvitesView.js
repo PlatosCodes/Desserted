@@ -4,20 +4,42 @@ import { Container, Typography, CircularProgress, Button, List, ListItem, ListIt
 import { useSelector } from 'react-redux';
 import { selectUser } from '../features/user/userSlice';
 import { useGameInvites } from '../hooks/useGameInvites';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import apiService from '../services/apiService';
 
 const GameInvitesView = () => {
   const user = useSelector(selectUser);
-  const { data: gameInvites, isLoading, isError, error } = useGameInvites(user.id);
-  const acceptInviteMutation = useMutation(apiService.acceptGameInvite);
+  const queryClient = useQueryClient();
+  const { data: invitesData, isLoading, isError, error, refetch } = useGameInvites(user.id);
+  const gameInvites = invitesData?.game_invite ?? []; 
+
+  const acceptInviteMutation = useMutation(apiService.acceptGameInvite, {
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries(['gameInvites', user.id]);
+
+      const previousData = queryClient.getQueryData(['gameInvites', user.id]);
+      
+      queryClient.setQueryData(['gameInvites', user.id], oldData => ({
+        ...oldData,
+        game_invite: oldData.game_invite.filter(invite => invite.game_id !== variables.game_id),
+      }));
+
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['gameInvites', user.id], context.previousData);
+    },
+    onSettled: () => {
+      refetch();
+    },
+  });
 
   const handleAcceptInvite = (inviteId, gameId) => {
     acceptInviteMutation.mutate({ invitee_player_id: inviteId, game_id: gameId });
   };
 
   if (isLoading) return <CircularProgress />;
-  if (isError) return <Alert severity="error">{error.message}</Alert>; 
+  if (isError) return <Alert severity="error">{error.message}</Alert>;
 
   return (
     <Container>
@@ -25,7 +47,7 @@ const GameInvitesView = () => {
       {error && <Alert severity="error">{error}</Alert>}
       <List>
         {gameInvites.map(invite => (
-          <ListItem key={invite.game_id}>
+          <ListItem key={invite.game_invitation_id}>
             <ListItemText primary={`Game invite from player ID: ${invite.invitee_player_id} for game ID: ${invite.game_id}`} />
             <Button variant="contained" color="primary" onClick={() => handleAcceptInvite(invite.invitee_player_id, invite.game_id)}>
               Accept
@@ -38,5 +60,3 @@ const GameInvitesView = () => {
 };
 
 export default GameInvitesView;
-
-

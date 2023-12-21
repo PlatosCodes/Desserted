@@ -38,8 +38,8 @@ function App() {
                             <Header />
                             <Suspense fallback={<div>Loading...</div>}>
                                 <Routes>
-                                    <Route path="/login" element={<Login />} />
                                     <Route path="/register" element={<Register />} />
+                                    <Route path="/login" element={<Login />} />
                                     <Route path="/profile" element={<ProtectedRoute element={<UserProfile />} />} />
                                     <Route path="/update_profile" element={<ProtectedRoute element={<UpdateProfile />} />} />
                                     <Route path="/create_game" element={<ProtectedRoute element={<CreateGame />} />} />

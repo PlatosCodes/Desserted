@@ -31,6 +31,7 @@ const UserProfile = () => {
         e.preventDefault();
         updateProfileMutation.mutate(formData);
         dispatch(updateUserProfile(formData));
+        setFormData({ ...formData, password: '' });
     };
 
     return (

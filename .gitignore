@@ -13,3 +13,5 @@ pkg/
 ./frontend/src/end.txt
 
 *.txt
+
+websocket/

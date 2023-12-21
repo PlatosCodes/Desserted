@@ -7,12 +7,13 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createGame = `-- name: CreateGame :one
 INSERT INTO games (created_by) 
 VALUES ($1) 
-RETURNING game_id, status, created_by, start_time, end_time
+RETURNING game_id, status, created_by, current_turn, current_player_id, start_time, end_time
 `
 
 func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error) {
@@ -22,6 +23,8 @@ func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error)
 		&i.GameID,
 		&i.Status,
 		&i.CreatedBy,
+		&i.CurrentTurn,
+		&i.CurrentPlayerID,
 		&i.StartTime,
 		&i.EndTime,
 	)
@@ -53,7 +56,7 @@ func (q *Queries) EndGame(ctx context.Context, gameID int64) error {
 }
 
 const getGameByID = `-- name: GetGameByID :one
-SELECT game_id, status, created_by, start_time, end_time FROM games 
+SELECT game_id, status, created_by, current_turn, current_player_id, start_time, end_time FROM games 
 WHERE game_id = $1
 `
 
@@ -64,6 +67,8 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int64) (Game, error) {
 		&i.GameID,
 		&i.Status,
 		&i.CreatedBy,
+		&i.CurrentTurn,
+		&i.CurrentPlayerID,
 		&i.StartTime,
 		&i.EndTime,
 	)
@@ -71,7 +76,7 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int64) (Game, error) {
 }
 
 const listActiveGames = `-- name: ListActiveGames :many
-SELECT game_id, status, created_by, start_time, end_time FROM games 
+SELECT game_id, status, created_by, current_turn, current_player_id, start_time, end_time FROM games 
 LIMIT $1 OFFSET $2
 `
 
@@ -93,6 +98,8 @@ func (q *Queries) ListActiveGames(ctx context.Context, arg ListActiveGamesParams
 			&i.GameID,
 			&i.Status,
 			&i.CreatedBy,
+			&i.CurrentTurn,
+			&i.CurrentPlayerID,
 			&i.StartTime,
 			&i.EndTime,
 		); err != nil {
@@ -151,12 +158,35 @@ func (q *Queries) ListGamePlayers(ctx context.Context, arg ListGamePlayersParams
 }
 
 const startGame = `-- name: StartGame :exec
-UPDATE games SET status = "active" 
+UPDATE games
+SET status = 'active', current_turn = 1, current_player_id = $2
 WHERE game_id = $1
 `
 
-func (q *Queries) StartGame(ctx context.Context, gameID int64) error {
-	_, err := q.db.ExecContext(ctx, startGame, gameID)
+type StartGameParams struct {
+	GameID          int64         `json:"game_id"`
+	CurrentPlayerID sql.NullInt64 `json:"current_player_id"`
+}
+
+func (q *Queries) StartGame(ctx context.Context, arg StartGameParams) error {
+	_, err := q.db.ExecContext(ctx, startGame, arg.GameID, arg.CurrentPlayerID)
+	return err
+}
+
+const updateGameState = `-- name: UpdateGameState :exec
+UPDATE games
+SET current_turn = $2, current_player_id = $3, last_action_time = NOW()
+WHERE game_id = $1
+`
+
+type UpdateGameStateParams struct {
+	GameID          int64         `json:"game_id"`
+	CurrentTurn     int32         `json:"current_turn"`
+	CurrentPlayerID sql.NullInt64 `json:"current_player_id"`
+}
+
+func (q *Queries) UpdateGameState(ctx context.Context, arg UpdateGameStateParams) error {
+	_, err := q.db.ExecContext(ctx, updateGameState, arg.GameID, arg.CurrentTurn, arg.CurrentPlayerID)
 	return err
 }
 

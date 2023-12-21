@@ -19,6 +19,7 @@ import "rpc_accept_game_invite.proto";
 import "rpc_list_game_invites.proto";
 // import "rpc_add_player_to_game.proto";
 import "rpc_list_game_players.proto";
+import "rpc_list_player_games.proto";
 import "rpc_get_player_game.proto";
 import "rpc_start_game.proto";
 import "rpc_get_player_hand.proto";
@@ -202,7 +203,25 @@ service Desserted {
         description: "Use this API to list the players of the game";
         summary: "List the game's players";
       };
-    };      
+    };    
+    rpc ListPlayerGames (ListPlayerGamesRequest) returns (ListPlayerGamesResponse) {
+      option (google.api.http) = {    
+          get: "/v1/list_player_games"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list the games for a player";
+        summary: "List the player's games";
+      };
+    };     
+    rpc ListActivePlayerGames (ListPlayerGamesRequest) returns (ListPlayerGamesResponse) {
+      option (google.api.http) = {    
+          get: "/v1/list_active_player_games/{player_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to list the active games for a player";
+        summary: "List the player's active games";
+      };
+    };     
     rpc GetPlayerGame (GetPlayerGameRequest) returns (GetPlayerGameResponse) {
       option (google.api.http) = {    
           get: "/v1/get_player_game/{player_game_id}"

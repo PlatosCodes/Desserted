@@ -21,9 +21,13 @@ CREATE TABLE games (
   game_id BIGSERIAL PRIMARY KEY,
   status VARCHAR(10) NOT NULL DEFAULT 'waiting',
   created_by BIGINT NOT NULL,
+  current_turn INT NOT NULL DEFAULT 0,
+  current_player_id BIGINT, 
   start_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   end_time TIMESTAMPTZ,
+  FOREIGN KEY (created_by) REFERENCES users(id),
   FOREIGN KEY (created_by) REFERENCES users(id)
+
 );
 CREATE INDEX idx_games_status ON games(status);
 
