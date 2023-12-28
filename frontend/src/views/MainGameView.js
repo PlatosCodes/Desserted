@@ -4,26 +4,40 @@ import { Container, Typography, CircularProgress, Alert } from '@mui/material';
 import GameBoard from './GameBoard';
 import { useGame } from '../context/GameContext';
 import apiService from '../services/apiService';
+import { connectWebSocket, closeWebSocket, sendMessage } from '../services/websocketService';
+import Cookie from 'js-cookie';
 
 const MainGameView = () => {
-    const { gameState, setGameState } = useContext(useGame);
+    const { gameState, updateGameState } = useContext(useGame);
 
     useEffect(() => {
         const fetchGameData = async () => {
             try {
                 const data = await apiService.getGameDetails();
-                setGameState(data);
+                console.log(data)
+                updateGameState(data);
             } catch (error) {
-                // Error handling
                 console.error('Failed to fetch game data:', error);
-                setGameState({ ...gameState, error: 'Failed to load game data.' });
+                updateGameState({ error: 'Failed to load game data.' });
             }
         };
 
         if (!gameState) {
             fetchGameData();
         }
-    }, [gameState, setGameState]);
+
+        // Connect to WebSocket
+        const token = Cookie.get('access_token');
+        const ws = connectWebSocket(token, (event) => {
+            const message = JSON.parse(event.data);
+            updateGameState(message);
+        });
+
+        // Clean up on unmount
+        return () => {
+            closeWebSocket();
+        };
+    }, [gameState, updateGameState]);
 
     if (!gameState) {
         return <Container><CircularProgress /></Container>;
@@ -36,7 +50,7 @@ const MainGameView = () => {
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Main Game</Typography>
-            <GameBoard />
+            <GameBoard gameState={gameState} />
         </Container>
     );
 };

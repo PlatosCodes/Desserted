@@ -28,6 +28,7 @@ func (server *Server) ListActivePlayerGames(ctx context.Context, req *pb.ListPla
 	playerGames := make([]*pb.PlayerGame, len(activeGames))
 	for i, game := range activeGames {
 		playerGames[i] = &pb.PlayerGame{
+			PlayerGame:   game.PlayerGameID,
 			PlayerId:     game.PlayerID,
 			GameId:       game.GameID,
 			PlayerScore:  game.PlayerScore.Int32,

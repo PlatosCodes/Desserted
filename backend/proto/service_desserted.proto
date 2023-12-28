@@ -14,6 +14,8 @@ import "rpc_list_user_friendships.proto";
 import "rpc_list_friend_requests.proto";
 import "rpc_accept_friend_request.proto";
 import "rpc_create_game.proto";
+import "rpc_get_game_by_id.proto";
+
 import "rpc_invite_players_to_game.proto";
 import "rpc_accept_game_invite.proto";
 import "rpc_list_game_invites.proto";
@@ -156,6 +158,15 @@ service Desserted {
         summary: "Create new game";
       };
     };
+    rpc GetGameByID (GetGameByIDRequest) returns (GetGameByIDResponse) {
+      option (google.api.http) = {    
+          get: "/v1/get_game_by_id/{game_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to get a game";
+        summary: "Get a game";
+      };
+    };
     rpc InvitePlayersToGame (InvitePlayersToGameRequest) returns (google.protobuf.Empty) {
       option (google.api.http) = {    
           post: "/v1/invite_player_to_game"
@@ -243,7 +254,7 @@ service Desserted {
     };   
     rpc GetPlayerHand (GetPlayerHandRequest) returns (GetPlayerHandResponse) {
       option (google.api.http) = {    
-          get: "/v1/get_player_hand"
+          get: "/v1/get_player_hand/{player_game_id}"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
         description: "Use this API to get a player's hand";

@@ -13,6 +13,7 @@ import (
 	"github.com/PlatosCodes/desserted/backend/gapi"
 	"github.com/PlatosCodes/desserted/backend/pb"
 	"github.com/PlatosCodes/desserted/backend/util"
+	"github.com/PlatosCodes/desserted/backend/ws"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -41,6 +42,7 @@ func main() {
 	runDBMigration(config.MigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
+
 	go runGatewayServer(config, store) //run in a separate routine
 	runGrpcServer(config, store)
 }
@@ -57,7 +59,7 @@ func runDBMigration(migrationURL string, dbSource string) {
 }
 
 func runGrpcServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+	server, _, err := gapi.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server")
 	}
@@ -84,7 +86,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 var swagger embed.FS
 
 func runGatewayServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+	server, tokenMaker, err := gapi.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server")
 	}
@@ -111,6 +113,13 @@ func runGatewayServer(config util.Config, store db.Store) {
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
 
+	wsHub := ws.NewHub()
+	go wsHub.Run() // Run WebSocket Hub in its own goroutine
+
+	mux.Handle("/ws", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ws.ServeWs(wsHub, w, r, config, store, tokenMaker)
+	}))
+
 	// Create a sub filesystem that contains the swagger files
 	swaggerFiles, err := fs.Sub(swagger, "doc/swagger")
 	if err != nil {
@@ -120,7 +129,7 @@ func runGatewayServer(config util.Config, store db.Store) {
 	mux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.FS(swaggerFiles))))
 
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Adjust as needed
+		AllowedOrigins:   []string{config.FrontendAddress}, // Adjust as needed
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type", "X-Requested-With"},
 		AllowCredentials: true,

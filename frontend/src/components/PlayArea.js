@@ -2,19 +2,11 @@
 import React, { useState } from 'react';
 import { Paper, Typography, Button, Chip, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import apiService from '../services/apiService';
+import { sendMessage } from '../services/websocketService';
 
-const PlayArea = ({ playerGameId, playerHand, refreshPlayerData }) => {
-    const [selectedCards, setSelectedCards] = useState([]);
+const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, fetchPlayerHand, playerHand }) => {
     const [dessertName, setDessertName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-
-    const handleCardSelect = (cardId) => {
-        if (selectedCards.includes(cardId)) {
-            setSelectedCards(selectedCards.filter(id => id !== cardId));
-        } else {
-            setSelectedCards([...selectedCards, cardId]);
-        }
-    };
 
     const handlePlayDessert = async () => {
         if (!dessertName || selectedCards.length === 0) {
@@ -23,11 +15,19 @@ const PlayArea = ({ playerGameId, playerHand, refreshPlayerData }) => {
         }
 
         try {
-            const response = await apiService.playDessert({ playerGameId, dessertName, cardIds: selectedCards });
-            console.log(response);
+            // Preparing the data for the WebSocket message
+            const dessertData = {
+                player_game_id: parseInt(playerGameId, 10),
+                dessert_name: dessertName,
+                card_ids: selectedCards.map(card_id => parseInt(card_id, 10))
+            };
+            
+            // Sending the message through WebSocket
+            sendMessage({ type: 'playDessert', data: dessertData });
+
+            // Resetting the selected cards and updating the player's hand
             setSelectedCards([]);
-            setDessertName('');
-            refreshPlayerData();
+            fetchPlayerHand();
         } catch (error) {
             console.error('Error playing dessert:', error);
             setErrorMessage('Failed to play dessert. Please try again.');
@@ -39,7 +39,7 @@ const PlayArea = ({ playerGameId, playerHand, refreshPlayerData }) => {
             <Typography variant="h6">Play Area</Typography>
             <Stack direction="row" spacing={1}>
                 {selectedCards.map((cardId, index) => (
-                    <Chip key={index} label={playerHand.find(card => card.id === cardId).name} />
+                    <Chip key={index} label={playerHand.find(card => card.card_id === cardId).card_name} />
                 ))}
             </Stack>
             <FormControl fullWidth>
@@ -52,7 +52,10 @@ const PlayArea = ({ playerGameId, playerHand, refreshPlayerData }) => {
                 >
                     {/* List of desserts */}
                     <MenuItem value="Cake">Cake</MenuItem>
+                    <MenuItem value="Pie">Pie</MenuItem>
+                    <MenuItem value="Chocolate Chip Cookies">Chocolate Chip Cookies</MenuItem>
                     {/* Add other dessert options here */}
+
                 </Select>
             </FormControl>
             <Button variant="contained" color="primary" onClick={handlePlayDessert} style={{ marginTop: '10px' }}>
