@@ -21,7 +21,6 @@ const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, fetchPlayerHa
                 dessert_name: dessertName,
                 card_ids: selectedCards.map(card_id => parseInt(card_id, 10))
             };
-            
             // Sending the message through WebSocket
             sendMessage({ type: 'playDessert', data: dessertData });
 

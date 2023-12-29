@@ -2,6 +2,7 @@
 import React from 'react';
 import { Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
 
+
 const Scoreboard = ({ players }) => {
     return (
         <Paper elevation={3} style={{ padding: '20px' }}>

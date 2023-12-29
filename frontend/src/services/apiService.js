@@ -195,7 +195,6 @@ const apiService = {
     listActivePlayerGames: async ({ player_id }) => {
         try {
             const response = await axiosInstance.get(`/v1/list_active_player_games/${player_id}`);
-            console.log("HERRE WE GOOOO" , response)
             return response.data.player_games;
         } catch (error) {
             throw error;
@@ -211,9 +210,9 @@ const apiService = {
         }
     },
 
-    startGame: async (startData) => {
+    startGame: async ( game_id ) => {
         try {
-            const response = await axios.post('/api/start_game', startData);
+            const response = await axiosInstance.post(`/v1/start_game`,  { game_id }  );
             return response.data;
         } catch (error) {
             handleRequestError(error, 'starting game');

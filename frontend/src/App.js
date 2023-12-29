@@ -46,7 +46,7 @@ function App() {
                                     <Route path="/create_game" element={<ProtectedRoute element={<CreateGame />} />} />
                                     <Route path="/game-invites" element={<ProtectedRoute element={<GameInvitesView />} />} />
                                     <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
-                                    <Route path="/gameboard/:game_id" element={<GameBoard />} />
+                                    <Route path="/gameboard/:game_id/:player_game_id" element={<GameBoard />} />
                                     <Route path="/friends" element={<ProtectedRoute element={<FriendsView />} />} />
                                     <Route path="/friend_requests" element={<ProtectedRoute element={<ListFriendRequestsView />} />} />
                                     <Route path="/my-games" element={<ProtectedRoute element={<UserGamesView />} />} />

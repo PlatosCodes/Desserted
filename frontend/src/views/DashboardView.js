@@ -6,30 +6,33 @@ import { Container, Typography, Button, CircularProgress, Alert } from '@mui/mat
 import { selectUser } from '../features/user/userSlice';
 import { useActivePlayerGames } from '../hooks/useActivePlayerGames';
 import apiService from '../services/apiService';
+import { useQueryClient } from 'react-query';
+
 // import { useGame } from '../context/GameContext';
 
 
 const DashboardView = () => {
     // const { gameState, updateGameState } = useContext(useGame);
-
     const user = useSelector(selectUser);
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { data: activeGames, isLoading, isError, error } = useActivePlayerGames(user.id);
-    console.log("Active Games: ", activeGames)
-    const handleGameClick = async (game_id) => {
+    const handleGameClick = async (game_id, player_game_id) => {
         try {
             const data = await apiService.getGameDetails(game_id);
-            navigate(`/gameboard/${game_id}`);
+            navigate(`/gameboard/${game_id}/${player_game_id}`);
         } catch (error) {
             // handle error
             console.log(error);
         }
     };
 
-    const handleStartGame = async (gameId) => {
+    const handleStartGame = async (game_id) => {
         try {
-            await apiService.startGame({ game_id: gameId });
-            // Handle post-start game logic (e.g., refresh game list)
+            await apiService.startGame(game_id);
+            // const updatedActiveGames = await apiService.listActivePlayerGames({ player_id: user.id });
+            queryClient.invalidateQueries(['activePlayerGames', user.id]);
+
         } catch (error) {
             console.error("Error starting game:", error);
         }
@@ -48,12 +51,13 @@ const DashboardView = () => {
                     <div key={index}>
                         <Button 
                             variant="outlined"
-                            onClick={() => handleGameClick(game.game_id)}
+                            onClick={() => handleGameClick(game.game_id, game.player_game)}
                         >
                             Game ID: {game.game_id}, Status: {game.status}, Player Game ID: {game.player_game}, Creator: { game.created_by }
                         </Button>
                         {game.status === 'waiting' && game.created_by === user.id && (
-                            <Button onClick={() => handleStartGame(game.game_id)}>Start Game</Button>
+                            <Button onClick={() => 
+                                handleStartGame(game.game_id)}>Start Game</Button>
                         )}
                         {game.status === 'waiting' && game.created_by !== user.id && (
                             <Typography>Waiting for creator to start.</Typography>

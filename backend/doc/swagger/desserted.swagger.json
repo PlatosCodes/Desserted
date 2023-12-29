@@ -1315,10 +1315,6 @@
     "pbStartGameRequest": {
       "type": "object",
       "properties": {
-        "creatorId": {
-          "type": "string",
-          "format": "int64"
-        },
         "gameId": {
           "type": "string",
           "format": "int64"

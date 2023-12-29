@@ -1,37 +1,60 @@
 // src/views/GameBoard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { Container, Grid, Typography, Button } from '@mui/material';
+import { Container, Grid, Typography, Button, CircularProgress } from '@mui/material';
 import Hand from '../components/Hand';
 import PlayArea from '../components/PlayArea';
-import Scoreboard from '../components/Scoreboard'
+import Scoreboard from '../components/Scoreboard';
 import { connectWebSocket, sendMessage, closeWebSocket } from '../services/websocketService';
 import { selectUser } from '../features/user/userSlice';
 import Cookie from 'js-cookie';
 import apiService from '../services/apiService';
 import { useParams } from 'react-router-dom';
 
-
 const GameBoardView = () => {
     const user = useSelector(selectUser);
-    const { game_id } = useParams();
+    const { game_id, player_game_id } = useParams();
     const [playerHand, setPlayerHand] = useState([]);
     const [selectedCards, setSelectedCards] = useState([]);
     const [playerScores, setPlayerScores] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const token = Cookie.get('access_token');
         const ws = connectWebSocket(token, handleMessage);
+        
+        // Reset the game state and fetch new data when game_id changes
+        resetGameState();
         fetchPlayerHand();
 
-        return () => closeWebSocket();
-    }, [user.id]);
+        return () => {
+            closeWebSocket();
+            resetGameState(); 
+        };
+    }, [user.id, game_id]);
+
+    const resetGameState = () => {
+        setPlayerHand([]);
+        setSelectedCards([]);
+        setPlayerScores([]);
+    };
+
+    const fetchPlayerHand = async () => {
+        setIsLoading(true);
+        try {
+            const handData = await apiService.getPlayerHand(player_game_id);
+            setPlayerHand(handData.player_hand);
+        } catch (error) {
+            console.error('Error fetching player hand:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchScores = async () => {
             try {
                 const playersData = await apiService.listGamePlayers( {game_id: parseInt(game_id, 10) });
-                console.log("We trying here", playersData)
                 setPlayerScores(playersData.players.map(player => ({
                     id: player.player_id,
                     // name: player.username, // Adjust according to your data structure
@@ -55,7 +78,6 @@ const GameBoardView = () => {
         }
     
         if (data.type === 'scoreUpdate' && Array.isArray(data.players)) {
-            console.log("Score Update Received:", data.players); // Debugging log
             setPlayerScores(data.players.map(player => ({
                 id: player.player_id,
                 score: typeof player.player_score === 'object' ? 
@@ -65,16 +87,6 @@ const GameBoardView = () => {
             fetchPlayerHand();
         }
     }, [playerHand, playerScores]);
-    
-
-    const fetchPlayerHand = async () => {
-        try {
-            const handData = await apiService.getPlayerHand(user.id);
-            setPlayerHand(handData.player_hand);
-        } catch (error) {
-            console.error('Error fetching player hand:', error);
-        }
-    };
 
     const handleCardSelect = (cardId) => {
         setSelectedCards(prevSelectedCards => {
@@ -101,7 +113,7 @@ const GameBoardView = () => {
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <PlayArea
-                        playerGameId={user.id}
+                        playerGameId={player_game_id}
                         selectedCards={selectedCards}
                         setSelectedCards={setSelectedCards}
                         fetchPlayerHand={fetchPlayerHand}
