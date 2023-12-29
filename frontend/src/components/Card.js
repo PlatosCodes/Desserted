@@ -114,31 +114,3 @@ const Card = ({ ingredient, desserts, onSelect }) => {
 };
 
 export default Card;
-
-
-
-//   return (
-//     <CardContainer initial={{ scale: 0 }}
-//                 animate={{ scale: 1, rotateY: isSelected ? 180 : 0 }}
-//                 transition={{ type: "spring", stiffness: 260, damping: 20 }} whileHover={{ scale: 1.05 }}>
-//         <CardInner> 
-//             <CardFront>
-//               {/* <CardImage src={`/images/${ingredient.card_name.toLowerCase()}.webp`} alt={ingredient.card_name} /> */}
-//                 <CardImage src={`/images/egg.webp`} alt={ingredient.name} />
-//                 <DessertIcons>
-//                 {/* {desserts.map(dessert => (
-//                     // <DessertIcon key={dessert.id} src={`/images/${dessert.icon}`} alt={dessert.name} />
-//                     <DessertIcon key={dessert.id} src={`/images/cake.webp`} alt={dessert.name} />
-//                 ))} */}
-//                 </DessertIcons>
-//             </CardFront>
-//             <CardBack>
-//                 {/* Back card content, like a logo or pattern */}
-//                 <p>Desserted</p>
-//             </CardBack>
-//         </CardInner>
-//     </CardContainer>
-//     );
-// };
-
-// export default Card;

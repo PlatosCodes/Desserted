@@ -9,7 +9,7 @@ const Scoreboard = ({ players }) => {
             <List>
                 {players.map(player => (
                     <ListItem key={player.id}>
-                        <ListItemText primary={player.name} secondary={`Score: ${player.score}`} />
+                        <ListItemText primary={`Player ${player.id}`} secondary={`Score: ${player.score}`} />
                     </ListItem>
                 ))}
             </List>

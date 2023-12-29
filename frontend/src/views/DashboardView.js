@@ -15,7 +15,7 @@ const DashboardView = () => {
     const user = useSelector(selectUser);
     const navigate = useNavigate();
     const { data: activeGames, isLoading, isError, error } = useActivePlayerGames(user.id);
-    console.log(activeGames)
+    console.log("Active Games: ", activeGames)
     const handleGameClick = async (game_id) => {
         try {
             const data = await apiService.getGameDetails(game_id);
@@ -23,6 +23,15 @@ const DashboardView = () => {
         } catch (error) {
             // handle error
             console.log(error);
+        }
+    };
+
+    const handleStartGame = async (gameId) => {
+        try {
+            await apiService.startGame({ game_id: gameId });
+            // Handle post-start game logic (e.g., refresh game list)
+        } catch (error) {
+            console.error("Error starting game:", error);
         }
     };
     
@@ -33,15 +42,23 @@ const DashboardView = () => {
         <Container aligncontent={'center'}>
             <Typography variant="h4" textAlign={'center'}>Welcome to Desserted, {user?.username}</Typography>
             <Typography variant="h5">Your Active Games</Typography>
+            {/* Loop through games and categorize based on status */}
             {activeGames && activeGames.length > 0 ? (
                 activeGames.map((game, index) => (
-                    <Button 
-                        key={index}
-                        variant="outlined"
-                        onClick={() => handleGameClick(game.game_id)}
-                    >
-                        Game ID: {game.game_id}, Status: {game.player_status}, PlayerGameID: {game.player_game}
-                    </Button>
+                    <div key={index}>
+                        <Button 
+                            variant="outlined"
+                            onClick={() => handleGameClick(game.game_id)}
+                        >
+                            Game ID: {game.game_id}, Status: {game.status}, Player Game ID: {game.player_game}, Creator: { game.created_by }
+                        </Button>
+                        {game.status === 'waiting' && game.created_by === user.id && (
+                            <Button onClick={() => handleStartGame(game.game_id)}>Start Game</Button>
+                        )}
+                        {game.status === 'waiting' && game.created_by !== user.id && (
+                            <Typography>Waiting for creator to start.</Typography>
+                        )}
+                    </div>
                 ))
             ) : (
                 <Typography>No active games found.</Typography>

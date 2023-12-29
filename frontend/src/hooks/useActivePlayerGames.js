@@ -7,6 +7,7 @@ export const useActivePlayerGames = (userId) => {
     ['activePlayerGames', userId],
     async () => {
       const response = await apiService.listActivePlayerGames({ player_id: userId });
+      console.log("RESPONSE: ", response)
       return response; 
     },
     { enabled: !!userId }

@@ -208,7 +208,7 @@ service Desserted {
     // };   
     rpc ListGamePlayers (ListGamePlayersRequest) returns (ListGamePlayersResponse) {
       option (google.api.http) = {    
-          get: "/v1/list_game_players"
+          get: "/v1/list_game_players/{game_id}"
       };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
         description: "Use this API to list the players of the game";

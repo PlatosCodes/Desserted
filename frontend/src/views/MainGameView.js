@@ -14,7 +14,6 @@ const MainGameView = () => {
         const fetchGameData = async () => {
             try {
                 const data = await apiService.getGameDetails();
-                console.log(data)
                 updateGameState(data);
             } catch (error) {
                 console.error('Failed to fetch game data:', error);

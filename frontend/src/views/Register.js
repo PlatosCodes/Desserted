@@ -51,7 +51,6 @@ const Register = () => {
           setError('An unexpected error occurred.');
         }
       } else if (error.response?.status === 400) {
-        console.log("yo",error.response.data.message)
         setError('Invalid password. Please make sure password is between 6 and 100 characters.');
       } else {
         setError('An unexpected error occurred.');

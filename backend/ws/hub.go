@@ -1,10 +1,5 @@
 package ws
 
-import (
-	"encoding/json"
-	"log"
-)
-
 // Hub maintains the set of active clients and broadcasts messages to the clients.
 type Hub struct {
 	clients    map[*Client]bool // Registered clients.
@@ -43,23 +38,6 @@ func (h *Hub) Run() {
 					delete(h.clients, client)
 				}
 			}
-		}
-	}
-}
-
-func (h *Hub) broadcastScores(scores []int64) {
-	scoreData, err := json.Marshal(scores)
-	if err != nil {
-		log.Printf("Error marshaling scores: %v", err)
-		return
-	}
-
-	for client := range h.clients {
-		select {
-		case client.send <- scoreData:
-		default:
-			close(client.send)
-			delete(h.clients, client)
 		}
 	}
 }

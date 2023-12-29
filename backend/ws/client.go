@@ -107,36 +107,40 @@ func (c *Client) writePump() {
 		ticker.Stop()
 		c.conn.Close()
 	}()
+
 	for {
 		select {
 		case message, ok := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				// The Hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 
+			c.mutex.Lock() // Lock for writing
 			w, err := c.conn.NextWriter(websocket.TextMessage)
+			if err == nil {
+				w.Write(message)
+				n := len(c.send)
+				for i := 0; i < n; i++ {
+					w.Write(<-c.send)
+				}
+				err = w.Close()
+			}
+			c.mutex.Unlock() // Unlock after writing
+
 			if err != nil {
 				return
 			}
-			w.Write(message)
 
-			// Add queued messages to the current WebSocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(<-c.send)
-			}
-
-			if err := w.Close(); err != nil {
-				return
-			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			c.mutex.Lock() // Lock for writing ping
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				c.mutex.Unlock() // Unlock before returning
 				return
 			}
+			c.mutex.Unlock() // Unlock after writing ping
 		}
 	}
 }

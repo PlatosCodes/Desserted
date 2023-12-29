@@ -331,9 +331,14 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 			return fmt.Errorf("error recording dessert played: %w", err)
 		}
 
+		currPlayer, err := q.GetPlayerGame(ctx, arg.PlayerGameID)
+		if err != nil {
+			return fmt.Errorf("error getting player's previous score: %w", err)
+		}
+
 		updatedPlayerGame, err := q.UpdatePlayerScore(ctx, UpdatePlayerScoreParams{
 			PlayerGameID: arg.PlayerGameID,
-			PlayerScore:  sql.NullInt32{Int32: dessert.Points, Valid: true},
+			PlayerScore:  sql.NullInt32{Int32: currPlayer.PlayerScore.Int32 + dessert.Points, Valid: true},
 		})
 		if err != nil {
 			return fmt.Errorf("error updating player's score: %w", err)

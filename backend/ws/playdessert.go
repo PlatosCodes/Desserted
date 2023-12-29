@@ -6,7 +6,6 @@ import (
 	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
-	"github.com/gorilla/websocket"
 )
 
 // PlayDessertPayload mirrors the PlayDessertRequest from gRPC
@@ -35,7 +34,6 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 	var playDessertPayload PlayDessertPayload
 	if err := json.Unmarshal(payload, &playDessertPayload); err != nil {
 		log.Printf("Error unmarshaling play dessert payload: %v", err)
-		// Ideally, send an error message back to the client
 		return
 	}
 
@@ -43,7 +41,6 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 	defer c.mutex.Unlock()
 
 	ctx := context.Background()
-
 	result, err := c.store.PlayDessertTx(ctx, db.PlayDessertTxParams{
 		PlayerGameID: playDessertPayload.PlayerGameID,
 		DessertName:  playDessertPayload.DessertName,
@@ -51,30 +48,55 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 	})
 
 	if err != nil {
-		log.Println("and the error is:", err)
-		// Handle error, send response back to client
+		log.Println("Error processing PlayDessertTx:", err)
 		return
 	}
 
-	// Convert protobuf response to custom JSON struct
-	responseJSON := PlayDessertResponseJSON{
-		DessertPlayedId: result.DessertPlayedID,
-		PlayerGame: &PlayerGameJSON{
-			PlayerGame:   result.PlayerGame.PlayerGameID,
-			PlayerId:     result.PlayerGame.PlayerID,
-			GameId:       result.PlayerGame.GameID,
-			PlayerScore:  result.PlayerGame.PlayerScore.Int32,
-			PlayerStatus: result.PlayerGame.PlayerStatus.String,
-		},
-		GameOver: result.GameOver,
-	}
-
-	// Now marshal and send this custom struct
-	data, err := json.Marshal(responseJSON)
+	// Fetch updated scores
+	updatedPlayers, err := c.store.ListGamePlayers(ctx, db.ListGamePlayersParams{
+		GameID: result.PlayerGame.GameID,
+		Limit:  10,
+		Offset: 0,
+	})
 	if err != nil {
-		log.Printf("Error marshaling response: %v", err)
-		// Send error back to client
+		log.Printf("Error fetching updated game scores: %v", err)
 		return
 	}
-	c.conn.WriteMessage(websocket.TextMessage, data)
+
+	log.Println("SCORE UPDATE: ", updatedPlayers, "FOR PLAYER: ", playDessertPayload.PlayerGameID)
+	// Prepare and send score update message to all clients
+	scoreUpdateMsg := prepareScoreUpdateMessage(updatedPlayers)
+	c.hub.broadcast <- scoreUpdateMsg
+}
+
+func prepareScoreUpdateMessage(players []db.PlayerGame) []byte {
+	// Define a struct for the message
+	type ScoreUpdate struct {
+		Type    string           `json:"type"`
+		Players []PlayerGameJSON `json:"players"`
+	}
+
+	var scoreData []PlayerGameJSON
+	for _, player := range players {
+		scoreData = append(scoreData, PlayerGameJSON{
+			PlayerGame:   player.PlayerGameID,
+			PlayerId:     player.PlayerID,
+			GameId:       player.GameID,
+			PlayerScore:  player.PlayerScore.Int32,
+			PlayerStatus: player.PlayerStatus.String,
+		})
+	}
+
+	updateMsg := ScoreUpdate{
+		Type:    "scoreUpdate",
+		Players: scoreData,
+	}
+
+	msg, err := json.Marshal(updateMsg)
+	if err != nil {
+		log.Printf("Error marshaling score update message: %v", err)
+		return nil
+	}
+
+	return msg
 }

@@ -75,6 +75,48 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int64) (Game, error) {
 	return i, err
 }
 
+const getGameScores = `-- name: GetGameScores :many
+SELECT 
+  users.id AS id,
+  users.username,
+  player_game.player_score
+FROM 
+  player_game
+INNER JOIN 
+  users ON player_game.player_id = users.id
+WHERE 
+  player_game.game_id = $1
+`
+
+type GetGameScoresRow struct {
+	ID          int64         `json:"id"`
+	Username    string        `json:"username"`
+	PlayerScore sql.NullInt32 `json:"player_score"`
+}
+
+func (q *Queries) GetGameScores(ctx context.Context, gameID int64) ([]GetGameScoresRow, error) {
+	rows, err := q.db.QueryContext(ctx, getGameScores, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetGameScoresRow{}
+	for rows.Next() {
+		var i GetGameScoresRow
+		if err := rows.Scan(&i.ID, &i.Username, &i.PlayerScore); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listActiveGames = `-- name: ListActiveGames :many
 SELECT game_id, status, created_by, current_turn, current_player_id, start_time, end_time FROM games 
 LIMIT $1 OFFSET $2

@@ -25,7 +25,7 @@ const HandContainer = styled.div`
 
 const Hand = ({ cards, onCardSelect, selectedCards }) => (
   <HandContainer>
-      {cards.map(card => (
+      {cards?.map(card => (
           <Card
               key={card.player_hand_id}
               ingredient={card}

@@ -54,6 +54,10 @@ const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, fetchPlayerHa
                     <MenuItem value="Cake">Cake</MenuItem>
                     <MenuItem value="Pie">Pie</MenuItem>
                     <MenuItem value="Chocolate Chip Cookies">Chocolate Chip Cookies</MenuItem>
+                    <MenuItem value="Cheesecake">Cheesecake</MenuItem>
+                    <MenuItem value="SaffronPannaCotta">Saffron Panna Cotta</MenuItem>
+
+
                     {/* Add other dessert options here */}
 
                 </Select>

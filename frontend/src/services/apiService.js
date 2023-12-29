@@ -87,7 +87,6 @@ const apiService = {
     verifySession: async () => {
         try {
             const sessionId = Cookie.get("session_id");
-            console.log(sessionId)
             if (!sessionId) {
                 return { isAuthenticated: false };
             }
@@ -196,16 +195,16 @@ const apiService = {
     listActivePlayerGames: async ({ player_id }) => {
         try {
             const response = await axiosInstance.get(`/v1/list_active_player_games/${player_id}`);
+            console.log("HERRE WE GOOOO" , response)
             return response.data.player_games;
         } catch (error) {
             throw error;
         }
     },
     
-
-    listGamePlayers: async () => {
+    listGamePlayers: async ( { game_id }) => {
         try {
-            const response = await axiosInstance.get('/v1/list_game_players');
+            const response = await axiosInstance.get(`/v1/list_game_players/${game_id}`);
             return response.data;
         } catch (error) {
             handleRequestError(error, 'listing game players');
@@ -214,10 +213,11 @@ const apiService = {
 
     startGame: async (startData) => {
         try {
-            const response = await axiosInstance.post('/v1/start_game', startData);
+            const response = await axios.post('/api/start_game', startData);
             return response.data;
         } catch (error) {
             handleRequestError(error, 'starting game');
+            throw error;
         }
     },
 

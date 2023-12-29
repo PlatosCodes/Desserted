@@ -494,7 +494,7 @@
         ]
       }
     },
-    "/v1/list_game_players": {
+    "/v1/list_game_players/{gameId}": {
       "get": {
         "summary": "List the game's players",
         "description": "Use this API to list the players of the game",
@@ -516,24 +516,10 @@
         "parameters": [
           {
             "name": "gameId",
-            "in": "query",
-            "required": false,
+            "in": "path",
+            "required": true,
             "type": "string",
             "format": "int64"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
           }
         ],
         "tags": [
@@ -1254,6 +1240,9 @@
           "type": "string",
           "format": "int64"
         },
+        "status": {
+          "type": "string"
+        },
         "playerId": {
           "type": "string",
           "format": "int64"
@@ -1268,6 +1257,18 @@
         },
         "playerStatus": {
           "type": "string"
+        },
+        "createdBy": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currentTurn": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "currentPlayerId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
