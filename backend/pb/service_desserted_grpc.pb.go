@@ -31,6 +31,7 @@ const (
 	Desserted_ListFriendRequests_FullMethodName    = "/pb.Desserted/ListFriendRequests"
 	Desserted_AcceptFriendRequest_FullMethodName   = "/pb.Desserted/AcceptFriendRequest"
 	Desserted_CreateGame_FullMethodName            = "/pb.Desserted/CreateGame"
+	Desserted_GetGameByID_FullMethodName           = "/pb.Desserted/GetGameByID"
 	Desserted_InvitePlayersToGame_FullMethodName   = "/pb.Desserted/InvitePlayersToGame"
 	Desserted_ListGameInvites_FullMethodName       = "/pb.Desserted/ListGameInvites"
 	Desserted_AcceptGameInvite_FullMethodName      = "/pb.Desserted/AcceptGameInvite"
@@ -63,6 +64,7 @@ type DessertedClient interface {
 	ListFriendRequests(ctx context.Context, in *ListFriendRequestsRequest, opts ...grpc.CallOption) (*ListFriendRequestsResponse, error)
 	AcceptFriendRequest(ctx context.Context, in *AcceptFriendRequestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateGame(ctx context.Context, in *CreateGameRequest, opts ...grpc.CallOption) (*CreateGameResponse, error)
+	GetGameByID(ctx context.Context, in *GetGameByIDRequest, opts ...grpc.CallOption) (*GetGameByIDResponse, error)
 	InvitePlayersToGame(ctx context.Context, in *InvitePlayersToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListGameInvites(ctx context.Context, in *ListGameInvitesRequest, opts ...grpc.CallOption) (*ListGameInvitesResponse, error)
 	AcceptGameInvite(ctx context.Context, in *AcceptGameInviteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -193,6 +195,15 @@ func (c *dessertedClient) CreateGame(ctx context.Context, in *CreateGameRequest,
 	return out, nil
 }
 
+func (c *dessertedClient) GetGameByID(ctx context.Context, in *GetGameByIDRequest, opts ...grpc.CallOption) (*GetGameByIDResponse, error) {
+	out := new(GetGameByIDResponse)
+	err := c.cc.Invoke(ctx, Desserted_GetGameByID_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *dessertedClient) InvitePlayersToGame(ctx context.Context, in *InvitePlayersToGameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Desserted_InvitePlayersToGame_FullMethodName, in, out, opts...)
@@ -311,6 +322,7 @@ type DessertedServer interface {
 	ListFriendRequests(context.Context, *ListFriendRequestsRequest) (*ListFriendRequestsResponse, error)
 	AcceptFriendRequest(context.Context, *AcceptFriendRequestRequest) (*emptypb.Empty, error)
 	CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error)
+	GetGameByID(context.Context, *GetGameByIDRequest) (*GetGameByIDResponse, error)
 	InvitePlayersToGame(context.Context, *InvitePlayersToGameRequest) (*emptypb.Empty, error)
 	ListGameInvites(context.Context, *ListGameInvitesRequest) (*ListGameInvitesResponse, error)
 	AcceptGameInvite(context.Context, *AcceptGameInviteRequest) (*emptypb.Empty, error)
@@ -371,6 +383,9 @@ func (UnimplementedDessertedServer) AcceptFriendRequest(context.Context, *Accept
 }
 func (UnimplementedDessertedServer) CreateGame(context.Context, *CreateGameRequest) (*CreateGameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGame not implemented")
+}
+func (UnimplementedDessertedServer) GetGameByID(context.Context, *GetGameByIDRequest) (*GetGameByIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGameByID not implemented")
 }
 func (UnimplementedDessertedServer) InvitePlayersToGame(context.Context, *InvitePlayersToGameRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvitePlayersToGame not implemented")
@@ -612,6 +627,24 @@ func _Desserted_CreateGame_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DessertedServer).CreateGame(ctx, req.(*CreateGameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_GetGameByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGameByIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).GetGameByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_GetGameByID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).GetGameByID(ctx, req.(*GetGameByIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -864,6 +897,10 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateGame",
 			Handler:    _Desserted_CreateGame_Handler,
+		},
+		{
+			MethodName: "GetGameByID",
+			Handler:    _Desserted_GetGameByID_Handler,
 		},
 		{
 			MethodName: "InvitePlayersToGame",

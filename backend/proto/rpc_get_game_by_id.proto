@@ -2,14 +2,14 @@ syntax = "proto3";
 
 package pb;
 
-import "player_game.proto";
+import "game.proto";
 
 option go_package = "github.com/PlatosCodes/desserted/backend/pb";
 
-message ListGamePlayersRequest {
+message GetGameByIDRequest {
     int64 game_id = 1;
   }
   
-  message ListGamePlayersResponse {
-    repeated PlayerGame players = 1;
+  message GetGameByIDResponse {
+    Game game = 1;
   }

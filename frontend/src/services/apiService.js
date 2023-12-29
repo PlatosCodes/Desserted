@@ -87,7 +87,6 @@ const apiService = {
     verifySession: async () => {
         try {
             const sessionId = Cookie.get("session_id");
-            console.log(sessionId)
             if (!sessionId) {
                 return { isAuthenticated: false };
             }
@@ -106,7 +105,6 @@ const apiService = {
             handleRequestError(error, 'updating user');
         }
     },
-    
 
     createGame: async (created_by) => {
         try {
@@ -114,6 +112,15 @@ const apiService = {
             return response.data;
         } catch (error) {
             handleRequestError(error, 'creating game');
+        }
+    },
+
+    getGameDetails: async (game_id) => {
+        try {
+            const response = await axiosInstance.get(`/v1/get_game_by_id/${game_id}`);
+            return response.data;
+        } catch (error) {
+            handleRequestError(error, 'fetching game details');
         }
     },
 
@@ -194,42 +201,42 @@ const apiService = {
         }
     },
     
-
-    listGamePlayers: async () => {
+    listGamePlayers: async ( { game_id }) => {
         try {
-            const response = await axiosInstance.get('/v1/list_game_players');
+            const response = await axiosInstance.get(`/v1/list_game_players/${game_id}`);
             return response.data;
         } catch (error) {
             handleRequestError(error, 'listing game players');
         }
     },
 
-    startGame: async (startData) => {
+    startGame: async ( game_id ) => {
         try {
-            const response = await axiosInstance.post('/v1/start_game', startData);
+            const response = await axiosInstance.post(`/v1/start_game`,  { game_id }  );
             return response.data;
         } catch (error) {
             handleRequestError(error, 'starting game');
+            throw error;
         }
     },
 
-    getPlayerHand: async (playerGameId) => {
+    getPlayerHand: async (player_game_id) => {
         try {
-            const response = await axiosInstance.get(`/v1/get_player_hand?playerGameId=${playerGameId}`);
-            return response.data.playerHand;
+            const response = await axiosInstance.get(`/v1/get_player_hand/${player_game_id}`);
+            return response.data;
         } catch (error) {
             handleRequestError(error, 'getting player hand');
         }
     },
 
-    playDessert: async (dessertData) => {
-        try {
-            const response = await axiosInstance.post('/v1/play_dessert', dessertData);
-            return response.data;
-        } catch (error) {
-            handleRequestError(error, 'playing dessert');
-        }
-    },
+    // playDessert: async (dessertData) => {
+    //     try {
+    //         const response = await axiosInstance.post('/v1/play_dessert', dessertData);
+    //         return response.data;
+    //     } catch (error) {
+    //         handleRequestError(error, 'playing dessert');
+    //     }
+    // },
 
     drawCard: async ({ gameId, playerGameId }) => {
         try {

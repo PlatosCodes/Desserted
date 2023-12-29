@@ -34,6 +34,16 @@ SELECT * FROM player_game
 WHERE player_id = $1;
 
 -- name: ListActivePlayerGames :many
-SELECT * FROM player_game 
+SELECT 
+    player_game.player_game_id, 
+    player_game.player_id, 
+    player_game.game_id, 
+    player_game.player_score, 
+    player_game.player_status, 
+    games.status, 
+    games.created_by,
+    games.current_turn, 
+    games.current_player_id
+FROM player_game 
 INNER JOIN games ON player_game.game_id = games.game_id
-WHERE player_id = $1 AND (games.status = 'active' OR games.status = 'pending') ;
+WHERE player_id = $1 AND (games.status = 'active' OR games.status = 'waiting');

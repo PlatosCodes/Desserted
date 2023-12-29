@@ -39,3 +39,15 @@ ORDER BY player_score DESC LIMIT 1;
 -- name: EndGame :exec
 UPDATE games SET status = 'completed', end_time = NOW() 
 WHERE game_id = $1;
+
+-- name: GetGameScores :many
+SELECT 
+  users.id AS id,
+  users.username,
+  player_game.player_score
+FROM 
+  player_game
+INNER JOIN 
+  users ON player_game.player_id = users.id
+WHERE 
+  player_game.game_id = $1;

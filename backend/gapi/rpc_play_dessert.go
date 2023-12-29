@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -13,6 +14,7 @@ import (
 )
 
 func (server *Server) PlayDessert(ctx context.Context, req *pb.PlayDessertRequest) (*pb.PlayDessertResponse, error) {
+	log.Println("request was:", req)
 	// Authenticate and authorize the user
 	authPayload, err := server.authorizeUser(ctx)
 	if err != nil {

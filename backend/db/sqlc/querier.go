@@ -38,6 +38,7 @@ type Querier interface {
 	GetFriendshipByID(ctx context.Context, friendshipID int64) (Friend, error)
 	GetGameByID(ctx context.Context, gameID int64) (Game, error)
 	GetGameDeck(ctx context.Context, gameID int64) (GameDeck, error)
+	GetGameScores(ctx context.Context, gameID int64) ([]GetGameScoresRow, error)
 	GetPlayedCards(ctx context.Context, playerGameID int64) ([]PlayedCard, error)
 	GetPlayerGame(ctx context.Context, playerGameID int64) (PlayerGame, error)
 	GetPlayerHand(ctx context.Context, playerGameID int64) ([]GetPlayerHandRow, error)

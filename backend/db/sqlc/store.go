@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/PlatosCodes/desserted/backend/util"
+	"github.com/PlatosCodes/desserted/backend/val"
 )
 
 // Store provides all functions to execure db queries and transactions
@@ -17,6 +19,7 @@ type Store interface {
 	StartGameTx(ctx context.Context, arg StartGameTxParams) (StartGameTxResult, error)
 	InitializeDeck(ctx context.Context, gameID int64, cardIDs []int64) (int64, error)
 	DrawCard(ctx context.Context, arg DrawCardTxParams) (int64, error)
+	PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -216,6 +219,7 @@ func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (int6
 		return 0, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
+	log.Println("Game ID: ", arg.GameID)
 	// Draw the top card from the game deck
 	cardID, err = store.DrawTopCard(ctx, arg.GameID)
 	if err != nil {
@@ -245,4 +249,114 @@ func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (int6
 	}
 
 	return cardID, nil
+}
+
+type PlayDessertTxParams struct {
+	PlayerGameID int64
+	DessertName  string
+	CardIDs      []int64
+}
+
+type PlayDessertTxResult struct {
+	DessertPlayedID int64
+	PlayerGame      PlayerGame
+	GameOver        bool
+}
+
+func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error) {
+	var result PlayDessertTxResult
+
+	log.Println("Dessert args:", arg)
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+
+		ingredientsList := []string{}
+		// Validate and process each card
+		for _, cardID := range arg.CardIDs {
+			// Fetch each card and validate
+			card, err := q.GetCardByID(ctx, cardID)
+			if err != nil {
+				return fmt.Errorf("error fetching card: %w", err)
+			}
+
+			// Check if card is in player's hand
+			inHand, err := q.IsCardInPlayerHand(ctx, IsCardInPlayerHandParams{
+				PlayerGameID: arg.PlayerGameID,
+				CardID:       cardID,
+			})
+			if err != nil || !inHand {
+				return fmt.Errorf("card not in player's hand: %w", err)
+			}
+
+			// Record card played and remove from player's hand
+			err = q.RecordPlayedCard(ctx, RecordPlayedCardParams{
+				PlayerGameID: arg.PlayerGameID,
+				CardID:       cardID,
+			})
+			if err != nil {
+				return fmt.Errorf("error recording card played: %w", err)
+			}
+
+			err = q.RemoveCardFromPlayerHand(ctx, RemoveCardFromPlayerHandParams{
+				PlayerGameID: arg.PlayerGameID,
+				CardID:       cardID,
+			})
+			if err != nil {
+				return fmt.Errorf("error removing card from hand: %w", err)
+			}
+
+			ingredientsList = append(ingredientsList, card.Name)
+		}
+
+		// Validate the dessert
+		err = val.ValidateDessert(arg.DessertName, ingredientsList)
+		if err != nil {
+			log.Printf("Invalid dessert: %v", err)
+			// Send error back to client
+			return fmt.Errorf("invalid dessert: %v", err)
+		}
+
+		// Record the dessert played and update player's score
+		dessert, err := q.GetDessertByName(ctx, arg.DessertName)
+		if err != nil {
+			return fmt.Errorf("error fetching dessert: %w", err)
+		}
+
+		err = q.RecordDessertPlayed(ctx, RecordDessertPlayedParams{
+			PlayerGameID: arg.PlayerGameID,
+			DessertID:    dessert.DessertID,
+		})
+		if err != nil {
+			return fmt.Errorf("error recording dessert played: %w", err)
+		}
+
+		currPlayer, err := q.GetPlayerGame(ctx, arg.PlayerGameID)
+		if err != nil {
+			return fmt.Errorf("error getting player's previous score: %w", err)
+		}
+
+		updatedPlayerGame, err := q.UpdatePlayerScore(ctx, UpdatePlayerScoreParams{
+			PlayerGameID: arg.PlayerGameID,
+			PlayerScore:  sql.NullInt32{Int32: currPlayer.PlayerScore.Int32 + dessert.Points, Valid: true},
+		})
+		if err != nil {
+			return fmt.Errorf("error updating player's score: %w", err)
+		}
+
+		// Check if the game is won
+		winningCondition, err := q.IsGameWon(ctx, arg.PlayerGameID)
+		if err != nil {
+			return fmt.Errorf("error checking if game was won: %w", err)
+		}
+
+		// Set results
+		result.DessertPlayedID = dessert.DessertID
+		result.PlayerGame = updatedPlayerGame
+		result.GameOver = winningCondition.Bool
+
+		return nil
+	})
+
+	return result, err
 }

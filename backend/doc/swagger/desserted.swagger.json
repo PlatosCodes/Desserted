@@ -261,6 +261,39 @@
         ]
       }
     },
+    "/v1/get_game_by_id/{gameId}": {
+      "get": {
+        "summary": "Get a game",
+        "description": "Use this API to get a game",
+        "operationId": "Desserted_GetGameByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetGameByIDResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/get_player_game/{playerGameId}": {
       "get": {
         "summary": "Get the player's game data",
@@ -294,7 +327,7 @@
         ]
       }
     },
-    "/v1/get_player_hand": {
+    "/v1/get_player_hand/{playerGameId}": {
       "get": {
         "summary": "Get the player's hand",
         "description": "Use this API to get a player's hand",
@@ -316,8 +349,8 @@
         "parameters": [
           {
             "name": "playerGameId",
-            "in": "query",
-            "required": false,
+            "in": "path",
+            "required": true,
             "type": "string",
             "format": "int64"
           }
@@ -461,7 +494,7 @@
         ]
       }
     },
-    "/v1/list_game_players": {
+    "/v1/list_game_players/{gameId}": {
       "get": {
         "summary": "List the game's players",
         "description": "Use this API to list the players of the game",
@@ -483,24 +516,10 @@
         "parameters": [
           {
             "name": "gameId",
-            "in": "query",
-            "required": false,
+            "in": "path",
+            "required": true,
             "type": "string",
             "format": "int64"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
           }
         ],
         "tags": [
@@ -981,6 +1000,14 @@
           "type": "string",
           "format": "int64"
         },
+        "currentTurn": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "currentPlayer": {
+          "type": "string",
+          "format": "int64"
+        },
         "startTime": {
           "type": "string",
           "format": "date-time"
@@ -1016,6 +1043,14 @@
         "timestamp": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "pbGetGameByIDResponse": {
+      "type": "object",
+      "properties": {
+        "game": {
+          "$ref": "#/definitions/pbGame"
         }
       }
     },
@@ -1205,6 +1240,9 @@
           "type": "string",
           "format": "int64"
         },
+        "status": {
+          "type": "string"
+        },
         "playerId": {
           "type": "string",
           "format": "int64"
@@ -1219,6 +1257,18 @@
         },
         "playerStatus": {
           "type": "string"
+        },
+        "createdBy": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currentTurn": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "currentPlayerId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1265,10 +1315,6 @@
     "pbStartGameRequest": {
       "type": "object",
       "properties": {
-        "creatorId": {
-          "type": "string",
-          "format": "int64"
-        },
         "gameId": {
           "type": "string",
           "format": "int64"

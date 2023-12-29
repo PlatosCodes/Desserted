@@ -115,8 +115,8 @@ const Header = () => {
                 className={classes.bottomNav}
                 >
                 <BottomNavigationAction label="Dashboard" value="/dashboard" icon={<LibraryAddCheckIcon />} component={Link} to="/dashboard" />
-                <BottomNavigationAction label="Create Game" value="/dashboard" icon={<CakeIcon />} component={Link} onClick={handleCakeIconClick} to="/create_game" />
-                <BottomNavigationAction label="Profile" value="/dashboard" icon={<StarIcon />} component={Link} to="/dashboard" />
+                <BottomNavigationAction label="Create Game" value="Create Game" icon={<CakeIcon />} component={Link} onClick={handleCakeIconClick} to="/create_game" />
+                <BottomNavigationAction label="Profile" value="Profile View" icon={<StarIcon />} component={Link} to="/profile" />
             </BottomNavigation>
                 )}
         </StyledAppBar>

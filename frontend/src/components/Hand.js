@@ -23,11 +23,16 @@ const HandContainer = styled.div`
   }
 `;
 
-const Hand = ({ cards, onCardSelect }) => (
+const Hand = ({ cards, onCardSelect, selectedCards }) => (
   <HandContainer>
-    {cards.map(card => (
-      <Card key={card.id} card={card} onSelect={() => onCardSelect(card.id)} />
-    ))}
+      {cards?.map(card => (
+          <Card
+              key={card.player_hand_id}
+              ingredient={card}
+              onSelect={() => onCardSelect(card.card_id)}
+              isSelected={selectedCards.includes(card.card_id)}
+          />
+      ))}
   </HandContainer>
 );
 
