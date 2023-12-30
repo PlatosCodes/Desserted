@@ -46,11 +46,11 @@ func (server *Server) ListGamePlayers(ctx context.Context, req *pb.ListGamePlaye
 		}
 
 		player_games = append(player_games, &pb.PlayerGame{
-			PlayerGame:   player.PlayerGameID,
+			PlayerGameId: player.PlayerGameID,
 			PlayerId:     player.PlayerID,
 			GameId:       player.GameID,
-			PlayerScore:  player.PlayerScore.Int32,
-			PlayerStatus: player.PlayerStatus.String,
+			PlayerScore:  player.PlayerScore,
+			PlayerStatus: player.PlayerStatus,
 		})
 
 	}

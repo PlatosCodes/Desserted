@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -100,6 +101,7 @@ func (store *SQLStore) RegisterTx(ctx context.Context, arg CreateUserParams) (Re
 // StartGameTxParams holds parameters for the StartGameTx function
 type StartGameTxParams struct {
 	GameID    int64   `json:"game_id"`
+	CreatedBy int64   `json:"created_by"`
 	PlayerIDs []int64 `json:"player_ids"`
 	CardIDs   []int64 `json:"card_ids"` // Add this to include the card IDs for initializing the deck
 }
@@ -116,10 +118,12 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
+		numberOfPlayers, gameID := int32(len(arg.PlayerIDs)), arg.GameID
+
 		// Update game status to active
-		err = q.UpdateGameStatus(ctx, UpdateGameStatusParams{
-			Status: "active",
-			GameID: arg.GameID,
+		err = q.StartGame(ctx, StartGameParams{
+			NumberOfPlayers: numberOfPlayers,
+			GameID:          gameID,
 		})
 		if err != nil {
 			return err
@@ -131,7 +135,21 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 			return err
 		}
 
-		for _, playerID := range arg.PlayerIDs {
+		var turn int32
+
+		for index, playerID := range arg.PlayerIDs {
+			turn = int32(index) + 1
+			err = store.UpdatePlayerNumber(ctx, UpdatePlayerNumberParams{
+				PlayerNumber: sql.NullInt32{
+					Int32: int32(turn),
+					Valid: true,
+				},
+				PlayerGameID: gameID,
+			})
+			if err != nil {
+				return err
+			}
+
 			for i := 0; i < 7; i++ { // Deal 7 cards to each player
 				top_card, err := store.DrawTopCard(ctx, arg.GameID)
 				if err != nil {
@@ -153,6 +171,9 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 				}
 			}
 		}
+
+		log.Println("Number of players in game: ", turn)
+		log.Println("LENGTH of player ids: ", numberOfPlayers)
 
 		// Retrieve the updated game details
 		result.Game, err = q.GetGameByID(ctx, arg.GameID)
@@ -205,13 +226,23 @@ func (store *SQLStore) InitializeDeck(ctx context.Context, gameID int64, cardIDs
 
 // DrawTxParams holds parameters for the StartGameTx function
 type DrawCardTxParams struct {
-	GameID   int64 `json:"game_id"`
-	PlayerID int64 `json:"player_id"`
+	GameID       int64 `json:"game_id"`
+	PlayerID     int64 `json:"player_id"`
+	PlayerNumber int32 `json:"player_number"`
 }
 
 // DrawCard draws the top card from the deck for a given game.
 func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (int64, error) {
 	var cardID int64
+
+	// Check if it's the player's turn
+	game, err := store.GetGameByID(ctx, arg.GameID)
+	if err != nil {
+		return 0, err
+	}
+	if game.CurrentPlayerNumber.Int32 != arg.PlayerNumber {
+		return 0, errors.New("not the player's turn")
+	}
 
 	// Begin transaction
 	tx, err := store.db.BeginTx(ctx, &sql.TxOptions{})
@@ -338,7 +369,7 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 
 		updatedPlayerGame, err := q.UpdatePlayerScore(ctx, UpdatePlayerScoreParams{
 			PlayerGameID: arg.PlayerGameID,
-			PlayerScore:  sql.NullInt32{Int32: currPlayer.PlayerScore.Int32 + dessert.Points, Valid: true},
+			PlayerScore:  currPlayer.PlayerScore + dessert.Points,
 		})
 		if err != nil {
 			return fmt.Errorf("error updating player's score: %w", err)

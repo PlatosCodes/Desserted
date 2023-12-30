@@ -73,6 +73,7 @@ type Querier interface {
 	StartGame(ctx context.Context, arg StartGameParams) error
 	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) error
 	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
+	UpdatePlayerNumber(ctx context.Context, arg UpdatePlayerNumberParams) error
 	UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) (PlayerGame, error)
 	UpdatePlayerStatus(ctx context.Context, arg UpdatePlayerStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

@@ -10,6 +10,7 @@ WHERE game_id = $1;
 -- name: ListGamePlayers :many
 SELECT * FROM player_game 
 WHERE game_id = $1 
+ORDER BY player_number ASC
 LIMIT $2 OFFSET $3;
 
 -- name: ListActiveGames :many
@@ -18,12 +19,12 @@ LIMIT $1 OFFSET $2;
 
 -- name: StartGame :exec
 UPDATE games
-SET status = 'active', current_turn = 1, current_player_id = $2
-WHERE game_id = $1;
+SET status = 'active', number_of_players = $1, current_turn = 1, current_player_number = 1
+WHERE game_id = $2;
 
 -- name: UpdateGameState :exec
 UPDATE games
-SET current_turn = $2, current_player_id = $3, last_action_time = NOW()
+SET current_turn = $2, current_player_number = $3, last_action_time = NOW()
 WHERE game_id = $1;
 
 -- name: UpdateGameStatus :exec

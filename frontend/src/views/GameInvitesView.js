@@ -1,5 +1,5 @@
 // src/views/GameInvitesView.js
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Container, Typography, CircularProgress, Button, List, ListItem, ListItemText, Alert } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../features/user/userSlice';
@@ -10,33 +10,38 @@ import apiService from '../services/apiService';
 const GameInvitesView = () => {
   const user = useSelector(selectUser);
   const queryClient = useQueryClient();
-  const { data: invitesData, isLoading, isError, error, refetch } = useGameInvites(user.id);
-  const gameInvites = invitesData?.game_invite ?? []; 
+  const { data: invitesData, isLoading, isError, error } = useGameInvites(user.id);
+  const gameInvites = invitesData?.game_invite ?? [];
 
   const acceptInviteMutation = useMutation(apiService.acceptGameInvite, {
     onMutate: async (variables) => {
       await queryClient.cancelQueries(['gameInvites', user.id]);
-
       const previousData = queryClient.getQueryData(['gameInvites', user.id]);
-      
+      // Optimistic update
       queryClient.setQueryData(['gameInvites', user.id], oldData => ({
         ...oldData,
         game_invite: oldData.game_invite.filter(invite => invite.game_id !== variables.game_id),
       }));
-
       return { previousData };
     },
     onError: (err, variables, context) => {
+      // Reset to previous data
       queryClient.setQueryData(['gameInvites', user.id], context.previousData);
+      // Handle specific error (game already started)
+      if (err?.response?.data?.message.includes('game has already started')) {
+        alert("The game has already started.");
+      } else {
+        alert("An error occurred.");
+      }
     },
     onSettled: () => {
-      refetch();
+      queryClient.invalidateQueries(['gameInvites', user.id]);
     },
   });
 
-  const handleAcceptInvite = (inviteId, gameId) => {
+  const handleAcceptInvite = useCallback((inviteId, gameId) => {
     acceptInviteMutation.mutate({ invitee_player_id: inviteId, game_id: gameId });
-  };
+  }, [acceptInviteMutation]);
 
   if (isLoading) return <CircularProgress />;
   if (isError) return <Alert severity="error">{error.message}</Alert>;
@@ -44,12 +49,16 @@ const GameInvitesView = () => {
   return (
     <Container>
       <Typography variant="h4">Game Invites</Typography>
-      {error && <Alert severity="error">{error}</Alert>}
       <List>
         {gameInvites.map(invite => (
           <ListItem key={invite.game_invitation_id}>
             <ListItemText primary={`Game invite from player ID: ${invite.invitee_player_id} for game ID: ${invite.game_id}`} />
-            <Button variant="contained" color="primary" onClick={() => handleAcceptInvite(invite.invitee_player_id, invite.game_id)}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleAcceptInvite(invite.invitee_player_id, invite.game_id)}
+              disabled={acceptInviteMutation.isLoading}
+            >
               Accept
             </Button>
           </ListItem>

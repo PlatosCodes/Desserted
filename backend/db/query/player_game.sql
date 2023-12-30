@@ -6,6 +6,12 @@ VALUES ($1, $2);
 SELECT * FROM player_game 
 WHERE player_game_id = $1;
 
+-- name: UpdatePlayerNumber :exec
+UPDATE player_game 
+SET player_number = $1
+WHERE player_game_id = $2
+;
+
 -- name: UpdatePlayerScore :one
 UPDATE player_game 
 SET player_score = $1
@@ -37,13 +43,15 @@ WHERE player_id = $1;
 SELECT 
     player_game.player_game_id, 
     player_game.player_id, 
-    player_game.game_id, 
+    player_game.game_id,
+    games.number_of_players,
+    player_game.player_number,
     player_game.player_score, 
-    player_game.player_status, 
+    player_game.player_status,
     games.status, 
     games.created_by,
     games.current_turn, 
-    games.current_player_id
+    games.current_player_number
 FROM player_game 
 INNER JOIN games ON player_game.game_id = games.game_id
 WHERE player_id = $1 AND (games.status = 'active' OR games.status = 'waiting');

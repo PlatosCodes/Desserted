@@ -29,11 +29,11 @@ func (server *Server) GetPlayerGame(ctx context.Context, req *pb.GetPlayerGameRe
 	}
 
 	pbPlayer := &pb.PlayerGame{
-		PlayerGame:   playerGame.PlayerGameID,
+		PlayerGameId: playerGame.PlayerGameID,
 		PlayerId:     playerGame.PlayerID,
 		GameId:       playerGame.GameID,
-		PlayerScore:  playerGame.PlayerScore.Int32,
-		PlayerStatus: playerGame.PlayerStatus.String,
+		PlayerScore:  playerGame.PlayerScore,
+		PlayerStatus: playerGame.PlayerStatus,
 	}
 
 	// Construct response

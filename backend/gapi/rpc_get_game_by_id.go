@@ -63,13 +63,14 @@ func (server *Server) GetGameByID(ctx context.Context, req *pb.GetGameByIDReques
 
 	// Convert game data to protobuf message
 	pbGame := &pb.Game{
-		GameId:        game.GameID,
-		Status:        game.Status,
-		CreatedBy:     game.CreatedBy,
-		CurrentTurn:   int32(game.CurrentTurn),
-		CurrentPlayer: game.CurrentPlayerID.Int64,
-		StartTime:     timestamppb.New(game.StartTime),
-		EndTime:       nil,
+		GameId:              game.GameID,
+		Status:              game.Status,
+		CreatedBy:           game.CreatedBy,
+		NumberOfPlayers:     game.NumberOfPlayers,
+		CurrentTurn:         int32(game.CurrentTurn),
+		CurrentPlayerNumber: game.CurrentPlayerNumber.Int32,
+		StartTime:           timestamppb.New(game.StartTime),
+		EndTime:             nil,
 	}
 
 	// Construct response

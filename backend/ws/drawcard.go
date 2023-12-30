@@ -15,6 +15,7 @@ import (
 type DrawCardPayload struct {
 	GameID       int64 `json:"game_id"`
 	PlayerGameID int64 `json:"player_game_id"`
+	PlayerNumber int32 `json:"player_number"`
 }
 
 func (c *Client) handleDrawCard(payload json.RawMessage) {
@@ -31,8 +32,9 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 
 	// Call the DrawCard function from your gRPC service
 	cardID, err := c.store.DrawCard(context.Background(), db.DrawCardTxParams{
-		GameID:   drawCardPayload.GameID,
-		PlayerID: drawCardPayload.PlayerGameID,
+		GameID:       drawCardPayload.GameID,
+		PlayerID:     drawCardPayload.PlayerGameID,
+		PlayerNumber: drawCardPayload.PlayerNumber,
 	})
 	if err != nil {
 		log.Printf("Error drawing card: %v", err)
