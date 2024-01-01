@@ -50,6 +50,7 @@ type Game struct {
 	CurrentTurn         int32         `json:"current_turn"`
 	CurrentPlayerNumber sql.NullInt32 `json:"current_player_number"`
 	StartTime           time.Time     `json:"start_time"`
+	LastActionTime      sql.NullTime  `json:"last_action_time"`
 	EndTime             sql.NullTime  `json:"end_time"`
 }
 

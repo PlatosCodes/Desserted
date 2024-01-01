@@ -13,7 +13,7 @@ import (
 const createGame = `-- name: CreateGame :one
 INSERT INTO games (created_by) 
 VALUES ($1) 
-RETURNING game_id, status, created_by, number_of_players, current_turn, current_player_number, start_time, end_time
+RETURNING game_id, status, created_by, number_of_players, current_turn, current_player_number, start_time, last_action_time, end_time
 `
 
 func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error) {
@@ -27,6 +27,7 @@ func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error)
 		&i.CurrentTurn,
 		&i.CurrentPlayerNumber,
 		&i.StartTime,
+		&i.LastActionTime,
 		&i.EndTime,
 	)
 	return i, err
@@ -57,7 +58,7 @@ func (q *Queries) EndGame(ctx context.Context, gameID int64) error {
 }
 
 const getGameByID = `-- name: GetGameByID :one
-SELECT game_id, status, created_by, number_of_players, current_turn, current_player_number, start_time, end_time FROM games 
+SELECT game_id, status, created_by, number_of_players, current_turn, current_player_number, start_time, last_action_time, end_time FROM games 
 WHERE game_id = $1
 `
 
@@ -72,6 +73,7 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int64) (Game, error) {
 		&i.CurrentTurn,
 		&i.CurrentPlayerNumber,
 		&i.StartTime,
+		&i.LastActionTime,
 		&i.EndTime,
 	)
 	return i, err
@@ -120,7 +122,7 @@ func (q *Queries) GetGameScores(ctx context.Context, gameID int64) ([]GetGameSco
 }
 
 const listActiveGames = `-- name: ListActiveGames :many
-SELECT game_id, status, created_by, number_of_players, current_turn, current_player_number, start_time, end_time FROM games 
+SELECT game_id, status, created_by, number_of_players, current_turn, current_player_number, start_time, last_action_time, end_time FROM games 
 LIMIT $1 OFFSET $2
 `
 
@@ -146,6 +148,7 @@ func (q *Queries) ListActiveGames(ctx context.Context, arg ListActiveGamesParams
 			&i.CurrentTurn,
 			&i.CurrentPlayerNumber,
 			&i.StartTime,
+			&i.LastActionTime,
 			&i.EndTime,
 		); err != nil {
 			return nil, err

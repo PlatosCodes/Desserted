@@ -25,6 +25,7 @@ CREATE TABLE games (
   current_turn INT NOT NULL DEFAULT 0,
   current_player_number INT,
   start_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_action_time TIMESTAMPTZ,
   end_time TIMESTAMPTZ,
   FOREIGN KEY (created_by) REFERENCES users(id)
 );

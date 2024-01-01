@@ -31,7 +31,7 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 	defer c.mutex.Unlock()
 
 	// Call the DrawCard function from your gRPC service
-	cardID, err := c.store.DrawCard(context.Background(), db.DrawCardTxParams{
+	card, err := c.store.DrawCard(context.Background(), db.DrawCardTxParams{
 		GameID:       drawCardPayload.GameID,
 		PlayerID:     drawCardPayload.PlayerGameID,
 		PlayerNumber: drawCardPayload.PlayerNumber,
@@ -42,13 +42,28 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 		return
 	}
 
-	// Create a response message
-	response := pb.DrawCardResponse{
-		CardId: cardID,
-	}
+	// // Create a response message
+	// response := pb.DrawCardResponse{
+	// 	CardId: cardID,
+	// }
 
 	// Send the response back to the client
-	sendDrawCardResponse(c.conn, &response)
+	// sendDrawCardResponse(c.conn, &response)
+
+	drawCardUpdateMessage := prepareDrawCardUpdateMessage(card)
+
+	// msg, err := json.Marshal(drawCardUpdateMessage)
+	// if err != nil {
+	// 	log.Printf("Error marshaling draw card response: %v", err)
+	// 	return
+	// }
+
+	// Send the message through the WebSocket connection
+	if err := c.conn.WriteMessage(websocket.TextMessage, drawCardUpdateMessage); err != nil {
+		log.Printf("Error sending draw card response: %v", err)
+	}
+	// c.hub.broadcast <- drawCardUpdateMessage
+
 }
 
 // sendErrorMessage sends an error message to the client
@@ -70,4 +85,25 @@ func sendDrawCardResponse(conn *websocket.Conn, response *pb.DrawCardResponse) {
 	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 		log.Printf("Error sending draw card response: %v", err)
 	}
+}
+
+func prepareDrawCardUpdateMessage(card db.DrawCardTxResult) []byte {
+	// Define a struct for the message
+	type DrawCardUpdate struct {
+		Type string              `json:"type"`
+		Card db.DrawCardTxResult `json:"card"`
+	}
+
+	updateMsg := DrawCardUpdate{
+		Type: "drawCardResponse",
+		Card: card,
+	}
+
+	msg, err := json.Marshal(updateMsg)
+	if err != nil {
+		log.Printf("Error marshaling score update message: %v", err)
+		return nil
+	}
+
+	return msg
 }

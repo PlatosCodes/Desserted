@@ -1252,10 +1252,6 @@
           "type": "string",
           "format": "int64"
         },
-        "numberOfPlayers": {
-          "type": "integer",
-          "format": "int32"
-        },
         "playerNumber": {
           "type": "integer",
           "format": "int32"
@@ -1267,17 +1263,13 @@
         "playerStatus": {
           "type": "string"
         },
+        "numberOfPlayers": {
+          "type": "integer",
+          "format": "int32"
+        },
         "createdBy": {
           "type": "string",
           "format": "int64"
-        },
-        "currentTurn": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "currentPlayerNumber": {
-          "type": "integer",
-          "format": "int32"
         },
         "status": {
           "type": "string"

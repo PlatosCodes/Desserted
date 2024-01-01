@@ -24,21 +24,21 @@ func (server *Server) ListActivePlayerGames(ctx context.Context, req *pb.ListPla
 		return nil, status.Errorf(codes.Internal, "failed to fetch active games: %v", err)
 	}
 
+	log.Println("Active Games:", activeGames)
+
 	// Prepare the response
 	playerGames := make([]*pb.PlayerGame, len(activeGames))
 	for i, game := range activeGames {
 		playerGames[i] = &pb.PlayerGame{
-			PlayerGameId:        game.PlayerGameID,
-			PlayerId:            game.PlayerID,
-			GameId:              game.GameID,
-			NumberOfPlayers:     game.NumberOfPlayers,
-			PlayerNumber:        game.PlayerNumber.Int32,
-			PlayerScore:         game.PlayerScore,
-			PlayerStatus:        game.PlayerStatus,
-			CreatedBy:           game.CreatedBy,
-			CurrentTurn:         game.CurrentTurn,
-			CurrentPlayerNumber: game.CurrentPlayerNumber.Int32,
-			Status:              game.Status,
+			PlayerGameId:    game.PlayerGameID,
+			PlayerId:        game.PlayerID,
+			GameId:          game.GameID,
+			NumberOfPlayers: game.NumberOfPlayers,
+			PlayerNumber:    game.PlayerNumber.Int32,
+			PlayerScore:     game.PlayerScore,
+			PlayerStatus:    game.PlayerStatus,
+			CreatedBy:       game.CreatedBy,
+			Status:          game.Status,
 		}
 	}
 

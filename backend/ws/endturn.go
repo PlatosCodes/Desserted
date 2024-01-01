@@ -9,13 +9,20 @@ import (
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	pb "github.com/PlatosCodes/desserted/backend/pb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/gorilla/websocket"
 )
 
 type EndTurnPayload struct {
 	GameID       int64 `json:"game_id"`
 	PlayerGameID int64 `json:"player_game_id"`
+}
+
+type GameJSON struct {
+	GameID              int64  `json:"game_id"`
+	Status              string `json:"status"`
+	CreatedBy           int64  `json:"created_by"`
+	NumberOfPlayers     int32  `json:"number_of_players"`
+	CurrentTurn         int32  `json:"current_turn"`
+	CurrentPlayerNumber int32  `json:"current_player_number"`
 }
 
 func (c *Client) handleEndTurn(payload json.RawMessage) {
@@ -44,7 +51,7 @@ func (c *Client) handleEndTurn(payload json.RawMessage) {
 		GameID:      endTurnPayload.GameID,
 		CurrentTurn: game.CurrentTurn + 1,
 		CurrentPlayerNumber: sql.NullInt32{
-			Int32: ((game.CurrentPlayerNumber.Int32 + int32(1)) % game.NumberOfPlayers) + 1,
+			Int32: ((game.CurrentTurn) % game.NumberOfPlayers) + 1,
 			Valid: true,
 		},
 	})
@@ -61,41 +68,71 @@ func (c *Client) handleEndTurn(payload json.RawMessage) {
 		return
 	}
 
-	// Create a response message
-	response := pb.GetGameByIDResponse{
-		Game: &pb.Game{
-			GameId:              updatedGame.GameID,
-			Status:              updatedGame.Status,
-			CreatedBy:           updatedGame.CreatedBy,
-			NumberOfPlayers:     updatedGame.NumberOfPlayers,
-			CurrentTurn:         updatedGame.CurrentTurn,
-			CurrentPlayerNumber: updatedGame.CurrentPlayerNumber.Int32,
-			StartTime:           timestamppb.New(updatedGame.StartTime),
-			EndTime:             nil,
-		},
+	updatedPbGame := &pb.Game{
+		GameId:              updatedGame.GameID,
+		Status:              updatedGame.Status,
+		CreatedBy:           updatedGame.CreatedBy,
+		NumberOfPlayers:     updatedGame.NumberOfPlayers,
+		CurrentTurn:         updatedGame.CurrentTurn,
+		CurrentPlayerNumber: updatedGame.CurrentPlayerNumber.Int32,
+		StartTime:           timestamppb.New(updatedGame.StartTime),
+		EndTime:             nil,
 	}
 
-	// Send the response back to the client
-	sendEndTurnResponse(c.conn, &response)
+	// // Create a response message
+	// response := pb.GetGameByIDResponse{
+	// 	Game: updatedPbGame,
+	// }
+
+	// // Send the response back to the client
+	// sendEndTurnResponse(c.conn, &response)
+
+	endTurnUpdateMsg := prepareEndTurnUpdateMessage(updatedPbGame)
+	c.hub.broadcast <- endTurnUpdateMsg
+
 }
 
-// // sendErrorMessage sends an error message to the client
-// func sendErrorMessage(conn *websocket.Conn, errorMessage string) {
-// 	// Implement a function to send an error message to the client
-// 	// This can be a simple JSON message with an 'error' field
+// // sendEndTurnResponse sends a game response to the client
+// func sendEndTurnResponse(conn *websocket.Conn, response *pb.GetGameByIDResponse) {
+// 	// Marshal the response into JSON
+// 	msg, err := json.Marshal(response)
+// 	if err != nil {
+// 		log.Printf("Error marshaling draw card response: %v", err)
+// 		return
+// 	}
+
+// 	// Send the message through the WebSocket connection
+// 	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+// 		log.Printf("Error sending end turn response: %v", err)
+// 	}
 // }
 
-// sendEndTurnResponse sends a game response to the client
-func sendEndTurnResponse(conn *websocket.Conn, response *pb.GetGameByIDResponse) {
-	// Marshal the response into JSON
-	msg, err := json.Marshal(response)
-	if err != nil {
-		log.Printf("Error marshaling draw card response: %v", err)
-		return
+func prepareEndTurnUpdateMessage(game *pb.Game) []byte {
+	// Define a struct for the message
+	type EndTurnUpdate struct {
+		Type string   `json:"type"`
+		Game GameJSON `json:"game"`
 	}
 
-	// Send the message through the WebSocket connection
-	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-		log.Printf("Error sending end turn response: %v", err)
+	gameJSON := GameJSON{
+		GameID:              game.GameId,
+		Status:              game.Status,
+		CreatedBy:           game.CreatedBy,
+		NumberOfPlayers:     game.NumberOfPlayers,
+		CurrentTurn:         game.CurrentTurn,
+		CurrentPlayerNumber: game.CurrentPlayerNumber,
 	}
+
+	updateMsg := EndTurnUpdate{
+		Type: "endTurn",
+		Game: gameJSON,
+	}
+
+	msg, err := json.Marshal(updateMsg)
+	if err != nil {
+		log.Printf("Error marshaling score update message: %v", err)
+		return nil
+	}
+
+	return msg
 }

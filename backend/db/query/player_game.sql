@@ -46,7 +46,7 @@ SELECT
     player_game.game_id,
     games.number_of_players,
     player_game.player_number,
-    player_game.player_score, 
+    player_game.player_score,
     player_game.player_status,
     games.status, 
     games.created_by,

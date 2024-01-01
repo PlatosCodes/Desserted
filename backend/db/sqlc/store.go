@@ -19,7 +19,7 @@ type Store interface {
 	RegisterTx(ctx context.Context, arg CreateUserParams) (RegisterTxResult, error)
 	StartGameTx(ctx context.Context, arg StartGameTxParams) (StartGameTxResult, error)
 	InitializeDeck(ctx context.Context, gameID int64, cardIDs []int64) (int64, error)
-	DrawCard(ctx context.Context, arg DrawCardTxParams) (int64, error)
+	DrawCard(ctx context.Context, arg DrawCardTxParams) (DrawCardTxResult, error)
 	PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error)
 }
 
@@ -103,7 +103,7 @@ type StartGameTxParams struct {
 	GameID    int64   `json:"game_id"`
 	CreatedBy int64   `json:"created_by"`
 	PlayerIDs []int64 `json:"player_ids"`
-	CardIDs   []int64 `json:"card_ids"` // Add this to include the card IDs for initializing the deck
+	CardIDs   []int64 `json:"card_ids"`
 }
 
 // StartGameTxResult holds the result for the StartGameTx function
@@ -144,7 +144,7 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 					Int32: int32(turn),
 					Valid: true,
 				},
-				PlayerGameID: gameID,
+				PlayerGameID: playerID,
 			})
 			if err != nil {
 				return err
@@ -155,7 +155,7 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 				if err != nil {
 					return fmt.Errorf("failed to draw top card: %w", err)
 				}
-				err = q.AddCardToPlayerHand(ctx, AddCardToPlayerHandParams{
+				_, err = q.AddCardToPlayerHand(ctx, AddCardToPlayerHandParams{
 					PlayerGameID: playerID,
 					CardID:       top_card,
 				})
@@ -171,9 +171,6 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 				}
 			}
 		}
-
-		log.Println("Number of players in game: ", turn)
-		log.Println("LENGTH of player ids: ", numberOfPlayers)
 
 		// Retrieve the updated game details
 		result.Game, err = q.GetGameByID(ctx, arg.GameID)
@@ -231,38 +228,46 @@ type DrawCardTxParams struct {
 	PlayerNumber int32 `json:"player_number"`
 }
 
+type DrawCardTxResult struct {
+	CardID       int64  `json:"card_id"`
+	CardName     string `json:"card_name"`
+	PlayerGameID int64  `json:"player_game_id"`
+	PlayerHandID int64  `json:"player_hand_id"`
+}
+
 // DrawCard draws the top card from the deck for a given game.
-func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (int64, error) {
+func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (DrawCardTxResult, error) {
 	var cardID int64
+
+	var rsp DrawCardTxResult
 
 	// Check if it's the player's turn
 	game, err := store.GetGameByID(ctx, arg.GameID)
 	if err != nil {
-		return 0, err
+		return rsp, err
 	}
 	if game.CurrentPlayerNumber.Int32 != arg.PlayerNumber {
-		return 0, errors.New("not the player's turn")
+		return rsp, errors.New("not the player's turn")
 	}
 
 	// Begin transaction
 	tx, err := store.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return 0, fmt.Errorf("failed to begin transaction: %w", err)
+		return rsp, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	log.Println("Game ID: ", arg.GameID)
 	// Draw the top card from the game deck
 	cardID, err = store.DrawTopCard(ctx, arg.GameID)
 	if err != nil {
-		return 0, fmt.Errorf("failed to draw top card: %w", err)
+		return rsp, fmt.Errorf("failed to draw top card: %w", err)
 	}
 
-	err = store.AddCardToPlayerHand(ctx, AddCardToPlayerHandParams{
+	player_hand_id, err := store.AddCardToPlayerHand(ctx, AddCardToPlayerHandParams{
 		PlayerGameID: arg.PlayerID,
 		CardID:       cardID,
 	})
 	if err != nil {
-		return 0, fmt.Errorf("failed to add card to player's hand: %w", err)
+		return rsp, fmt.Errorf("failed to add card to player's hand: %w", err)
 	}
 
 	// Remove the drawn card from the game deck
@@ -271,15 +276,27 @@ func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (int6
 		CardID: cardID,
 	})
 	if err != nil {
-		return 0, fmt.Errorf("failed to remove card from game deck: %w", err)
+		return rsp, fmt.Errorf("failed to remove card from game deck: %w", err)
+	}
+
+	card, err := store.GetCardByID(ctx, cardID)
+	if err != nil {
+		return rsp, fmt.Errorf("failed to get card info from database: %w", err)
+	}
+
+	rsp = DrawCardTxResult{
+		CardID:       cardID,
+		CardName:     card.Name,
+		PlayerGameID: arg.PlayerID,
+		PlayerHandID: player_hand_id,
 	}
 
 	// Commit transaction
 	if err := tx.Commit(); err != nil {
-		return 0, fmt.Errorf("failed to commit transaction: %w", err)
+		return rsp, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return cardID, nil
+	return rsp, nil
 }
 
 type PlayDessertTxParams struct {

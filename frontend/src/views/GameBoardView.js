@@ -14,11 +14,12 @@ import { useWebSocket } from '../hooks/useWebSocket';
 
 const GameboardView = () => {
     const user = useSelector(selectUser);
-    const { game_id, player_game_id } = useParams();
+    const { game_id, player_game_id, player_number } = useParams();
     const [game, setGame] = useState(null); 
     const [playerHand, setPlayerHand] = useState([]);
     const [selectedCards, setSelectedCards] = useState([]);
     const [playerScores, setPlayerScores] = useState([]);
+    const [currentPlayerTurn, setCurrentPlayerTurn] = useState(null)
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -39,6 +40,7 @@ const GameboardView = () => {
         setPlayerHand([]);
         setSelectedCards([]);
         setPlayerScores([]);
+        setCurrentPlayerTurn(null);
     };
 
     useEffect(() => {
@@ -47,6 +49,7 @@ const GameboardView = () => {
             try {
                 const gameData = await apiService.getGameDetails(game_id);                
                 setGame(gameData);
+                setCurrentPlayerTurn(gameData.game.current_player_number)
             } catch (error) {
                 console.error('Error fetching game data:', error);
                 // Handle error appropriately
@@ -54,7 +57,6 @@ const GameboardView = () => {
                 setIsLoading(false);
             }
         };
-
         fetchGame();
     }, [game_id]);
 
@@ -63,6 +65,7 @@ const GameboardView = () => {
         try {
             const handData = await apiService.getPlayerHand(player_game_id);
             setPlayerHand(handData.player_hand);
+            console.log("PlayerHand: ", handData)
         } catch (error) {
             console.error('Error fetching player hand:', error);
         } finally {
@@ -76,6 +79,7 @@ const GameboardView = () => {
                 const playersData = await apiService.listGamePlayers( {game_id: parseInt(game_id, 10) });
                 setPlayerScores(playersData.players.map(player => ({
                     id: player.player_id,
+                    player_number: player.player_number,
                     // name: player.username, 
                     score: typeof player.player_score === 'object' ? 
                     (player.player_score.Valid ? player.player_score.Int32 : 0) :
@@ -94,24 +98,22 @@ const GameboardView = () => {
     
         switch (data.type) {
             case 'drawCardResponse':
-                setPlayerHand(prevHand => [...prevHand, data.card]);
+                setPlayerHand(prevHand => {
+                    const newHand = [...prevHand, data.card];
+                    // Sort the new hand by card_id
+                    return newHand.sort((a, b) => parseInt(a.card_id) - parseInt(b.card_id));
+                });
                 break;
             case 'scoreUpdate':
-                if (Array.isArray(data.players)) {
-                    setPlayerScores(data.players.map(player => ({
-                        id: player.player_id,
-                        score: player.player_score || 0,
-                    })));
-                }
+                updateScores(data.players);
                 break;
-            case 'gameUpdate':
-                // Handle other game update messages, like a new turn or game over
+            case 'endTurn':
+                setCurrentPlayerTurn(data.game.current_player_number);
                 break;
-            // Add more cases
             default:
                 console.warn('Unhandled message type:', data.type);
         }
-    }, [setPlayerHand, setPlayerScores]);
+    }, [setPlayerHand, setPlayerScores, setCurrentPlayerTurn, currentPlayerTurn]);
 
     const handleCardSelect = (cardId) => {
         setSelectedCards(prevSelectedCards => {
@@ -126,28 +128,38 @@ const GameboardView = () => {
     };
 
     const handleDrawCard = () => {
-        if (game.game.current_player === player_game_id) {
-        sendMessage({ type: 'drawCard', data: { game_id: parseInt(game_id, 10), player_game_id: parseInt(playerHand[0].player_game_id, 10) } });
-        fetchPlayerHand();
-        } else {
+        if (game.game.current_player_number === parseInt(player_number,10)) {
+        sendMessage({ type: 'drawCard', data: { game_id: parseInt(game_id, 10), 
+                                                player_game_id: parseInt(playerHand[0].player_game_id, 10), 
+                                                player_number: parseInt(player_number,10), 
+                                                player_hand_id: parseInt(playerHand[0].player_hand_id, 10)} });
+    } else {
             alert("It's not your turn!");
         }
     };
 
     const handleEndTurn = () => {
-        if (game.current_player_id === user.id) {
-          sendMessage({ type: 'endTurn', data: { game_id } });
+        if (game.game.current_player_number === parseInt(player_number,10)) {
+            sendMessage({ type: 'endTurn', data: { game_id: parseInt(game_id, 10), player_game_id: parseInt(playerHand[0].player_game_id, 10) } });
         }
       };
 
-    if (isLoading) return <div>Loading game data...</div>;
-    if (!game) return <div>Game not found or error loading game</div>;
+      const updateScores = (players) => {
+        const updatedScores = players.map(player => ({
+            id: player.player_id,
+            score: player.player_score || 0,
+        }));
+        setPlayerScores(updatedScores);
+    };
+
+    if (isLoading) return <CircularProgress />;
+    if (!game) return <Typography variant="h6">Game not found or error loading game</Typography>;
     
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Game Board</Typography>
             <Scoreboard players={playerScores} />
-            <Button onClick={handleDrawCard} disabled={game.game.current_player !== player_game_id}>
+            <Button onClick={handleDrawCard} disabled={currentPlayerTurn !== parseInt(player_number,10)}>
                 Draw Card
             </Button>            
             <Grid container spacing={3}>
@@ -156,15 +168,17 @@ const GameboardView = () => {
                         playerGameId={player_game_id}
                         selectedCards={selectedCards}
                         setSelectedCards={setSelectedCards}
-                        fetchPlayerHand={fetchPlayerHand}
+                        setPlayerHand={setPlayerHand}
                         playerHand={playerHand}
+                        currentPlayerTurn={parseInt(currentPlayerTurn,10)}
+                        playerNumber={parseInt(player_number,10)}
                     />
                 </Grid>
                 <Grid item xs={12}>
                     <Hand cards={playerHand} onCardSelect={handleCardSelect} selectedCards={selectedCards} />
                 </Grid>
             </Grid>
-            <Button onClick={handleEndTurn} disabled={game.current_player_id !== user.id}>
+            <Button onClick={handleEndTurn} disabled={currentPlayerTurn !== parseInt(player_number,10)}>
                 End Turn
             </Button>
         </Container>

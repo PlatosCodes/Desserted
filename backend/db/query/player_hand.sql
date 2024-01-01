@@ -1,6 +1,7 @@
--- name: AddCardToPlayerHand :exec
+-- name: AddCardToPlayerHand :one
 INSERT INTO player_hand (player_game_id, card_id) 
-VALUES ($1, $2);
+VALUES ($1, $2)
+RETURNING player_hand_id;
 
 -- name: RemoveCardFromPlayerHand :exec
 DELETE FROM player_hand 
