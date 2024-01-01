@@ -4,6 +4,7 @@ package gapi
 
 import (
 	"context"
+	"log"
 
 	"github.com/PlatosCodes/desserted/backend/pb"
 	"google.golang.org/grpc/codes"
@@ -23,21 +24,25 @@ func (server *Server) ListActivePlayerGames(ctx context.Context, req *pb.ListPla
 		return nil, status.Errorf(codes.Internal, "failed to fetch active games: %v", err)
 	}
 
+	log.Println("Active Games:", activeGames)
+
 	// Prepare the response
 	playerGames := make([]*pb.PlayerGame, len(activeGames))
 	for i, game := range activeGames {
 		playerGames[i] = &pb.PlayerGame{
-			PlayerGame:      game.PlayerGameID,
-			Status:          game.Status,
+			PlayerGameId:    game.PlayerGameID,
 			PlayerId:        game.PlayerID,
 			GameId:          game.GameID,
-			PlayerScore:     game.PlayerScore.Int32,
-			PlayerStatus:    game.PlayerStatus.String,
+			NumberOfPlayers: game.NumberOfPlayers,
+			PlayerNumber:    game.PlayerNumber.Int32,
+			PlayerScore:     game.PlayerScore,
+			PlayerStatus:    game.PlayerStatus,
 			CreatedBy:       game.CreatedBy,
-			CurrentTurn:     game.CurrentTurn,
-			CurrentPlayerId: game.CurrentPlayerID.Int64,
+			Status:          game.Status,
 		}
 	}
+
+	log.Println(&pb.ListPlayerGamesResponse{PlayerGames: playerGames})
 
 	return &pb.ListPlayerGamesResponse{PlayerGames: playerGames}, nil
 }

@@ -1000,13 +1000,17 @@
           "type": "string",
           "format": "int64"
         },
+        "numberOfPlayers": {
+          "type": "integer",
+          "format": "int32"
+        },
         "currentTurn": {
           "type": "integer",
           "format": "int32"
         },
-        "currentPlayer": {
-          "type": "string",
-          "format": "int64"
+        "currentPlayerNumber": {
+          "type": "integer",
+          "format": "int32"
         },
         "startTime": {
           "type": "string",
@@ -1236,12 +1240,9 @@
     "pbPlayerGame": {
       "type": "object",
       "properties": {
-        "playerGame": {
+        "playerGameId": {
           "type": "string",
           "format": "int64"
-        },
-        "status": {
-          "type": "string"
         },
         "playerId": {
           "type": "string",
@@ -1251,6 +1252,10 @@
           "type": "string",
           "format": "int64"
         },
+        "playerNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
         "playerScore": {
           "type": "integer",
           "format": "int32"
@@ -1258,17 +1263,16 @@
         "playerStatus": {
           "type": "string"
         },
+        "numberOfPlayers": {
+          "type": "integer",
+          "format": "int32"
+        },
         "createdBy": {
           "type": "string",
           "format": "int64"
         },
-        "currentTurn": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "currentPlayerId": {
-          "type": "string",
-          "format": "int64"
+        "status": {
+          "type": "string"
         }
       }
     },

@@ -21,13 +21,13 @@ CREATE TABLE games (
   game_id BIGSERIAL PRIMARY KEY,
   status VARCHAR(10) NOT NULL DEFAULT 'waiting',
   created_by BIGINT NOT NULL,
+  number_of_players INT NOT NULL DEFAULT 0,
   current_turn INT NOT NULL DEFAULT 0,
-  current_player_id BIGINT, 
+  current_player_number INT,
   start_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_action_time TIMESTAMPTZ,
   end_time TIMESTAMPTZ,
-  FOREIGN KEY (created_by) REFERENCES users(id),
   FOREIGN KEY (created_by) REFERENCES users(id)
-
 );
 CREATE INDEX idx_games_status ON games(status);
 
@@ -58,8 +58,9 @@ CREATE TABLE player_game (
   player_game_id BIGSERIAL PRIMARY KEY,
   player_id BIGINT NOT NULL,
   game_id BIGINT NOT NULL,
-  player_score INT DEFAULT 0,
-  player_status VARCHAR(10) DEFAULT 'active',
+  player_number INT,
+  player_score INT NOT NULL DEFAULT 0,
+  player_status VARCHAR(10) NOT NULL DEFAULT 'active',
   FOREIGN KEY (player_id) REFERENCES users(id),
   FOREIGN KEY (game_id) REFERENCES games(game_id)
 );

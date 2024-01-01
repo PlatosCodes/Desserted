@@ -3,7 +3,6 @@ package gapi
 import (
 	"context"
 	"database/sql"
-	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -20,7 +19,6 @@ func (server *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (
 		return nil, unauthenticatedError(err)
 	}
 
-	log.Println("REQUEST", req)
 	gameID := req.GetGameId()
 	// Check if the user is the game creator
 	game, err := server.Store.GetGameByID(ctx, gameID)
@@ -57,6 +55,7 @@ func (server *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (
 	// Start the game using the start game transactional method
 	startGameResult, err := server.Store.StartGameTx(ctx, db.StartGameTxParams{
 		GameID:    gameID,
+		CreatedBy: game.CreatedBy,
 		PlayerIDs: player_ids,
 		CardIDs:   cardIDs,
 	})

@@ -9,9 +9,10 @@ import (
 	"context"
 )
 
-const addCardToPlayerHand = `-- name: AddCardToPlayerHand :exec
+const addCardToPlayerHand = `-- name: AddCardToPlayerHand :one
 INSERT INTO player_hand (player_game_id, card_id) 
 VALUES ($1, $2)
+RETURNING player_hand_id
 `
 
 type AddCardToPlayerHandParams struct {
@@ -19,9 +20,11 @@ type AddCardToPlayerHandParams struct {
 	CardID       int64 `json:"card_id"`
 }
 
-func (q *Queries) AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) error {
-	_, err := q.db.ExecContext(ctx, addCardToPlayerHand, arg.PlayerGameID, arg.CardID)
-	return err
+func (q *Queries) AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, addCardToPlayerHand, arg.PlayerGameID, arg.CardID)
+	var player_hand_id int64
+	err := row.Scan(&player_hand_id)
+	return player_hand_id, err
 }
 
 const getPlayedCards = `-- name: GetPlayedCards :many

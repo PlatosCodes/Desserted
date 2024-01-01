@@ -43,13 +43,15 @@ type Friend struct {
 
 // Represents a game session
 type Game struct {
-	GameID          int64         `json:"game_id"`
-	Status          string        `json:"status"`
-	CreatedBy       int64         `json:"created_by"`
-	CurrentTurn     int32         `json:"current_turn"`
-	CurrentPlayerID sql.NullInt64 `json:"current_player_id"`
-	StartTime       time.Time     `json:"start_time"`
-	EndTime         sql.NullTime  `json:"end_time"`
+	GameID              int64         `json:"game_id"`
+	Status              string        `json:"status"`
+	CreatedBy           int64         `json:"created_by"`
+	NumberOfPlayers     int32         `json:"number_of_players"`
+	CurrentTurn         int32         `json:"current_turn"`
+	CurrentPlayerNumber sql.NullInt32 `json:"current_player_number"`
+	StartTime           time.Time     `json:"start_time"`
+	LastActionTime      sql.NullTime  `json:"last_action_time"`
+	EndTime             sql.NullTime  `json:"end_time"`
 }
 
 type GameDeck struct {
@@ -77,11 +79,12 @@ type PlayedCard struct {
 
 // Associates users with their game sessions and tracks their progress
 type PlayerGame struct {
-	PlayerGameID int64          `json:"player_game_id"`
-	PlayerID     int64          `json:"player_id"`
-	GameID       int64          `json:"game_id"`
-	PlayerScore  sql.NullInt32  `json:"player_score"`
-	PlayerStatus sql.NullString `json:"player_status"`
+	PlayerGameID int64         `json:"player_game_id"`
+	PlayerID     int64         `json:"player_id"`
+	GameID       int64         `json:"game_id"`
+	PlayerNumber sql.NullInt32 `json:"player_number"`
+	PlayerScore  int32         `json:"player_score"`
+	PlayerStatus string        `json:"player_status"`
 }
 
 type PlayerHand struct {

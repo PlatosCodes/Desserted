@@ -4,7 +4,7 @@ import { Paper, Typography, Button, Chip, Stack, Select, MenuItem, FormControl, 
 import apiService from '../services/apiService';
 import { sendMessage } from '../services/websocketService';
 
-const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, fetchPlayerHand, playerHand }) => {
+const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, setPlayerHand, playerHand, currentPlayerTurn, playerNumber}) => {
     const [dessertName, setDessertName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -13,25 +13,28 @@ const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, fetchPlayerHa
             setErrorMessage("Please select a dessert and at least one card");
             return;
         }
-
+    
         try {
-            // Preparing the data for the WebSocket message
+            // Prepare the data for the WebSocket message
             const dessertData = {
                 player_game_id: parseInt(playerGameId, 10),
                 dessert_name: dessertName,
                 card_ids: selectedCards.map(card_id => parseInt(card_id, 10))
             };
-            // Sending the message through WebSocket
+            // Send the message through WebSocket
             sendMessage({ type: 'playDessert', data: dessertData });
-
-            // Resetting the selected cards and updating the player's hand
+    
+            // Remove played cards from hand
+            setPlayerHand(prevHand => prevHand.filter(card => !selectedCards.includes(card.card_id)));
+    
+            // Resetting the selected cards
             setSelectedCards([]);
-            fetchPlayerHand();
         } catch (error) {
             console.error('Error playing dessert:', error);
             setErrorMessage('Failed to play dessert. Please try again.');
         }
     };
+    
 
     return (
         <Paper elevation={3} style={{ padding: '20px', minHeight: '200px' }}>
@@ -61,8 +64,11 @@ const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, fetchPlayerHa
 
                 </Select>
             </FormControl>
-            <Button variant="contained" color="primary" onClick={handlePlayDessert} style={{ marginTop: '10px' }}>
-                Play Dessert
+            <Button variant="contained" color="primary" 
+                onClick={handlePlayDessert} 
+                disabled={playerNumber !== currentPlayerTurn} 
+                style={{ marginTop: '10px' }}>
+                    Play Dessert
             </Button>
             {errorMessage && <Typography color="error">{errorMessage}</Typography>}
         </Paper>

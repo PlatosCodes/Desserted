@@ -39,6 +39,6 @@ func (server *Server) DrawCard(ctx context.Context, req *pb.DrawCardRequest) (*p
 
 	// Construct and return the response to the client.
 	return &pb.DrawCardResponse{
-		CardId: drawn_card,
+		CardId: drawn_card.CardID,
 	}, nil
 }

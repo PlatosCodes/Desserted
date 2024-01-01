@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"context"
+	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -61,13 +62,17 @@ func (server *Server) CreateGame(ctx context.Context, req *pb.CreateGameRequest)
 
 	rsp := &pb.CreateGameResponse{
 		Game: &pb.Game{
-			GameId:    game.GameID,
-			CreatedBy: game.CreatedBy,
-			Status:    game.Status,
-			StartTime: timestamppb.New(game.StartTime),
-			EndTime:   endTime,
+			GameId:              game.GameID,
+			CreatedBy:           game.CreatedBy,
+			NumberOfPlayers:     game.NumberOfPlayers,
+			CurrentTurn:         game.CurrentTurn,
+			CurrentPlayerNumber: game.CurrentPlayerNumber.Int32,
+			Status:              game.Status,
+			StartTime:           timestamppb.New(game.StartTime),
+			EndTime:             endTime,
 		},
 	}
+	log.Println("RESPONSE: ", rsp)
 
 	return rsp, nil
 }

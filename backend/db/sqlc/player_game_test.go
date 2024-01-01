@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -49,10 +48,7 @@ func TestUpdatePlayerScore(t *testing.T) {
 
 	dessert_points := 10
 
-	updated_score := sql.NullInt32{
-		Int32: player_score.Int32 + int32(dessert_points),
-		Valid: true,
-	}
+	updated_score := player_score + int32(dessert_points)
 
 	updated_player, err := testQueries.UpdatePlayerScore(context.Background(), UpdatePlayerScoreParams{
 		PlayerScore:  updated_score,

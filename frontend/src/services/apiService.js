@@ -238,14 +238,14 @@ const apiService = {
     //     }
     // },
 
-    drawCard: async ({ gameId, playerGameId }) => {
-        try {
-            const response = await axiosInstance.post('/v1/draw_card', { gameId, playerGameId });
-            return response.data;
-        } catch (error) {
-            handleRequestError(error, 'drawing a card');
-        }
-    },
+    // drawCard: async ({ gameId, playerGameId }) => {
+    //     try {
+    //         const response = await axiosInstance.post('/v1/draw_card', { gameId, playerGameId });
+    //         return response.data;
+    //     } catch (error) {
+    //         handleRequestError(error, 'drawing a card');
+    //     }
+    // },
 
     getPlayerGameData: async (playerGameId) => {
         try {

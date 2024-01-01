@@ -37,6 +37,24 @@ func (server *Server) AcceptGameInvite(ctx context.Context, req *pb.AcceptGameIn
 		return nil, status.Errorf(codes.NotFound, "no invitation found for the specified game")
 	}
 
+	game, err := server.Store.GetGameByID(ctx, gameID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting game status: %v", err)
+	}
+
+	if game.Status != "waiting" {
+		// Delete the invitation after accepting it
+		err = server.Store.DeleteGameInvitation(ctx, db.DeleteGameInvitationParams{
+			InviteePlayerID: invitee,
+			GameID:          gameID,
+		})
+		if err != nil {
+			// Log the error but do not fail the operation
+			return nil, status.Errorf(codes.Internal, "failed to delete invitation: %v", err)
+		}
+		return nil, status.Errorf(codes.Internal, "game has already started: %v", err)
+	}
+
 	// Accept the game invitation
 	err = server.Store.AcceptGameInvitation(ctx, db.AcceptGameInvitationParams{
 		ID:     invitee,

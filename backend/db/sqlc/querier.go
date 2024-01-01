@@ -14,7 +14,7 @@ import (
 type Querier interface {
 	AcceptFriendRequest(ctx context.Context, arg AcceptFriendRequestParams) error
 	AcceptGameInvitation(ctx context.Context, arg AcceptGameInvitationParams) error
-	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) error
+	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) (int64, error)
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
 	BlockSession(ctx context.Context, id uuid.UUID) error
 	CreateFriendship(ctx context.Context, arg CreateFriendshipParams) (Friend, error)
@@ -73,6 +73,7 @@ type Querier interface {
 	StartGame(ctx context.Context, arg StartGameParams) error
 	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) error
 	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
+	UpdatePlayerNumber(ctx context.Context, arg UpdatePlayerNumberParams) error
 	UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) (PlayerGame, error)
 	UpdatePlayerStatus(ctx context.Context, arg UpdatePlayerStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

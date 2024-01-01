@@ -2,7 +2,6 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
 	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
@@ -96,10 +95,7 @@ func (server *Server) PlayDessert(ctx context.Context, req *pb.PlayDessertReques
 	// Update player's score
 	updated_player_game, err := server.Store.UpdatePlayerScore(ctx, db.UpdatePlayerScoreParams{
 		PlayerGameID: playerGame.PlayerGameID,
-		PlayerScore: sql.NullInt32{
-			Int32: playerGame.PlayerScore.Int32 + dessert.Points,
-			Valid: true,
-		},
+		PlayerScore:  playerGame.PlayerScore + dessert.Points,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error updated player's score: %s", err)
@@ -114,11 +110,11 @@ func (server *Server) PlayDessert(ctx context.Context, req *pb.PlayDessertReques
 	return &pb.PlayDessertResponse{
 		DessertPlayedId: dessert.DessertID,
 		PlayerGame: &pb.PlayerGame{
-			PlayerGame:   updated_player_game.PlayerGameID,
+			PlayerGameId: updated_player_game.PlayerGameID,
 			PlayerId:     updated_player_game.PlayerID,
 			GameId:       updated_player_game.GameID,
-			PlayerScore:  updated_player_game.PlayerScore.Int32,
-			PlayerStatus: updated_player_game.PlayerStatus.String,
+			PlayerScore:  updated_player_game.PlayerScore,
+			PlayerStatus: updated_player_game.PlayerStatus,
 		},
 		// Game is won
 		GameOver: winning_condition.Bool,

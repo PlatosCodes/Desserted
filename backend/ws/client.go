@@ -62,6 +62,7 @@ func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64
 	// Setting up message handlers
 	client.messageHandlers["drawCard"] = client.handleDrawCard
 	client.messageHandlers["playDessert"] = client.handlePlayDessert
+	client.messageHandlers["endTurn"] = client.handleEndTurn
 
 	return client
 }

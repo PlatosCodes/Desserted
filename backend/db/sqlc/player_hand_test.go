@@ -48,7 +48,7 @@ func createRandomPlayerHand(t *testing.T, player1_game_id int64) []GetPlayerHand
 			CardID:       cardID,
 		}
 
-		err := testQueries.AddCardToPlayerHand(context.Background(), addCardParams)
+		_, err := testQueries.AddCardToPlayerHand(context.Background(), addCardParams)
 		require.NoError(t, err)
 	}
 
@@ -83,7 +83,7 @@ func TestAddCardToHand(t *testing.T) {
 		CardID:       cardID,
 	}
 
-	err := testQueries.AddCardToPlayerHand(context.Background(), add_card_params)
+	_, err := testQueries.AddCardToPlayerHand(context.Background(), add_card_params)
 	require.NoError(t, err)
 
 	player1_hand, err := testQueries.GetPlayerHand(context.Background(), player1_game_id)
@@ -104,7 +104,7 @@ func TestGetPlayerHand(t *testing.T) {
 		CardID:       cardID,
 	}
 
-	err := testQueries.AddCardToPlayerHand(context.Background(), add_card_params)
+	_, err := testQueries.AddCardToPlayerHand(context.Background(), add_card_params)
 	require.NoError(t, err)
 
 	player1_hand, err := testQueries.GetPlayerHand(context.Background(), player1_game_id)

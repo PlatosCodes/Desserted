@@ -1,7 +1,7 @@
 // src/views/Register.js
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Grid, Container, Typography, Paper, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import apiService from '../services/apiService';

@@ -83,16 +83,12 @@ const DessertIcon = styled.img`
   margin: 0 2px;
 `;
 
-const Card = ({ ingredient, desserts, onSelect }) => {
-  const [isSelected, setIsSelected] = useState(false);
-
-  const handleCardClick = () => {
-    setIsSelected(!isSelected);
-    // onSelect(ingredient.id);
-  };  
-  
+const Card = ({ ingredient, onSelect, isSelected }) => {
   return (
-    <CardContainer onClick={() => onSelect(ingredient.card_id)} isSelected={isSelected}>
+    <CardContainer 
+      onClick={() => onSelect(ingredient.card_id)}
+      style={{ transform: isSelected ? 'scale(1.1)' : 'none' }}
+    >
     <CardInner> 
         <CardFront>
           <CardImage src={`/images/${ingredient.card_name.toLowerCase()}.webp`} alt={ingredient.card_name} />

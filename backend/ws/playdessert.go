@@ -84,8 +84,8 @@ func prepareScoreUpdateMessage(players []db.PlayerGame) []byte {
 			PlayerGame:   player.PlayerGameID,
 			PlayerId:     player.PlayerID,
 			GameId:       player.GameID,
-			PlayerScore:  player.PlayerScore.Int32,
-			PlayerStatus: player.PlayerStatus.String,
+			PlayerScore:  player.PlayerScore,
+			PlayerStatus: player.PlayerStatus,
 		})
 	}
 
