@@ -1,105 +1,85 @@
-//src/components/Card.js
-import React, {useState} from 'react';
+import React from 'react';
 import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
 const CardInner = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
   text-align: center;
-  transition: transform 0.8s;
+  transition: transform 0.8s ease;
   transform-style: preserve-3d;
 `;
 
-const CardFront = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  border-radius: 10px;
-  color: black;
-  font-size: 16px;
-  /* Add more styles as needed */
-`;
-
-const CardBack = styled.div`
-  background-color: #1a1a1a;
-  border-radius: 10px;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  /* You can add a pattern or logo here */
-`;
-
-
-const CardContainer = styled.div`
-  width: 100px;
-  height: 140px;
-  border: 1px solid #ccc;
+const CardContainer = styled(motion.div)`
+  width: 120px;
+  min-width: 120px; // Prevents cards from becoming too narrow
+  height: 168px;
   border-radius: 10px;
   overflow: hidden;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
   cursor: pointer;
-  transform: ${({ isSelected }) => isSelected ? 'scale(1.1)' : 'none'};
-  transition: transform 0.3s;
-  &:hover ${CardInner} {
-    transform: rotateY(180deg);
-  }
+  perspective: 1000px;
   &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-  }
-  &:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+    transition: box-shadow 0.3s ease;
   }
 `;
 
-const CardImage = styled.img`
-  width: 80%;
-  height: auto;
-`;
 
-const CardText = styled.div`
-  margin-top: 10px; // Adjust as needed
-`;
-
-const DessertIcons = styled.div`
-  display: flex;
-  justify-content: center;
+const CardFace = styled.div`
+  position: absolute;
   width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 10px;
+  overflow: hidden;
 `;
 
-const DessertIcon = styled.img`
-  width: 20px;
-  height: 20px;
-  margin: 0 2px;
+const CardFront = styled(CardFace)`
+  background: url(${props => props.bgImage}) no-repeat center center;
+  background-size: cover;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+`;
+
+const CardBack = styled(CardFace)`
+  background-color: #1a1a1d;
+  color: white;
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CardTitle = styled.div`
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-size: 12px;
+  margin-bottom: 10px;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
 `;
 
 const Card = ({ ingredient, onSelect, isSelected }) => {
+  const cardVariants = {
+    hover: { scale: 1.05 },
+    tap: { scale: 0.95 }
+  };
+
   return (
-    <CardContainer 
+    <CardContainer
       onClick={() => onSelect(ingredient.card_id)}
-      style={{ transform: isSelected ? 'scale(1.1)' : 'none' }}
+      variants={cardVariants}
+      initial={false}
+      animate={isSelected ? 'tap' : 'hover'}
+      whileHover="hover"
+      whileTap="tap"
     >
-    <CardInner> 
-        <CardFront>
-          <CardImage src={`/images/${ingredient.card_name.toLowerCase()}.webp`} alt={ingredient.card_name} />
-          {/* <CardImage src={`/images/egg.webp`} alt={ingredient.name} /> */}
-          <CardText>{ingredient.card_name}</CardText>
-          <DessertIcons>
-            <DessertIcon key="CAKE" src={`/images/cake.webp`} alt="cake" />
-          {/* {desserts.map(dessert => (
-            <DessertIcon key={dessert.id} src={`/images/${dessert.icon}`} alt={dessert.name} />
-          ))} */}
-          </DessertIcons>
+      <CardInner>
+        <CardFront bgImage={`/images/${ingredient.card_name.toLowerCase().replace(/ /g, '_')}.webp`} alt={ingredient.name}>
+          <CardTitle>{ingredient.card_name}</CardTitle>
         </CardFront>
         <CardBack>
           <p>Desserted</p>

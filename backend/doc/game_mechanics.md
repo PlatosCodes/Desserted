@@ -14,14 +14,11 @@
 - Sugar (Common)
 - Eggs (Common)
 - Butter (Common)
-- Cocoa (Rare)
 - Vanilla (Rare)
 - Berries (Rare - various types like Strawberries, Blueberries)
 - Cream Cheese (Epic)
-- Saffron (Epic)
 - Honey (Epic)
-- Dark Chocolate (Epic)
-- Matcha Powder (Epic)
+- Chocolate (Epic)
 - Edible Gold Leaf (Epic)
 
 ### Desserts List
@@ -29,10 +26,10 @@
 - Pie (15 Points) - Requires Flour, Butter, Berries
 - Chocolate Chip Cookies (20 Points) - Requires Flour, Sugar, Dark Chocolate
 - Cheesecake (25 Points) - Requires Cream Cheese, Eggs, Vanilla
-- Tiramisu (30 Points) - Requires Coffee, Cream Cheese, Cocoa
-- Matcha Cake (35 Points) - Requires Flour, Matcha Powder, Eggs
-- Saffron Panna Cotta (40 Points) - Requires Cream, Saffron, Sugar
-- Gourmet Truffles (45 Points) - Requires Dark Chocolate, Cream, Honey
+- Marble Cake (30 Points) Flour, Sugar, Eggs, Butter, Vanilla, Chocolate
+- Triple Chocolate Brownies (35 Points) -  Chocolate, Butter, Sugar, Flour, Eggs
+- Gourmet Truffles (40 Points) - Requires Chocolate, Cream Cheese, Honey
+- Raspberry Chocolate Cheesecake (45 Points) - Cream Cheese, Eggs, Sugar, Vanilla, Chocolate, Berries
 - Gold Leaf Cupcakes (50 Points) - Requires Flour, Sugar, Butter, Edible Gold Leaf
 
 ### Special Cards
@@ -41,7 +38,7 @@
 - Double Points: Doubles the points of the next dessert you play.
 - Refresh Hand: Discard your hand and draw the same number of cards.
 - Instant Bake: Play a dessert without using a turn.
-- Mystery Flavor: Add random extra points (1-10) to a dessert.
+- Mystery Ingredient: Add random extra points (1-10) to a dessert.
 - Sabotage: Force another player to skip their turn.
 - Glass of Milk: Add 3 points to your dessert.
 

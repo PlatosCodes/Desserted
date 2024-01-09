@@ -57,11 +57,11 @@ const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, setPlayerHand
                     <MenuItem value="Pie">Pie</MenuItem>
                     <MenuItem value="Chocolate Chip Cookies">Chocolate Chip Cookies</MenuItem>
                     <MenuItem value="Cheesecake">Cheesecake</MenuItem>
-                    <MenuItem value="SaffronPannaCotta">Saffron Panna Cotta</MenuItem>
-
-
-                    {/* Add other dessert options here */}
-
+                    <MenuItem value="Marble Cake">Marble Cake</MenuItem>
+                    <MenuItem value="Triple Chocolate Brownies">Triple Chocolate Brownies</MenuItem>
+                    <MenuItem value="Gourmet Truffles">Gourmet Truffles</MenuItem>
+                    <MenuItem value="Raspberry Chocolate Cheesecake">Raspberry Chocolate Cheesecake</MenuItem>
+                    <MenuItem value="Gold Leaf Cupcakes">Gold Leaf Cupcakes</MenuItem>
                 </Select>
             </FormControl>
             <Button variant="contained" color="primary" 

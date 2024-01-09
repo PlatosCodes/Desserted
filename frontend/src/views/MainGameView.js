@@ -1,7 +1,7 @@
 // src/views/MainGameView.js
 import React, { useEffect, useContext } from 'react';
 import { Container, Typography, CircularProgress, Alert } from '@mui/material';
-import GameBoard from './GameBoard';
+import Gameboard from './Gameboard';
 import { useGame } from '../context/GameContext';
 import apiService from '../services/apiService';
 import { connectWebSocket, closeWebSocket, sendMessage } from '../services/websocketService';
@@ -49,7 +49,7 @@ const MainGameView = () => {
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Main Game</Typography>
-            <GameBoard gameState={gameState} />
+            <Gameboard gameState={gameState} />
         </Container>
     );
 };

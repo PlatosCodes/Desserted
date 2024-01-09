@@ -1,4 +1,4 @@
-// //src/components/GameBoard.js
+// //src/components/Gameboard.js
 import React from 'react';
 import styled from 'styled-components';
 import Hand from './Hand';
@@ -21,7 +21,7 @@ const PlayerInfo = styled.div`
   margin-bottom: 20px;
 `;
 
-const GameBoard = ({ players }) => (
+const Gameboard = ({ players }) => (
   <BoardContainer
     initial={{ scale: 0.8, opacity: 0 }}
     animate={{ scale: 1, opacity: 1 }}
@@ -39,4 +39,4 @@ const GameBoard = ({ players }) => (
   </BoardContainer>
 );
 
-export default GameBoard;
+export default Gameboard;

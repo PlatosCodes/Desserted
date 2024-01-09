@@ -49,8 +49,8 @@ const Login = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.lazy)(_c = () =
 _c2 = Login;
 const Register = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.lazy)(_c3 = () => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_mui_material_TextField_TextField_js"), __webpack_require__.e("vendors-node_modules_mui_material_Grid_Grid_js"), __webpack_require__.e("src_views_Register_js")]).then(__webpack_require__.bind(__webpack_require__, /*! ./views/Register */ "./src/views/Register.js")));
 _c4 = Register;
-const GameBoard = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.lazy)(_c5 = () => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_mui_material_CircularProgress_CircularProgress_js-node_modules_styled-co-7dc10a"), __webpack_require__.e("src_views_MainGameView_js")]).then(__webpack_require__.bind(__webpack_require__, /*! ./views/MainGameView */ "./src/views/MainGameView.js")));
-_c6 = GameBoard;
+const Gameboard = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.lazy)(_c5 = () => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_mui_material_CircularProgress_CircularProgress_js-node_modules_styled-co-7dc10a"), __webpack_require__.e("src_views_MainGameView_js")]).then(__webpack_require__.bind(__webpack_require__, /*! ./views/MainGameView */ "./src/views/MainGameView.js")));
+_c6 = Gameboard;
 const UserProfile = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.lazy)(_c7 = () => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_mui_material_TextField_TextField_js"), __webpack_require__.e("src_views_UserProfile_js")]).then(__webpack_require__.bind(__webpack_require__, /*! ./views/UserProfile */ "./src/views/UserProfile.js")));
 _c8 = UserProfile;
 const Dashboard = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.lazy)(_c9 = () => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_mui_material_TextField_TextField_js"), __webpack_require__.e("src_views_DashboardView_js")]).then(__webpack_require__.bind(__webpack_require__, /*! ./views/DashboardView */ "./src/views/DashboardView.js")));
@@ -111,7 +111,7 @@ function App() {
                 }, this), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)(react_router_dom__WEBPACK_IMPORTED_MODULE_12__.Route, {
                   path: "/gameboard",
                   element: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)(ProtectedRoute, {
-                    element: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)(GameBoard, {}, void 0, false, {
+                    element: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)(Gameboard, {}, void 0, false, {
                       fileName: _jsxFileName,
                       lineNumber: 39,
                       columnNumber: 96
@@ -300,8 +300,8 @@ __webpack_require__.$Refresh$.register(_c, "Login$lazy");
 __webpack_require__.$Refresh$.register(_c2, "Login");
 __webpack_require__.$Refresh$.register(_c3, "Register$lazy");
 __webpack_require__.$Refresh$.register(_c4, "Register");
-__webpack_require__.$Refresh$.register(_c5, "GameBoard$lazy");
-__webpack_require__.$Refresh$.register(_c6, "GameBoard");
+__webpack_require__.$Refresh$.register(_c5, "Gameboard$lazy");
+__webpack_require__.$Refresh$.register(_c6, "Gameboard");
 __webpack_require__.$Refresh$.register(_c7, "UserProfile$lazy");
 __webpack_require__.$Refresh$.register(_c8, "UserProfile");
 __webpack_require__.$Refresh$.register(_c9, "Dashboard$lazy");

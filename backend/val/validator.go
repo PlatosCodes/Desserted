@@ -54,15 +54,15 @@ func ValidateDessert(dessertType string, ingredientCards []string) error {
 
 	// Define the required ingredients for each dessert type
 	requiredIngredients := map[string][]string{
-		util.Cake:                 {"Flour", "Sugar", "Eggs"},
-		util.Pie:                  {"Flour", "Butter", "Berries"},
-		util.ChocolateChipCookies: {"Flour", "Sugar", "Dark Chocolate"},
-		util.Cheesecake:           {"Cream Cheese", "Eggs", "Vanilla"},
-		util.Tiramisu:             {"Coffee", "Cream Cheese", "Cocoa"},
-		util.MatchaCake:           {"Flour", "Matcha Powder", "Eggs"},
-		util.SaffronPannaCotta:    {"Cream", "Saffron", "Sugar"},
-		util.GourmetTruffles:      {"Dark Chocolate", "Cream", "Honey"},
-		util.GoldLeafCupcakes:     {"Flour", "Sugar", "Butter", "Edible Gold Leaf"},
+		util.Cake:                    {"Flour", "Sugar", "Eggs"},
+		util.Pie:                     {"Flour", "Butter", "Berries"},
+		util.ChocolateChipCookies:    {"Flour", "Sugar", "Chocolate"},
+		util.Cheesecake:              {"Cream Cheese", "Eggs", "Vanilla"},
+		util.MarbleCake:              {"Flour", "Sugar", "Eggs", "Butter", "Vanilla", "Chocolate"},
+		util.TripleChocolateBrownies: {"Chocolate", "Butter", "Sugar", "Flour", "Eggs"},
+		util.GourmetTruffles:         {"Chocolate", "Cream Cheese", "Honey"},
+		util.RaspberryChocCheesecake: {"Cream Cheese", "Eggs", "Sugar", "Vanilla", "Chocolate", "Raspberries"},
+		util.GoldLeafCupcakes:        {"Flour", "Sugar", "Butter", "Edible Gold Leaf"},
 	}
 
 	// Check if the ingredient cards match the required ingredients

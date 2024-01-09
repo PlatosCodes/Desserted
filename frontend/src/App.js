@@ -15,7 +15,7 @@ import ListFriendRequestsView from './views/ListFriendRequestsView';
 
 const Login = lazy(() => import('./views/Login'));
 const Register = lazy(() => import('./views/Register'));
-// const GameBoard = lazy(() => import('./views/MainGameView'));
+// const Gameboard = lazy(() => import('./views/MainGameView'));
 const Gameboard = lazy(() => import('./views/GameboardView'));
 const UserProfile = lazy(() => import('./views/UserProfile'));
 const UpdateProfile = lazy(() => import('./views/UpdateProfileView'));
