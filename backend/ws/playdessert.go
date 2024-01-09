@@ -37,8 +37,6 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 		return
 	}
 
-	log.Println("DESSERT PAYLOAD: ", playDessertPayload)
-
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
