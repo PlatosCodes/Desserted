@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const createGame = `-- name: CreateGame :one
@@ -75,6 +76,55 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int64) (Game, error) {
 		&i.StartTime,
 		&i.LastActionTime,
 		&i.EndTime,
+	)
+	return i, err
+}
+
+const getGameByPlayerGameID = `-- name: GetGameByPlayerGameID :one
+SELECT games.game_id, status, created_by, number_of_players, current_turn, current_player_number, start_time, last_action_time, end_time, player_game_id, player_id, player_game.game_id, player_number, player_score, player_status FROM games 
+INNER JOIN 
+  player_game ON games.game_id = player_game.game_id
+WHERE 
+  player_game.player_game_id = $1
+`
+
+type GetGameByPlayerGameIDRow struct {
+	GameID              int64         `json:"game_id"`
+	Status              string        `json:"status"`
+	CreatedBy           int64         `json:"created_by"`
+	NumberOfPlayers     int32         `json:"number_of_players"`
+	CurrentTurn         int32         `json:"current_turn"`
+	CurrentPlayerNumber sql.NullInt32 `json:"current_player_number"`
+	StartTime           time.Time     `json:"start_time"`
+	LastActionTime      sql.NullTime  `json:"last_action_time"`
+	EndTime             sql.NullTime  `json:"end_time"`
+	PlayerGameID        int64         `json:"player_game_id"`
+	PlayerID            int64         `json:"player_id"`
+	GameID_2            int64         `json:"game_id_2"`
+	PlayerNumber        sql.NullInt32 `json:"player_number"`
+	PlayerScore         int32         `json:"player_score"`
+	PlayerStatus        string        `json:"player_status"`
+}
+
+func (q *Queries) GetGameByPlayerGameID(ctx context.Context, playerGameID int64) (GetGameByPlayerGameIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getGameByPlayerGameID, playerGameID)
+	var i GetGameByPlayerGameIDRow
+	err := row.Scan(
+		&i.GameID,
+		&i.Status,
+		&i.CreatedBy,
+		&i.NumberOfPlayers,
+		&i.CurrentTurn,
+		&i.CurrentPlayerNumber,
+		&i.StartTime,
+		&i.LastActionTime,
+		&i.EndTime,
+		&i.PlayerGameID,
+		&i.PlayerID,
+		&i.GameID_2,
+		&i.PlayerNumber,
+		&i.PlayerScore,
+		&i.PlayerStatus,
 	)
 	return i, err
 }

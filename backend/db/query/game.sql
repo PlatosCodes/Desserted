@@ -7,6 +7,13 @@ RETURNING *;
 SELECT * FROM games 
 WHERE game_id = $1;
 
+-- name: GetGameByPlayerGameID :one
+SELECT * FROM games 
+INNER JOIN 
+  player_game ON games.game_id = player_game.game_id
+WHERE 
+  player_game.player_game_id = $1;
+
 -- name: ListGamePlayers :many
 SELECT * FROM player_game 
 WHERE game_id = $1 

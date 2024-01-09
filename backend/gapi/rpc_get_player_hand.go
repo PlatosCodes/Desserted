@@ -40,7 +40,7 @@ func (server *Server) GetPlayerHand(ctx context.Context, req *pb.GetPlayerHandRe
 			PlayerHandId: card.PlayerHandID,
 			PlayerGameId: card.PlayerGameID,
 			CardId:       card.CardID,
-			CardName:     card.Name,
+			Name:         card.Name,
 		})
 	}
 

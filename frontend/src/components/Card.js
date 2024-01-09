@@ -68,6 +68,8 @@ const Card = ({ ingredient, onSelect, isSelected }) => {
     tap: { scale: 0.95 }
   };
 
+  const cardName = ingredient?.name || 'Unknown Card';
+
   return (
     <CardContainer
       onClick={() => onSelect(ingredient.card_id)}
@@ -78,8 +80,8 @@ const Card = ({ ingredient, onSelect, isSelected }) => {
       whileTap="tap"
     >
       <CardInner>
-        <CardFront bgImage={`/images/${ingredient.card_name.toLowerCase().replace(/ /g, '_')}.webp`} alt={ingredient.name}>
-          <CardTitle>{ingredient.card_name}</CardTitle>
+        <CardFront bgImage={`/images/${cardName.toLowerCase().replace(/ /g, '_')}.webp`} alt={cardName}>
+          <CardTitle>{cardName}</CardTitle>
         </CardFront>
         <CardBack>
           <p>Desserted</p>

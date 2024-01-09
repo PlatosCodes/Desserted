@@ -1291,7 +1291,7 @@
           "type": "string",
           "format": "int64"
         },
-        "cardName": {
+        "name": {
           "type": "string"
         }
       }

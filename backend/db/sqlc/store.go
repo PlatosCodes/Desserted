@@ -21,6 +21,7 @@ type Store interface {
 	InitializeDeck(ctx context.Context, gameID int64, cardIDs []int64) (int64, error)
 	DrawCard(ctx context.Context, arg DrawCardTxParams) (DrawCardTxResult, error)
 	PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error)
+	RefreshPlayerPantryTx(ctx context.Context, playerGameID int64) error
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -45,7 +46,6 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 	}
 
 	q := New(tx)
-
 	err = fn(q)
 
 	if err != nil {
@@ -230,7 +230,7 @@ type DrawCardTxParams struct {
 
 type DrawCardTxResult struct {
 	CardID       int64  `json:"card_id"`
-	CardName     string `json:"card_name"`
+	CardName     string `json:"name"`
 	PlayerGameID int64  `json:"player_game_id"`
 	PlayerHandID int64  `json:"player_hand_id"`
 }
@@ -313,13 +313,21 @@ type PlayDessertTxResult struct {
 
 func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error) {
 	var result PlayDessertTxResult
-
-	log.Println("Dessert args:", arg)
+	var doublePointsMultiplier int32 = 1
+	var extraPoints int32 = 0
+	var wildcardUsed bool = false
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
 		ingredientsList := []string{}
+		requiredIngredients, err := util.GetRequiredIngredientsForDessert(arg.DessertName)
+		if err != nil {
+			log.Printf("Invalid dessert: %v", err)
+			// Send error back to client
+			return fmt.Errorf("invalid dessert: %v", err)
+		}
+
 		// Validate and process each card
 		for _, cardID := range arg.CardIDs {
 			// Fetch each card and validate
@@ -354,7 +362,25 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 				return fmt.Errorf("error removing card from hand: %w", err)
 			}
 
+			if card.Type == util.Special {
+				switch card.Name {
+				case "Wildcard Ingredient":
+					wildcardUsed = true
+				case "Double Points":
+					doublePointsMultiplier = 2
+				case "Glass of Milk":
+					extraPoints += 3
+				case "Mystery Ingredient":
+					extraPoints += getRandomPoints()
+				}
+				continue // Skip adding special cards to ingredientsList
+			}
+
 			ingredientsList = append(ingredientsList, card.Name)
+		}
+
+		if wildcardUsed {
+			ingredientsList = appendMissingIngredientWithWildcard(ingredientsList, requiredIngredients)
 		}
 
 		// Validate the dessert
@@ -384,9 +410,12 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 			return fmt.Errorf("error getting player's previous score: %w", err)
 		}
 
+		// Calculate points considering special cards
+		totalPoints := (dessert.Points * doublePointsMultiplier) + extraPoints
+
 		updatedPlayerGame, err := q.UpdatePlayerScore(ctx, UpdatePlayerScoreParams{
 			PlayerGameID: arg.PlayerGameID,
-			PlayerScore:  currPlayer.PlayerScore + dessert.Points,
+			PlayerScore:  currPlayer.PlayerScore + totalPoints,
 		})
 		if err != nil {
 			return fmt.Errorf("error updating player's score: %w", err)
@@ -407,4 +436,86 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 	})
 
 	return result, err
+}
+
+// appendMissingIngredientWithWildcard adds a missing ingredient using the wildcard
+func appendMissingIngredientWithWildcard(ingredientsList []string, requiredIngredients []string) []string {
+	ingredientMap := make(map[string]bool)
+	for _, ingredient := range ingredientsList {
+		ingredientMap[ingredient] = true
+	}
+
+	for _, required := range requiredIngredients {
+		if !ingredientMap[required] {
+			ingredientsList = append(ingredientsList, required)
+			break // Only substitute for one missing ingredient
+		}
+	}
+
+	return ingredientsList
+}
+
+// RefreshPlayerHand discards the player's hand and draws the same number of new cards.
+func (store *SQLStore) RefreshPlayerPantryTx(ctx context.Context, playerGameID int64) error {
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+
+		// Fetch the gameID based on playerGameID
+		game, err := store.GetGameByPlayerGameID(ctx, playerGameID)
+		if err != nil {
+			return fmt.Errorf("failed to get game with playerGameID: %w", err)
+		}
+		gameID := game.GameID
+
+		// Fetch current player hand
+		currentHand, err := store.GetPlayerHand(ctx, playerGameID)
+		if err != nil {
+			return err
+		}
+
+		// Remove all cards in hand
+		for _, card := range currentHand {
+			err := store.RemoveCardFromPlayerHand(ctx, RemoveCardFromPlayerHandParams{
+				PlayerGameID: playerGameID,
+				CardID:       card.CardID,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		// Draw new cards equal to the number of discarded cards
+		for i := 0; i < len(currentHand); i++ {
+			topCard, err := store.DrawTopCard(ctx, gameID)
+			if err != nil {
+				return fmt.Errorf("failed to draw top card: %w", err)
+			}
+			_, err = store.AddCardToPlayerHand(ctx, AddCardToPlayerHandParams{
+				PlayerGameID: playerGameID,
+				CardID:       topCard,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to add card to player's hand: %w", err)
+			}
+			err = store.RemoveCardFromDeck(ctx, RemoveCardFromDeckParams{
+				GameID: gameID,
+				CardID: topCard,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to remove card from game deck: %w", err)
+			}
+		}
+
+		log.Println("We got the hand: ", gameID)
+		return nil
+
+	})
+	log.Println(err)
+	return err
+}
+
+// getRandomPoints returns a random integer between 1 and 10
+func getRandomPoints() int32 {
+	return util.Rand().Int31n(10) + 1
 }

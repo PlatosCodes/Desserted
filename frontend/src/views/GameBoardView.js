@@ -1,7 +1,7 @@
 // src/views/Gameboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { Container, Grid, Typography, Button, CircularProgress } from '@mui/material';
+import { Container, Grid, Typography, Button, CircularProgress, Snackbar } from '@mui/material';
 import Hand from '../components/Hand';
 import PlayArea from '../components/PlayArea';
 import Scoreboard from '../components/Scoreboard';
@@ -21,6 +21,9 @@ const GameboardView = () => {
     const [playerScores, setPlayerScores] = useState([]);
     const [currentPlayerTurn, setCurrentPlayerTurn] = useState(null)
     const [isLoading, setIsLoading] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
 
     useEffect(() => {
         const token = Cookie.get('access_token');
@@ -104,6 +107,15 @@ const GameboardView = () => {
                     return newHand.sort((a, b) => parseInt(a.card_id) - parseInt(b.card_id));
                 });
                 break;
+            case 'refreshPantry':
+                if (Array.isArray(data.hand)) {
+                    setPlayerHand(data.hand);
+                    setSnackbarMessage("Pantry has been refreshed!");
+                    setSnackbarOpen(true);
+                } else {
+                    console.error('Invalid hand data received', data.hand);
+                }
+                break;
             case 'scoreUpdate':
                 updateScores(data.players);
                 break;
@@ -152,6 +164,11 @@ const GameboardView = () => {
         setPlayerScores(updatedScores);
     };
 
+    // Snackbar close handler
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
     if (isLoading) return <CircularProgress />;
     if (!game) return <Typography variant="h6">Game not found or error loading game</Typography>;
     
@@ -181,6 +198,12 @@ const GameboardView = () => {
             <Button onClick={handleEndTurn} disabled={currentPlayerTurn !== parseInt(player_number,10)}>
                 End Turn
             </Button>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                message={snackbarMessage}
+            />
         </Container>
     );
 };
