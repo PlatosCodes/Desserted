@@ -1,5 +1,5 @@
 // src/views/Gameboard.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Container, Grid, Typography, Button, CircularProgress, Snackbar } from '@mui/material';
 import Hand from '../components/Hand';
@@ -23,11 +23,16 @@ const GameboardView = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const selectedCardsRef = useRef(selectedCards);
+
+    useEffect(() => {
+        selectedCardsRef.current = selectedCards;
+    }, [selectedCards]);
 
 
     useEffect(() => {
         const token = Cookie.get('access_token');
-        const ws = connectWebSocket(token, handleMessage);
+        const ws = connectWebSocket(token, game_id, player_game_id, handleMessage);
         
         // Reset the game state and fetch new data when game_id changes
         resetGameState();
@@ -37,7 +42,7 @@ const GameboardView = () => {
             closeWebSocket();
             resetGameState(); 
         };
-    }, [user.id, game_id]);
+    }, [user.id, game_id, player_game_id]);
 
     const resetGameState = () => {
         setPlayerHand([]);
@@ -94,11 +99,38 @@ const GameboardView = () => {
         };
         fetchScores();
     }, []);
+
+    const handleStealCardDetailedNotification = useCallback((data) => {
+        if (data.playerGameID === parseInt(player_game_id, 10)) {
+            // Current player stole a card
+            setPlayerHand(prevHand => prevHand.filter(card => !selectedCardsRef.current.includes(card.card_id)));
+            setPlayerHand(prevHand => {
+                const newHand = [...prevHand, data.card];
+                // Sort the new hand by card_id
+                return newHand.sort((a, b) => parseInt(a.card_id) - parseInt(b.card_id));
+            });          
+            setSelectedCards([]);
+            setSnackbarMessage(`You stole ${data.card.name} from Player ${data.targetPlayerID}`);
+        } else if (data.targetPlayerID === parseInt(player_game_id, 10)) {
+            // Current player had a card stolen
+            setPlayerHand(prevHand => prevHand.filter(card => card.card_id.toString() !== data.card.card_id.toString()));
+            setSnackbarMessage(`Player ${data.playerGameID} stole your ${data.card.name}`);
+        }
+        setSnackbarOpen(true);
+    }, [player_game_id, setSnackbarMessage, setSnackbarOpen, setPlayerHand]);
+
+    
+    const handleStealCardGenericNotification = useCallback((data) => {
+        // Handle generic notification for other players
+        setSnackbarMessage(data.notificationText);
+        setSnackbarOpen(true);
+    }, [setSnackbarMessage, setSnackbarOpen]);
+
     
     const handleMessage = useCallback((event) => {
         const data = JSON.parse(event.data);
         console.log("WebSocket Message Received:", data);
-    
+        
         switch (data.type) {
             case 'drawCardResponse':
                 setPlayerHand(prevHand => {
@@ -116,16 +148,39 @@ const GameboardView = () => {
                     console.error('Invalid hand data received', data.hand);
                 }
                 break;
+            case 'dessertResponse':
+                // Assuming 'data' contains information about the played dessert
+                if(data.success) {
+                    setPlayerHand(prevHand => prevHand.filter(card => !selectedCardsRef.current.includes(card.card_id)));
+                    setSelectedCards([]);
+                    setSnackbarMessage(data.message || "Successfully play dessert");
+                } else {
+                    // Handle failure (e.g., display an error message)
+                    setSnackbarMessage(data.message || "Failed to play dessert");
+                    setSnackbarOpen(true);
+                }
+                break;
+            case 'stealCardDetailedNotification':
+                handleStealCardDetailedNotification(data);
+                break;
+            case 'stealCardGenericNotification':
+                handleStealCardGenericNotification(data);
+                break;
             case 'scoreUpdate':
                 updateScores(data.players);
                 break;
             case 'endTurn':
                 setCurrentPlayerTurn(data.game.current_player_number);
                 break;
+            case 'error':
+                setSnackbarMessage(data.message);
+                setSnackbarOpen(true);
+                break;
             default:
                 console.warn('Unhandled message type:', data.type);
         }
-    }, [setPlayerHand, setPlayerScores, setCurrentPlayerTurn, currentPlayerTurn]);
+    }, [setPlayerHand, setPlayerScores, setCurrentPlayerTurn, setSnackbarMessage, setSnackbarOpen, 
+        handleStealCardDetailedNotification, handleStealCardGenericNotification]);
 
     const handleCardSelect = (cardId) => {
         setSelectedCards(prevSelectedCards => {
@@ -182,6 +237,7 @@ const GameboardView = () => {
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <PlayArea
+                        game_id={game_id}
                         playerGameId={player_game_id}
                         selectedCards={selectedCards}
                         setSelectedCards={setSelectedCards}

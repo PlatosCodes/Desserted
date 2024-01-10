@@ -4,7 +4,7 @@ import { Paper, Typography, Button, Chip, Stack, Select, MenuItem, FormControl, 
 import apiService from '../services/apiService';
 import { sendMessage } from '../services/websocketService';
 
-const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, setPlayerHand, playerHand, currentPlayerTurn, playerNumber}) => {
+const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setPlayerHand, playerHand, currentPlayerTurn, playerNumber}) => {
     const [dessertName, setDessertName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [specialCardType, setSpecialCardType] = useState('');
@@ -15,14 +15,22 @@ const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, setPlayerHand
     };
 
     const handlePlaySpecialCard = () => {
-        sendMessage({
-            type: 'playSpecialCard',
-            data: {
-                player_game_id: parseInt(playerGameId, 10),
-                card_type: specialCardType
-            }
-        });
+        try {
+            sendMessage({
+                type: 'playSpecialCard',
+                data: {
+                    game_id: parseInt(game_id, 10), 
+                    player_game_id: parseInt(playerGameId, 10),
+                    card_type: specialCardType,
+                    card_id: parseInt(selectedCards[0], 10)
+                }
+            });
+        } catch (error) {
+            console.error('Error playing special card:', error);
+            setErrorMessage('Failed to play special card. Please try again.');
+        }
         resetSelections();
+        setErrorMessage('');
     };
 
     const handlePlayDessert = async () => {
@@ -41,16 +49,12 @@ const PlayArea = ({ playerGameId, selectedCards, setSelectedCards, setPlayerHand
             // Send the message through WebSocket
             sendMessage({ type: 'playDessert', data: dessertData });
     
-            // Remove played cards from hand
-            setPlayerHand(prevHand => prevHand.filter(card => !selectedCards.includes(card.card_id)));
-    
-            // Resetting the selected cards
-            setSelectedCards([]);
         } catch (error) {
             console.error('Error playing dessert:', error);
             setErrorMessage('Failed to play dessert. Please try again.');
         }
         resetSelections();
+        setErrorMessage('');
     };
     
 

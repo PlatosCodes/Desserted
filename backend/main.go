@@ -116,8 +116,11 @@ func runGatewayServer(config util.Config, store db.Store) {
 	wsHub := ws.NewHub()
 	go wsHub.Run() // Run WebSocket Hub in its own goroutine
 
+	messageQueue := ws.NewMessageQueue(100) // Adjust size as needed
+	messageQueue.StartProcessing(wsHub)
+
 	mux.Handle("/ws", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ws.ServeWs(wsHub, w, r, config, store, tokenMaker)
+		ws.ServeWs(wsHub, w, r, config, store, messageQueue, tokenMaker)
 	}))
 
 	// Create a sub filesystem that contains the swagger files

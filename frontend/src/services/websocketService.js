@@ -1,8 +1,8 @@
 // src/services/websocketService.js
 let socket;
 
-export const connectWebSocket = (token, onMessageHandler) => {
-  socket = new WebSocket(`ws://localhost:8082/ws?access_token=${token}`);
+export const connectWebSocket = (token, game_id, player_game_id, onMessageHandler) => {
+  socket = new WebSocket(`ws://localhost:8082/ws?access_token=${token}&game_id=${game_id}&player_game_id=${player_game_id}`);
 
   socket.onopen = () => {
     console.log('WebSocket Connected');

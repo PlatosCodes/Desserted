@@ -61,7 +61,7 @@ func ValidateDessert(dessertType string, ingredientCards []string) error {
 		util.MarbleCake:              {"Flour", "Sugar", "Eggs", "Butter", "Vanilla", "Chocolate"},
 		util.TripleChocolateBrownies: {"Chocolate", "Butter", "Sugar", "Flour", "Eggs"},
 		util.GourmetTruffles:         {"Chocolate", "Cream Cheese", "Honey"},
-		util.RaspberryChocCheesecake: {"Cream Cheese", "Eggs", "Sugar", "Vanilla", "Chocolate", "Raspberries"},
+		util.RaspberryChocCheesecake: {"Cream Cheese", "Eggs", "Sugar", "Vanilla", "Chocolate", "Berries"},
 		util.GoldLeafCupcakes:        {"Flour", "Sugar", "Butter", "Edible Gold Leaf"},
 	}
 

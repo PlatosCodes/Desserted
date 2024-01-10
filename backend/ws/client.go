@@ -13,7 +13,7 @@ import (
 
 const (
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
+	pongWait = 5 * time.Minute
 
 	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
@@ -22,7 +22,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 512
+	maxMessageSize = 1024
 )
 
 // Define a type for message handling functions
@@ -39,7 +39,10 @@ type Client struct {
 	userID          int64
 	store           db.Store
 	messageHandlers map[string]messageHandler
+	messageQueue    *MessageQueue
 	mutex           sync.Mutex
+	gameID          int64
+	playerGameID    int64
 }
 
 type WebSocketMessage struct {
@@ -48,7 +51,7 @@ type WebSocketMessage struct {
 }
 
 // NewClient initializes a new client and sets up message handlers
-func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64, store db.Store) *Client {
+func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64, store db.Store, mq *MessageQueue, gameID int64, playerGameID int64) *Client {
 	client := &Client{
 		ctx:             ctx,
 		hub:             hub,
@@ -57,6 +60,9 @@ func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64
 		userID:          userID,
 		store:           store,
 		messageHandlers: make(map[string]messageHandler),
+		messageQueue:    mq,
+		gameID:          gameID,
+		playerGameID:    playerGameID,
 	}
 
 	// Setting up message handlers
@@ -122,11 +128,7 @@ func (c *Client) writePump() {
 			c.mutex.Lock() // Lock for writing
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err == nil {
-				w.Write(message)
-				n := len(c.send)
-				for i := 0; i < n; i++ {
-					w.Write(<-c.send)
-				}
+				w.Write(message) // Write only one message per frame
 				err = w.Close()
 			}
 			c.mutex.Unlock() // Unlock after writing
@@ -154,4 +156,22 @@ func handleWebsocketError(err error, conn *websocket.Conn) {
 		errMsg, _ := json.Marshal(map[string]string{"error": "WebSocket connection closed unexpectedly"})
 		conn.WriteMessage(websocket.TextMessage, errMsg)
 	}
+}
+
+func (c *Client) sendErrorMessage(errorMessage string) {
+	errorResponse := struct {
+		Type    string `json:"type"`
+		Message string `json:"message"`
+	}{
+		Type:    "error",
+		Message: errorMessage,
+	}
+
+	msg, err := json.Marshal(errorResponse)
+	if err != nil {
+		log.Printf("Error marshaling error message: %v", err)
+		return
+	}
+
+	c.send <- msg
 }
