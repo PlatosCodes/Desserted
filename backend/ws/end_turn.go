@@ -79,33 +79,10 @@ func (c *Client) handleEndTurn(payload json.RawMessage) {
 		EndTime:             nil,
 	}
 
-	// // Create a response message
-	// response := pb.GetGameByIDResponse{
-	// 	Game: updatedPbGame,
-	// }
-
-	// // Send the response back to the client
-	// sendEndTurnResponse(c.conn, &response)
-
 	endTurnUpdateMsg := prepareEndTurnUpdateMessage(updatedPbGame)
 	c.hub.broadcast <- endTurnUpdateMsg
 
 }
-
-// // sendEndTurnResponse sends a game response to the client
-// func sendEndTurnResponse(conn *websocket.Conn, response *pb.GetGameByIDResponse) {
-// 	// Marshal the response into JSON
-// 	msg, err := json.Marshal(response)
-// 	if err != nil {
-// 		log.Printf("Error marshaling draw card response: %v", err)
-// 		return
-// 	}
-
-// 	// Send the message through the WebSocket connection
-// 	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-// 		log.Printf("Error sending end turn response: %v", err)
-// 	}
-// }
 
 func prepareEndTurnUpdateMessage(game *pb.Game) []byte {
 	// Define a struct for the message
@@ -136,3 +113,18 @@ func prepareEndTurnUpdateMessage(game *pb.Game) []byte {
 
 	return msg
 }
+
+// // sendEndTurnResponse sends a game response to the client
+// func sendEndTurnResponse(conn *websocket.Conn, response *pb.GetGameByIDResponse) {
+// 	// Marshal the response into JSON
+// 	msg, err := json.Marshal(response)
+// 	if err != nil {
+// 		log.Printf("Error marshaling draw card response: %v", err)
+// 		return
+// 	}
+
+// 	// Send the message through the WebSocket connection
+// 	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+// 		log.Printf("Error sending end turn response: %v", err)
+// 	}
+// }

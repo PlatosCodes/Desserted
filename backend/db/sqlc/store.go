@@ -21,7 +21,8 @@ type Store interface {
 	InitializeDeck(ctx context.Context, gameID int64, cardIDs []int64) (int64, error)
 	DrawCard(ctx context.Context, arg DrawCardTxParams) (DrawCardTxResult, error)
 	PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error)
-	RefreshPlayerPantryTx(ctx context.Context, playerGameID int64) error
+	RefreshPlayerPantryTx(ctx context.Context, playerGameID int64, cardID int64) error
+	StealRandomCardFromPlayerTx(ctx context.Context, playerGameID int64, cardID int64) (StealRandomCardFromPlayerTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -456,7 +457,7 @@ func appendMissingIngredientWithWildcard(ingredientsList []string, requiredIngre
 }
 
 // RefreshPlayerHand discards the player's hand and draws the same number of new cards.
-func (store *SQLStore) RefreshPlayerPantryTx(ctx context.Context, playerGameID int64) error {
+func (store *SQLStore) RefreshPlayerPantryTx(ctx context.Context, playerGameID int64, cardID int64) error {
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
@@ -467,6 +468,24 @@ func (store *SQLStore) RefreshPlayerPantryTx(ctx context.Context, playerGameID i
 			return fmt.Errorf("failed to get game with playerGameID: %w", err)
 		}
 		gameID := game.GameID
+
+		// Check if card is in player's hand
+		inHand, err := q.IsCardInPlayerHand(ctx, IsCardInPlayerHandParams{
+			PlayerGameID: playerGameID,
+			CardID:       cardID,
+		})
+		if err != nil || !inHand {
+			return fmt.Errorf("card not in player's hand: %w", err)
+		}
+
+		// Record card played (not removing from hand because it will be removed when all cards removed below)
+		err = q.RecordPlayedCard(ctx, RecordPlayedCardParams{
+			PlayerGameID: playerGameID,
+			CardID:       cardID,
+		})
+		if err != nil {
+			return fmt.Errorf("error recording card played: %w", err)
+		}
 
 		// Fetch current player hand
 		currentHand, err := store.GetPlayerHand(ctx, playerGameID)
@@ -513,6 +532,110 @@ func (store *SQLStore) RefreshPlayerPantryTx(ctx context.Context, playerGameID i
 	})
 	log.Println(err)
 	return err
+}
+
+type StealRandomCardFromPlayerTxResult struct {
+	TargetPlayerID int64 `json:"target_player_id"`
+	StolenCardID   int64 `json:"stolen_card_id"`
+}
+
+func (store *SQLStore) StealRandomCardFromPlayerTx(ctx context.Context, playerGameID int64, cardID int64) (StealRandomCardFromPlayerTxResult, error) {
+	var targetPlayerID, stolenCardID int64
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+		// Fetch the gameID based on playerGameID
+		game, err := store.GetGameByPlayerGameID(ctx, playerGameID)
+		if err != nil {
+			return fmt.Errorf("failed to get game with playerGameID: %w", err)
+		}
+		gameID := game.GameID
+
+		// Check if steal card is in player's hand
+		inHand, err := q.IsCardInPlayerHand(ctx, IsCardInPlayerHandParams{
+			PlayerGameID: playerGameID,
+			CardID:       cardID,
+		})
+		if err != nil || !inHand {
+			return fmt.Errorf("card not in player's hand: %w", err)
+		}
+
+		// Record steal card played and remove from player's hand
+		err = q.RecordPlayedCard(ctx, RecordPlayedCardParams{
+			PlayerGameID: playerGameID,
+			CardID:       cardID,
+		})
+		if err != nil {
+			return fmt.Errorf("error recording card played: %w", err)
+		}
+
+		err = q.RemoveCardFromPlayerHand(ctx, RemoveCardFromPlayerHandParams{
+			PlayerGameID: playerGameID,
+			CardID:       cardID,
+		})
+		if err != nil {
+			return fmt.Errorf("error removing card from hand: %w", err)
+		}
+
+		// Fetch all player IDs in the current game except the player who played the Steal Card
+		players, err := q.ListGamePlayers(ctx, ListGamePlayersParams{
+			GameID: gameID,
+			Limit:  100,
+			Offset: 0,
+		})
+		if err != nil {
+			return fmt.Errorf("error fetching other player IDs: %w", err)
+		}
+
+		var playerIDs []int64
+
+		for _, player := range players {
+			if player.PlayerGameID != playerGameID {
+				playerIDs = append(playerIDs, player.PlayerGameID)
+			}
+		}
+
+		// Select a random player from the game
+		if len(playerIDs) == 0 {
+			return errors.New("no other players to steal from")
+		}
+		targetPlayerID = playerIDs[util.Rand().Intn(len(playerIDs))]
+
+		// Fetch a random card from the selected player's hand
+		targetHand, err := q.GetPlayerHand(ctx, targetPlayerID)
+		if err != nil {
+			return fmt.Errorf("error fetching target player hand: %w", err)
+		}
+		if len(targetHand) == 0 {
+			return errors.New("target player has no cards to steal")
+		}
+		stolenCardID = targetHand[util.Rand().Intn(len(targetHand))].CardID
+
+		// Remove the stolen card from the target player's hand
+		err = q.RemoveCardFromPlayerHand(ctx, RemoveCardFromPlayerHandParams{
+			PlayerGameID: targetPlayerID,
+			CardID:       stolenCardID,
+		})
+		if err != nil {
+			return fmt.Errorf("error removing card from target player's hand: %w", err)
+		}
+
+		// Add the stolen card to the current player's hand
+		_, err = q.AddCardToPlayerHand(ctx, AddCardToPlayerHandParams{
+			PlayerGameID: playerGameID,
+			CardID:       stolenCardID,
+		})
+		if err != nil {
+			return fmt.Errorf("error adding card to current player's hand: %w", err)
+		}
+
+		return nil
+	})
+
+	return StealRandomCardFromPlayerTxResult{
+		TargetPlayerID: targetPlayerID,
+		StolenCardID:   stolenCardID,
+	}, err
 }
 
 // getRandomPoints returns a random integer between 1 and 10

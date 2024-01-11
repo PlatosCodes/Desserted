@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
@@ -49,6 +50,7 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 
 	if err != nil {
 		log.Println("Error processing PlayDessertTx:", err)
+		c.prepareDessertResponse(false, err.Error())
 		return
 	}
 
@@ -63,10 +65,16 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 		return
 	}
 
-	log.Println("SCORE UPDATE: ", updatedPlayers, "FOR PLAYER: ", playDessertPayload.PlayerGameID)
-	// Prepare and send score update message to all clients
+	// Prepare dessert response
+	dessertResponse := c.prepareDessertResponse(true, fmt.Sprintf("%s successfully played", playDessertPayload.DessertName))
+
+	// Enqueue dessert response message
+	dessertResponseMsg, _ := json.Marshal(dessertResponse)
+	c.messageQueue.Enqueue(dessertResponseMsg)
+
+	// Enqueue score update message
 	scoreUpdateMsg := prepareScoreUpdateMessage(updatedPlayers)
-	c.hub.broadcast <- scoreUpdateMsg
+	c.messageQueue.Enqueue(scoreUpdateMsg)
 }
 
 func prepareScoreUpdateMessage(players []db.PlayerGame) []byte {
@@ -95,6 +103,27 @@ func prepareScoreUpdateMessage(players []db.PlayerGame) []byte {
 	msg, err := json.Marshal(updateMsg)
 	if err != nil {
 		log.Printf("Error marshaling score update message: %v", err)
+		return nil
+	}
+
+	return msg
+}
+
+func (c *Client) prepareDessertResponse(success bool, message string) []byte {
+
+	dessertResponse := struct {
+		Type    string `json:"type"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}{
+		Type:    "dessertResponse",
+		Success: success,
+		Message: message,
+	}
+
+	msg, err := json.Marshal(dessertResponse)
+	if err != nil {
+		log.Printf("Error marshaling dessert response message: %v", err)
 		return nil
 	}
 

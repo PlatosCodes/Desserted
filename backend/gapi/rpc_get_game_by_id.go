@@ -3,7 +3,6 @@ package gapi
 
 import (
 	"context"
-	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	"github.com/PlatosCodes/desserted/backend/pb"
@@ -77,8 +76,6 @@ func (server *Server) GetGameByID(ctx context.Context, req *pb.GetGameByIDReques
 	response := &pb.GetGameByIDResponse{
 		Game: pbGame,
 	}
-
-	log.Println("Response for get game by id:", response)
 
 	return response, nil
 }
