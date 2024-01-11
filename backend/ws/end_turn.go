@@ -2,11 +2,9 @@ package ws
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"log"
 
-	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	pb "github.com/PlatosCodes/desserted/backend/pb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -39,48 +37,26 @@ func (c *Client) handleEndTurn(payload json.RawMessage) {
 
 	ctx := context.Background()
 
-	game, err := c.store.GetGameByID(ctx, endTurnPayload.GameID)
+	updatedGame, err := c.store.EndTurnTx(ctx, endTurnPayload.GameID, endTurnPayload.PlayerGameID)
 	if err != nil {
-		log.Printf("Error getting game info: %v", err)
-		sendErrorMessage(c.conn, "Error getting game info")
-		return
-	}
-
-	// Call the UpdatePlayerNumber function from gRPC service
-	err = c.store.UpdateGameState(ctx, db.UpdateGameStateParams{
-		GameID:      endTurnPayload.GameID,
-		CurrentTurn: game.CurrentTurn + 1,
-		CurrentPlayerNumber: sql.NullInt32{
-			Int32: ((game.CurrentTurn) % game.NumberOfPlayers) + 1,
-			Valid: true,
-		},
-	})
-	if err != nil {
-		log.Printf("Error updating game state : %v", err)
-		sendErrorMessage(c.conn, "Error updating game state")
-		return
-	}
-
-	updatedGame, err := c.store.GetGameByID(ctx, endTurnPayload.GameID)
-	if err != nil {
-		log.Printf("Error getting game info: %v", err)
-		sendErrorMessage(c.conn, "Error getting game info")
+		log.Printf("Error ending turn: %v", err)
+		sendErrorMessage(c.conn, "Error ending turn")
 		return
 	}
 
 	updatedPbGame := &pb.Game{
-		GameId:              updatedGame.GameID,
-		Status:              updatedGame.Status,
-		CreatedBy:           updatedGame.CreatedBy,
-		NumberOfPlayers:     updatedGame.NumberOfPlayers,
-		CurrentTurn:         updatedGame.CurrentTurn,
-		CurrentPlayerNumber: updatedGame.CurrentPlayerNumber.Int32,
-		StartTime:           timestamppb.New(updatedGame.StartTime),
+		GameId:              updatedGame.Game.GameID,
+		Status:              updatedGame.Game.Status,
+		CreatedBy:           updatedGame.Game.CreatedBy,
+		NumberOfPlayers:     updatedGame.Game.NumberOfPlayers,
+		CurrentTurn:         updatedGame.Game.CurrentTurn,
+		CurrentPlayerNumber: updatedGame.Game.CurrentPlayerNumber.Int32,
+		StartTime:           timestamppb.New(updatedGame.Game.StartTime),
 		EndTime:             nil,
 	}
 
 	endTurnUpdateMsg := prepareEndTurnUpdateMessage(updatedPbGame)
-	c.hub.broadcast <- endTurnUpdateMsg
+	c.messageQueue.Enqueue(endTurnUpdateMsg)
 
 }
 
@@ -113,18 +89,3 @@ func prepareEndTurnUpdateMessage(game *pb.Game) []byte {
 
 	return msg
 }
-
-// // sendEndTurnResponse sends a game response to the client
-// func sendEndTurnResponse(conn *websocket.Conn, response *pb.GetGameByIDResponse) {
-// 	// Marshal the response into JSON
-// 	msg, err := json.Marshal(response)
-// 	if err != nil {
-// 		log.Printf("Error marshaling draw card response: %v", err)
-// 		return
-// 	}
-
-// 	// Send the message through the WebSocket connection
-// 	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-// 		log.Printf("Error sending end turn response: %v", err)
-// 	}
-// }

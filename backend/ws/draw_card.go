@@ -30,8 +30,9 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
+	ctx := context.Background()
 	// Call the DrawCard function from your gRPC service
-	card, err := c.store.DrawCard(context.Background(), db.DrawCardTxParams{
+	card, err := c.store.DrawCard(ctx, db.DrawCardTxParams{
 		GameID:       drawCardPayload.GameID,
 		PlayerID:     drawCardPayload.PlayerGameID,
 		PlayerNumber: drawCardPayload.PlayerNumber,
@@ -42,21 +43,7 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 		return
 	}
 
-	// // Create a response message
-	// response := pb.DrawCardResponse{
-	// 	CardId: cardID,
-	// }
-
-	// Send the response back to the client
-	// sendDrawCardResponse(c.conn, &response)
-
 	drawCardUpdateMessage := prepareDrawCardUpdateMessage(card)
-
-	// msg, err := json.Marshal(drawCardUpdateMessage)
-	// if err != nil {
-	// 	log.Printf("Error marshaling draw card response: %v", err)
-	// 	return
-	// }
 
 	// Send the message through the WebSocket connection
 	if err := c.conn.WriteMessage(websocket.TextMessage, drawCardUpdateMessage); err != nil {
@@ -64,27 +51,17 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 	}
 	// c.hub.broadcast <- drawCardUpdateMessage
 
-}
-
-// sendErrorMessage sends an error message to the client
-func sendErrorMessage(conn *websocket.Conn, errorMessage string) {
-	// Implement a function to send an error message to the client
-	// This can be a simple JSON message with an 'error' field
-}
-
-// sendDrawCardResponse sends a draw card response to the client
-func sendDrawCardResponse(conn *websocket.Conn, response *pb.DrawCardResponse) {
-	// Marshal the response into JSON
-	msg, err := json.Marshal(response)
+	// Check if all actions are completed
+	completed, err := c.store.CheckAllActionsCompleted(ctx, drawCardPayload.PlayerGameID)
 	if err != nil {
-		log.Printf("Error marshaling draw card response: %v", err)
-		return
+		log.Printf("Error checking actions completed: %v", err)
+
 	}
 
-	// Send the message through the WebSocket connection
-	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-		log.Printf("Error sending draw card response: %v", err)
+	if completed.Bool {
+		log.Println("MAKE FIX FOR PLAYER WHO's TURN IS OVER -- EVENT DRIVEN DESIGN>")
 	}
+
 }
 
 func prepareDrawCardUpdateMessage(card db.DrawCardTxResult) []byte {
@@ -106,4 +83,25 @@ func prepareDrawCardUpdateMessage(card db.DrawCardTxResult) []byte {
 	}
 
 	return msg
+}
+
+// sendErrorMessage sends an error message to the client
+func sendErrorMessage(conn *websocket.Conn, errorMessage string) {
+	// Implement a function to send an error message to the client
+	// This can be a simple JSON message with an 'error' field
+}
+
+// sendDrawCardResponse sends a draw card response to the client
+func sendDrawCardResponse(conn *websocket.Conn, response *pb.DrawCardResponse) {
+	// Marshal the response into JSON
+	msg, err := json.Marshal(response)
+	if err != nil {
+		log.Printf("Error marshaling draw card response: %v", err)
+		return
+	}
+
+	// Send the message through the WebSocket connection
+	if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+		log.Printf("Error sending draw card response: %v", err)
+	}
 }

@@ -124,6 +124,15 @@ CREATE TABLE game_invitations (
   FOREIGN KEY (game_id) REFERENCES games(game_id)
 );
 
+-- Table: PlayerTurnActionsTable
+-- Records the actions player has taken on a turn
+CREATE TABLE player_turn_actions (
+  player_game_id BIGINT PRIMARY KEY,
+  card_drawn BOOLEAN NOT NULL DEFAULT FALSE,
+  dessert_played BOOLEAN NOT NULL DEFAULT FALSE,
+  special_card_played BOOLEAN NOT NULL DEFAULT FALSE,
+  FOREIGN KEY (player_game_id) REFERENCES player_game(player_game_id)
+);
 
 -- Table: Friends
 -- Records friends
