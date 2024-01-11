@@ -75,6 +75,30 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 	// Enqueue score update message
 	scoreUpdateMsg := prepareScoreUpdateMessage(updatedPlayers)
 	c.messageQueue.Enqueue(scoreUpdateMsg)
+
+	// Check if all actions are completed
+	completed, err := c.store.CheckAllActionsCompleted(ctx, playDessertPayload.PlayerGameID)
+	if err != nil {
+		log.Printf("Error checking actions completed: %v", err)
+
+	}
+
+	log.Println("COMPLETED STATUS IS:", completed)
+
+	if completed.Bool {
+		endTurnPayload := EndTurnPayload{
+			GameID:       result.PlayerGame.GameID,
+			PlayerGameID: playDessertPayload.PlayerGameID,
+		}
+
+		marshaledPayload, err := json.Marshal(endTurnPayload)
+		if err != nil {
+			log.Printf("Error marshaling endTurnPayload response: %v", err)
+			return
+		}
+
+		c.handleEndTurn(marshaledPayload)
+	}
 }
 
 func prepareScoreUpdateMessage(players []db.PlayerGame) []byte {

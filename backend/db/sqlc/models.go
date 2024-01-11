@@ -93,6 +93,13 @@ type PlayerHand struct {
 	CardID       int64 `json:"card_id"`
 }
 
+type PlayerTurnAction struct {
+	PlayerGameID      int64 `json:"player_game_id"`
+	CardDrawn         bool  `json:"card_drawn"`
+	DessertPlayed     bool  `json:"dessert_played"`
+	SpecialCardPlayed bool  `json:"special_card_played"`
+}
+
 type Session struct {
 	ID           uuid.UUID `json:"id"`
 	Username     string    `json:"username"`

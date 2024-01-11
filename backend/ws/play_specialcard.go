@@ -63,6 +63,30 @@ func (c *Client) handlePlaySpecialCard(payload json.RawMessage) {
 
 	// Notify client about the action taken
 	// ...
+
+	// Check if all actions are completed
+	completed, err := c.store.CheckAllActionsCompleted(ctx, specialCardPayload.PlayerGameID)
+	if err != nil {
+		log.Printf("Error checking actions completed: %v", err)
+
+	}
+
+	log.Println("COMPLETED STATUS IS:", completed)
+
+	if completed.Bool {
+		endTurnPayload := EndTurnPayload{
+			GameID:       c.gameID,
+			PlayerGameID: specialCardPayload.PlayerGameID,
+		}
+
+		marshaledPayload, err := json.Marshal(endTurnPayload)
+		if err != nil {
+			log.Printf("Error marshaling endTurnPayload response: %v", err)
+			return
+		}
+
+		c.handleEndTurn(marshaledPayload)
+	}
 }
 
 func (c *Client) sendUpdatedHand(newHand []db.GetPlayerHandRow) {

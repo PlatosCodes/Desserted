@@ -170,6 +170,7 @@ const GameboardView = () => {
                 updateScores(data.players);
                 break;
             case 'endTurn':
+                console.log("I DID RECEIVE!")
                 setCurrentPlayerTurn(data.game.current_player_number);
                 break;
             case 'error':

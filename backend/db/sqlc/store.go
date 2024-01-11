@@ -23,6 +23,7 @@ type Store interface {
 	PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error)
 	RefreshPlayerPantryTx(ctx context.Context, playerGameID int64, cardID int64) error
 	StealRandomCardFromPlayerTx(ctx context.Context, playerGameID int64, cardID int64) (StealRandomCardFromPlayerTxResult, error)
+	EndTurnTx(ctx context.Context, gameID int64, playerGameID int64) (EndTurnTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -171,6 +172,11 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 					return fmt.Errorf("failed to remove card from game deck: %w", err)
 				}
 			}
+
+			err = store.CreatePlayerTurnActions(ctx, playerID)
+			if err != nil {
+				return fmt.Errorf("failed to create entry into player turn actions table: %w", err)
+			}
 		}
 
 		// Retrieve the updated game details
@@ -257,6 +263,16 @@ func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (Draw
 		return rsp, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
+	// Check if player has already drawn a card this turn
+	hasAlreadyDrawnCard, err := store.CheckCardDrawn(ctx, arg.PlayerID)
+	if err != nil {
+		return rsp, fmt.Errorf("failed to get player's drawn card status for this turn: %w", err)
+	}
+
+	if hasAlreadyDrawnCard {
+		return rsp, fmt.Errorf("player has already drawn card this turn: %w", err)
+	}
+
 	// Draw the top card from the game deck
 	cardID, err = store.DrawTopCard(ctx, arg.GameID)
 	if err != nil {
@@ -292,6 +308,11 @@ func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (Draw
 		PlayerHandID: player_hand_id,
 	}
 
+	err = store.UpdateCardDrawnStatus(ctx, arg.PlayerID)
+	if err != nil {
+		return rsp, fmt.Errorf("failed to update player's drawn card status for this turn: %w", err)
+	}
+
 	// Commit transaction
 	if err := tx.Commit(); err != nil {
 		return rsp, fmt.Errorf("failed to commit transaction: %w", err)
@@ -320,6 +341,16 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
+
+		// Check if player has already played a dessert this turn
+		hasAlreadyPlayedDessert, err := store.CheckDessertPlayed(ctx, arg.PlayerGameID)
+		if err != nil {
+			return fmt.Errorf("failed to get player's drawn card status for this turn: %w", err)
+		}
+
+		if hasAlreadyPlayedDessert {
+			return fmt.Errorf("player has already played a dessert this turn: %w", err)
+		}
 
 		ingredientsList := []string{}
 		requiredIngredients, err := util.GetRequiredIngredientsForDessert(arg.DessertName)
@@ -364,6 +395,17 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 			}
 
 			if card.Type == util.Special {
+
+				// Check if player has already played a special card this turn
+				hasAlreadyPlayedSpecialCard, err := store.CheckSpecialCardPlayed(ctx, arg.PlayerGameID)
+				if err != nil {
+					return fmt.Errorf("failed to get player's drawn card status for this turn: %w", err)
+				}
+
+				if hasAlreadyPlayedSpecialCard {
+					return fmt.Errorf("player has already played a special card this turn: %w", err)
+				}
+
 				switch card.Name {
 				case "Wildcard Ingredient":
 					wildcardUsed = true
@@ -372,7 +414,12 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 				case "Glass of Milk":
 					extraPoints += 3
 				case "Mystery Ingredient":
-					extraPoints += getRandomPoints()
+					extraPoints += util.RandomPoints()
+				}
+				// Update special card played status
+				err = q.UpdateSpecialCardPlayedStatus(ctx, arg.PlayerGameID)
+				if err != nil {
+					log.Printf("Error updating special card played status: %v", err)
 				}
 				continue // Skip adding special cards to ingredientsList
 			}
@@ -404,6 +451,12 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 		})
 		if err != nil {
 			return fmt.Errorf("error recording dessert played: %w", err)
+		}
+
+		// Update dessert played status
+		err = q.UpdateDessertPlayedStatus(ctx, arg.PlayerGameID)
+		if err != nil {
+			log.Printf("Error updating dessert played status: %v", err)
 		}
 
 		currPlayer, err := q.GetPlayerGame(ctx, arg.PlayerGameID)
@@ -461,6 +514,16 @@ func (store *SQLStore) RefreshPlayerPantryTx(ctx context.Context, playerGameID i
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
+
+		// Check if player has already played a special card this turn
+		hasAlreadyPlayedSpecialCard, err := store.CheckSpecialCardPlayed(ctx, playerGameID)
+		if err != nil {
+			return fmt.Errorf("failed to get player's drawn card status for this turn: %w", err)
+		}
+
+		if hasAlreadyPlayedSpecialCard {
+			return fmt.Errorf("player has already played a special card this turn: %w", err)
+		}
 
 		// Fetch the gameID based on playerGameID
 		game, err := store.GetGameByPlayerGameID(ctx, playerGameID)
@@ -526,7 +589,12 @@ func (store *SQLStore) RefreshPlayerPantryTx(ctx context.Context, playerGameID i
 			}
 		}
 
-		log.Println("We got the hand: ", gameID)
+		// Update special card played status
+		err = q.UpdateSpecialCardPlayedStatus(ctx, playerGameID)
+		if err != nil {
+			log.Printf("Error updating special card played status: %v", err)
+		}
+
 		return nil
 
 	})
@@ -544,6 +612,17 @@ func (store *SQLStore) StealRandomCardFromPlayerTx(ctx context.Context, playerGa
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
+
+		// Check if player has already played a special card this turn
+		hasAlreadyPlayedSpecialCard, err := store.CheckSpecialCardPlayed(ctx, playerGameID)
+		if err != nil {
+			return fmt.Errorf("failed to get player's drawn card status for this turn: %w", err)
+		}
+
+		if hasAlreadyPlayedSpecialCard {
+			return fmt.Errorf("player has already played a special card this turn: %w", err)
+		}
+
 		// Fetch the gameID based on playerGameID
 		game, err := store.GetGameByPlayerGameID(ctx, playerGameID)
 		if err != nil {
@@ -629,6 +708,12 @@ func (store *SQLStore) StealRandomCardFromPlayerTx(ctx context.Context, playerGa
 			return fmt.Errorf("error adding card to current player's hand: %w", err)
 		}
 
+		// Update special card played status
+		err = q.UpdateSpecialCardPlayedStatus(ctx, playerGameID)
+		if err != nil {
+			log.Printf("Error updating special card played status: %v", err)
+		}
+
 		return nil
 	})
 
@@ -638,7 +723,53 @@ func (store *SQLStore) StealRandomCardFromPlayerTx(ctx context.Context, playerGa
 	}, err
 }
 
-// getRandomPoints returns a random integer between 1 and 10
-func getRandomPoints() int32 {
-	return util.Rand().Int31n(10) + 1
+type EndTurnTxResult struct {
+	Game Game `json:"game"`
+}
+
+// EndTurnTx ends the current turn and updates the game to the next turn
+func (store *SQLStore) EndTurnTx(ctx context.Context, gameID int64, playerGameID int64) (EndTurnTxResult, error) {
+	var result EndTurnTxResult
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+		// Retrieve the current game state
+		game, err := q.GetGameByID(ctx, gameID)
+		if err != nil {
+			return fmt.Errorf("error fetching game: %w", err)
+		}
+
+		// Reset current player turn action status for next turn
+		err = q.ResetTurnActions(ctx, playerGameID)
+		if err != nil {
+			return fmt.Errorf("error resetting player turn actions: %w", err)
+		}
+
+		// Calculate the next turn and player number
+		nextTurn := game.CurrentTurn + 1
+		nextPlayerNumber := ((nextTurn - 1) % game.NumberOfPlayers) + 1
+
+		// Update the game state
+		err = q.UpdateGameState(ctx, UpdateGameStateParams{
+			GameID:      gameID,
+			CurrentTurn: nextTurn,
+			CurrentPlayerNumber: sql.NullInt32{
+				Int32: int32(nextPlayerNumber),
+				Valid: true,
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("error updating game state: %w", err)
+		}
+
+		// Retrieve updated game details
+		result.Game, err = q.GetGameByID(ctx, gameID)
+		if err != nil {
+			return fmt.Errorf("error retrieving updated game: %w", err)
+		}
+
+		return nil
+	})
+
+	return result, err
 }

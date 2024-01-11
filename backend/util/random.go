@@ -70,3 +70,8 @@ func RandomDessertName() string {
 	}
 	return dessertName[rand.Intn(len(dessertName))]
 }
+
+// getRandomPoints returns a random integer between 1 and 10
+func RandomPoints() int32 {
+	return Rand().Int31n(10) + 1
+}

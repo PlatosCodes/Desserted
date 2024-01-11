@@ -17,9 +17,18 @@ type Querier interface {
 	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) (int64, error)
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
 	BlockSession(ctx context.Context, id uuid.UUID) error
+	// Checks if all actions for a turn are completed for a player
+	CheckAllActionsCompleted(ctx context.Context, playerGameID int64) (sql.NullBool, error)
+	// Checks if draw card action for a turn has been completed for a player
+	CheckCardDrawn(ctx context.Context, playerGameID int64) (bool, error)
+	// Checks if play dessert card action for a turn has been completed for a player
+	CheckDessertPlayed(ctx context.Context, playerGameID int64) (bool, error)
+	// Checks if play special card action for a turn has been completed for a player
+	CheckSpecialCardPlayed(ctx context.Context, playerGameID int64) (bool, error)
 	CreateFriendship(ctx context.Context, arg CreateFriendshipParams) (Friend, error)
 	CreateGame(ctx context.Context, createdBy int64) (Game, error)
 	CreateGameInvitationWithUsername(ctx context.Context, arg CreateGameInvitationWithUsernameParams) error
+	CreatePlayerTurnActions(ctx context.Context, playerGameID int64) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Declare the winner of the game
@@ -71,12 +80,20 @@ type Querier interface {
 	RecordPlayedCard(ctx context.Context, arg RecordPlayedCardParams) error
 	RemoveCardFromDeck(ctx context.Context, arg RemoveCardFromDeckParams) error
 	RemoveCardFromPlayerHand(ctx context.Context, arg RemoveCardFromPlayerHandParams) error
+	// Resets the turn actions for a player after their turn
+	ResetTurnActions(ctx context.Context, playerGameID int64) error
 	StartGame(ctx context.Context, arg StartGameParams) error
+	// Updates the card drawn status for a player
+	UpdateCardDrawnStatus(ctx context.Context, playerGameID int64) error
+	// Updates the dessert played status for a player
+	UpdateDessertPlayedStatus(ctx context.Context, playerGameID int64) error
 	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) error
 	UpdateGameStatus(ctx context.Context, arg UpdateGameStatusParams) error
 	UpdatePlayerNumber(ctx context.Context, arg UpdatePlayerNumberParams) error
 	UpdatePlayerScore(ctx context.Context, arg UpdatePlayerScoreParams) (PlayerGame, error)
 	UpdatePlayerStatus(ctx context.Context, arg UpdatePlayerStatusParams) error
+	// Updates the special card played status for a player
+	UpdateSpecialCardPlayedStatus(ctx context.Context, playerGameID int64) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
