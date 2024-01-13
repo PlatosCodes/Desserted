@@ -1,5 +1,5 @@
 // src/components/PlayArea.js
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Paper, Typography, Button, Chip, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import apiService from '../services/apiService';
 import { sendMessage } from '../services/websocketService';
@@ -8,6 +8,11 @@ const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setP
     const [dessertName, setDessertName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [specialCardType, setSpecialCardType] = useState('');
+    const selectedCardsRef = useRef(selectedCards);
+
+    useEffect(() => {
+        selectedCardsRef.current = selectedCards;
+    }, [selectedCards]);
 
     const resetSelections = () => {
         setDessertName('');
@@ -25,6 +30,7 @@ const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setP
                     card_id: parseInt(selectedCards[0], 10)
                 }
             });
+
         } catch (error) {
             console.error('Error playing special card:', error);
             setErrorMessage('Failed to play special card. Please try again.');
@@ -42,13 +48,15 @@ const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setP
         try {
             // Prepare the data for the WebSocket message
             const dessertData = {
+                game_id: parseInt(game_id, 10),
                 player_game_id: parseInt(playerGameId, 10),
                 dessert_name: dessertName,
                 card_ids: selectedCards.map(card_id => parseInt(card_id, 10))
             };
             // Send the message through WebSocket
             sendMessage({ type: 'playDessert', data: dessertData });
-    
+            setPlayerHand(prevHand => prevHand.filter(card => !selectedCardsRef.current.includes(card.card_id)));
+            setSelectedCards([]);
         } catch (error) {
             console.error('Error playing dessert:', error);
             setErrorMessage('Failed to play dessert. Please try again.');

@@ -41,6 +41,8 @@ type Querier interface {
 	EndGame(ctx context.Context, gameID int64) error
 	// Get card by ID
 	GetCardByID(ctx context.Context, cardID int64) (Card, error)
+	// Get card by Name
+	GetCardByName(ctx context.Context, name string) (Card, error)
 	GetDessertByName(ctx context.Context, name string) (Dessert, error)
 	GetDessertIDByName(ctx context.Context, name string) (int64, error)
 	GetDessertsPlayedByPlayer(ctx context.Context, playerGameID int64) ([]int64, error)

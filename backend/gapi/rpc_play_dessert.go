@@ -5,8 +5,8 @@ import (
 	"log"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
+	"github.com/PlatosCodes/desserted/backend/game"
 	"github.com/PlatosCodes/desserted/backend/pb"
-	"github.com/PlatosCodes/desserted/backend/val"
 	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -74,7 +74,7 @@ func (server *Server) PlayDessert(ctx context.Context, req *pb.PlayDessertReques
 	}
 
 	// Validate the dessert
-	err = val.ValidateDessert(req.GetDessertName(), ingredientsList)
+	err = game.ValidateDessert(req.GetDessertName(), ingredientsList)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "invalid ingredients for dessert: %v", err)
 	}

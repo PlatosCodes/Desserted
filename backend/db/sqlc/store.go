@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/PlatosCodes/desserted/backend/util"
-	"github.com/PlatosCodes/desserted/backend/val"
 )
 
 // Store provides all functions to execure db queries and transactions
@@ -20,7 +19,7 @@ type Store interface {
 	StartGameTx(ctx context.Context, arg StartGameTxParams) (StartGameTxResult, error)
 	InitializeDeck(ctx context.Context, gameID int64, cardIDs []int64) (int64, error)
 	DrawCard(ctx context.Context, arg DrawCardTxParams) (DrawCardTxResult, error)
-	PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error)
+	PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayerGame, error)
 	RefreshPlayerPantryTx(ctx context.Context, playerGameID int64, cardID int64) error
 	StealRandomCardFromPlayerTx(ctx context.Context, playerGameID int64, cardID int64) (StealRandomCardFromPlayerTxResult, error)
 	EndTurnTx(ctx context.Context, gameID int64, playerGameID int64) (EndTurnTxResult, error)
@@ -319,194 +318,6 @@ func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (Draw
 	}
 
 	return rsp, nil
-}
-
-type PlayDessertTxParams struct {
-	PlayerGameID int64
-	DessertName  string
-	CardIDs      []int64
-}
-
-type PlayDessertTxResult struct {
-	DessertPlayedID int64
-	PlayerGame      PlayerGame
-	GameOver        bool
-}
-
-func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParams) (PlayDessertTxResult, error) {
-	var result PlayDessertTxResult
-	var doublePointsMultiplier int32 = 1
-	var extraPoints int32 = 0
-	var wildcardUsed bool = false
-
-	err := store.execTx(ctx, func(q *Queries) error {
-		var err error
-
-		// Check if player has already played a dessert this turn
-		hasAlreadyPlayedDessert, err := store.CheckDessertPlayed(ctx, arg.PlayerGameID)
-		if err != nil {
-			return fmt.Errorf("failed to get player's drawn card status for this turn: %w", err)
-		}
-
-		if hasAlreadyPlayedDessert {
-			return fmt.Errorf("player has already played a dessert this turn: %w", err)
-		}
-
-		ingredientsList := []string{}
-		requiredIngredients, err := util.GetRequiredIngredientsForDessert(arg.DessertName)
-		if err != nil {
-			log.Printf("Invalid dessert: %v", err)
-			// Send error back to client
-			return fmt.Errorf("invalid dessert: %v", err)
-		}
-
-		// Validate and process each card
-		for _, cardID := range arg.CardIDs {
-			// Fetch each card and validate
-			card, err := q.GetCardByID(ctx, cardID)
-			if err != nil {
-				return fmt.Errorf("error fetching card: %w", err)
-			}
-
-			// Check if card is in player's hand
-			inHand, err := q.IsCardInPlayerHand(ctx, IsCardInPlayerHandParams{
-				PlayerGameID: arg.PlayerGameID,
-				CardID:       cardID,
-			})
-			if err != nil || !inHand {
-				return fmt.Errorf("card not in player's hand: %w", err)
-			}
-
-			// Record card played and remove from player's hand
-			err = q.RecordPlayedCard(ctx, RecordPlayedCardParams{
-				PlayerGameID: arg.PlayerGameID,
-				CardID:       cardID,
-			})
-			if err != nil {
-				return fmt.Errorf("error recording card played: %w", err)
-			}
-
-			err = q.RemoveCardFromPlayerHand(ctx, RemoveCardFromPlayerHandParams{
-				PlayerGameID: arg.PlayerGameID,
-				CardID:       cardID,
-			})
-			if err != nil {
-				return fmt.Errorf("error removing card from hand: %w", err)
-			}
-
-			if card.Type == util.Special {
-
-				// Check if player has already played a special card this turn
-				hasAlreadyPlayedSpecialCard, err := store.CheckSpecialCardPlayed(ctx, arg.PlayerGameID)
-				if err != nil {
-					return fmt.Errorf("failed to get player's drawn card status for this turn: %w", err)
-				}
-
-				if hasAlreadyPlayedSpecialCard {
-					return fmt.Errorf("player has already played a special card this turn: %w", err)
-				}
-
-				switch card.Name {
-				case "Wildcard Ingredient":
-					wildcardUsed = true
-				case "Double Points":
-					doublePointsMultiplier = 2
-				case "Glass of Milk":
-					extraPoints += 3
-				case "Mystery Ingredient":
-					extraPoints += util.RandomPoints()
-				}
-				// Update special card played status
-				err = q.UpdateSpecialCardPlayedStatus(ctx, arg.PlayerGameID)
-				if err != nil {
-					log.Printf("Error updating special card played status: %v", err)
-				}
-				continue // Skip adding special cards to ingredientsList
-			}
-
-			ingredientsList = append(ingredientsList, card.Name)
-		}
-
-		if wildcardUsed {
-			ingredientsList = appendMissingIngredientWithWildcard(ingredientsList, requiredIngredients)
-		}
-
-		// Validate the dessert
-		err = val.ValidateDessert(arg.DessertName, ingredientsList)
-		if err != nil {
-			log.Printf("Invalid dessert: %v", err)
-			// Send error back to client
-			return fmt.Errorf("invalid dessert: %v", err)
-		}
-
-		// Record the dessert played and update player's score
-		dessert, err := q.GetDessertByName(ctx, arg.DessertName)
-		if err != nil {
-			return fmt.Errorf("error fetching dessert: %w", err)
-		}
-
-		err = q.RecordDessertPlayed(ctx, RecordDessertPlayedParams{
-			PlayerGameID: arg.PlayerGameID,
-			DessertID:    dessert.DessertID,
-		})
-		if err != nil {
-			return fmt.Errorf("error recording dessert played: %w", err)
-		}
-
-		// Update dessert played status
-		err = q.UpdateDessertPlayedStatus(ctx, arg.PlayerGameID)
-		if err != nil {
-			log.Printf("Error updating dessert played status: %v", err)
-		}
-
-		currPlayer, err := q.GetPlayerGame(ctx, arg.PlayerGameID)
-		if err != nil {
-			return fmt.Errorf("error getting player's previous score: %w", err)
-		}
-
-		// Calculate points considering special cards
-		totalPoints := (dessert.Points * doublePointsMultiplier) + extraPoints
-
-		updatedPlayerGame, err := q.UpdatePlayerScore(ctx, UpdatePlayerScoreParams{
-			PlayerGameID: arg.PlayerGameID,
-			PlayerScore:  currPlayer.PlayerScore + totalPoints,
-		})
-		if err != nil {
-			return fmt.Errorf("error updating player's score: %w", err)
-		}
-
-		// Check if the game is won
-		winningCondition, err := q.IsGameWon(ctx, arg.PlayerGameID)
-		if err != nil {
-			return fmt.Errorf("error checking if game was won: %w", err)
-		}
-
-		// Set results
-		result.DessertPlayedID = dessert.DessertID
-		result.PlayerGame = updatedPlayerGame
-		result.GameOver = winningCondition.Bool
-
-		return nil
-	})
-
-	return result, err
-}
-
-// appendMissingIngredientWithWildcard adds a missing ingredient using the wildcard
-func appendMissingIngredientWithWildcard(ingredientsList []string, requiredIngredients []string) []string {
-	ingredientMap := make(map[string]bool)
-	for _, ingredient := range ingredientsList {
-		ingredientMap[ingredient] = true
-	}
-
-	for _, required := range requiredIngredients {
-		if !ingredientMap[required] {
-			ingredientsList = append(ingredientsList, required)
-			break // Only substitute for one missing ingredient
-		}
-	}
-
-	return ingredientsList
 }
 
 // RefreshPlayerHand discards the player's hand and draws the same number of new cards.

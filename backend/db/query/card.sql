@@ -11,7 +11,13 @@ SELECT card_id FROM cards;
 SELECT * FROM cards 
 WHERE card_id = $1;
 
+-- Get card by Name
+-- name: GetCardByName :one
+SELECT * FROM cards 
+WHERE name = $1;
+
 -- List cards by type
 -- name: ListCardsByType :many
 SELECT * FROM cards 
 WHERE type = $1;
+

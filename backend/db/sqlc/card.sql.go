@@ -22,6 +22,19 @@ func (q *Queries) GetCardByID(ctx context.Context, cardID int64) (Card, error) {
 	return i, err
 }
 
+const getCardByName = `-- name: GetCardByName :one
+SELECT card_id, type, name FROM cards 
+WHERE name = $1
+`
+
+// Get card by Name
+func (q *Queries) GetCardByName(ctx context.Context, name string) (Card, error) {
+	row := q.db.QueryRowContext(ctx, getCardByName, name)
+	var i Card
+	err := row.Scan(&i.CardID, &i.Type, &i.Name)
+	return i, err
+}
+
 const listCardIDs = `-- name: ListCardIDs :many
 SELECT card_id FROM cards
 `

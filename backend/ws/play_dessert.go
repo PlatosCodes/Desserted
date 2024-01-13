@@ -3,14 +3,14 @@ package ws
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 
-	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
+	gameservice "github.com/PlatosCodes/desserted/backend/game_service"
 )
 
 // PlayDessertPayload mirrors the PlayDessertRequest from gRPC
 type PlayDessertPayload struct {
+	GameID       int64   `json:"game_id"`
 	PlayerGameID int64   `json:"player_game_id"`
 	DessertName  string  `json:"dessert_name"`
 	CardIDs      []int64 `json:"card_ids"`
@@ -27,6 +27,7 @@ type PlayerGameJSON struct {
 	PlayerGame   int64  `json:"player_game_id"`
 	PlayerId     int64  `json:"player_id"`
 	GameId       int64  `json:"game_id"`
+	PlayerNumber int32  `json:"player_number"`
 	PlayerScore  int32  `json:"player_score"`
 	PlayerStatus string `json:"player_status"`
 }
@@ -42,95 +43,20 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 	defer c.mutex.Unlock()
 
 	ctx := context.Background()
-	result, err := c.store.PlayDessertTx(ctx, db.PlayDessertTxParams{
+
+	// Forward playDessertPayload to the GameService's PlayDessertHandler
+	err := c.gameService.PlayDessertHandler(ctx, gameservice.PlayDessertHandlerParams{
 		PlayerGameID: playDessertPayload.PlayerGameID,
+		GameID:       playDessertPayload.GameID,
 		DessertName:  playDessertPayload.DessertName,
 		CardIDs:      playDessertPayload.CardIDs,
 	})
-
 	if err != nil {
-		log.Println("Error processing PlayDessertTx:", err)
-		c.prepareDessertResponse(false, err.Error())
+		log.Println("Error processing play dessert event:", err)
+		c.sendErrorMessage(err.Error())
 		return
 	}
 
-	// Fetch updated scores
-	updatedPlayers, err := c.store.ListGamePlayers(ctx, db.ListGamePlayersParams{
-		GameID: result.PlayerGame.GameID,
-		Limit:  10,
-		Offset: 0,
-	})
-	if err != nil {
-		log.Printf("Error fetching updated game scores: %v", err)
-		return
-	}
-
-	// Prepare dessert response
-	dessertResponse := c.prepareDessertResponse(true, fmt.Sprintf("%s successfully played", playDessertPayload.DessertName))
-
-	// Enqueue dessert response message
-	dessertResponseMsg, _ := json.Marshal(dessertResponse)
-	c.messageQueue.Enqueue(dessertResponseMsg)
-
-	// Enqueue score update message
-	scoreUpdateMsg := prepareScoreUpdateMessage(updatedPlayers)
-	c.messageQueue.Enqueue(scoreUpdateMsg)
-
-	// Check if all actions are completed
-	completed, err := c.store.CheckAllActionsCompleted(ctx, playDessertPayload.PlayerGameID)
-	if err != nil {
-		log.Printf("Error checking actions completed: %v", err)
-
-	}
-
-	log.Println("COMPLETED STATUS IS:", completed)
-
-	if completed.Bool {
-		endTurnPayload := EndTurnPayload{
-			GameID:       result.PlayerGame.GameID,
-			PlayerGameID: playDessertPayload.PlayerGameID,
-		}
-
-		marshaledPayload, err := json.Marshal(endTurnPayload)
-		if err != nil {
-			log.Printf("Error marshaling endTurnPayload response: %v", err)
-			return
-		}
-
-		c.handleEndTurn(marshaledPayload)
-	}
-}
-
-func prepareScoreUpdateMessage(players []db.PlayerGame) []byte {
-	// Define a struct for the message
-	type ScoreUpdate struct {
-		Type    string           `json:"type"`
-		Players []PlayerGameJSON `json:"players"`
-	}
-
-	var scoreData []PlayerGameJSON
-	for _, player := range players {
-		scoreData = append(scoreData, PlayerGameJSON{
-			PlayerGame:   player.PlayerGameID,
-			PlayerId:     player.PlayerID,
-			GameId:       player.GameID,
-			PlayerScore:  player.PlayerScore,
-			PlayerStatus: player.PlayerStatus,
-		})
-	}
-
-	updateMsg := ScoreUpdate{
-		Type:    "scoreUpdate",
-		Players: scoreData,
-	}
-
-	msg, err := json.Marshal(updateMsg)
-	if err != nil {
-		log.Printf("Error marshaling score update message: %v", err)
-		return nil
-	}
-
-	return msg
 }
 
 func (c *Client) prepareDessertResponse(success bool, message string) []byte {

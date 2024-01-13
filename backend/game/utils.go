@@ -1,22 +1,36 @@
-package util
+package game
 
 import (
 	"errors"
 	"fmt"
 )
 
-// Constants for all supported dessert types
-const (
-	Cake                    = "Cake"
-	Pie                     = "Pie"
-	ChocolateChipCookies    = "Chocolate Chip Cookies"
-	Cheesecake              = "Cheesecake"
-	MarbleCake              = "Marble Cake"
-	TripleChocolateBrownies = "Triple Chocolate Brownies"
-	GourmetTruffles         = "Gourmet Truffles"
-	RaspberryChocCheesecake = "Raspberry Chocolate Cheesecake"
-	GoldLeafCupcakes        = "Gold Leaf Cupcakes"
-)
+// IsSupportedCardType returns true if the card type is supported
+func IsSupportedCardype(card_type string) bool {
+	switch card_type {
+	case Ingredient, Special:
+		return true
+	}
+	return false
+}
+
+// IsSupportedIngredientType returns true if the ingredient type is supported
+func IsSupportedIngredientType(ingredientType string) bool {
+	switch ingredientType {
+	case Flour, Sugar, Eggs, Butter, Vanilla, Berries, CreamCheese, Honey, Chocolate, EdibleGoldLeaf:
+		return true
+	}
+	return false
+}
+
+// IsSupportedSpecialCardType returns true if the special card type is supported
+func IsSupportedSpecialCardType(specialCardType string) bool {
+	switch specialCardType {
+	case WildcardIngredient, DoublePoints, MysteryIngredient, StealCard, RefreshPantry, GlassOfMilk:
+		return true
+	}
+	return false
+}
 
 // IsSupportedDessertType returns true if the dessert type is supported
 func IsSupportedDessertType(dessertType string) bool {
@@ -51,4 +65,8 @@ func GetRequiredIngredientsForDessert(dessertType string) ([]string, error) {
 	}
 
 	return ingredients, nil
+}
+
+func IsGameWon(score int32) bool {
+	return score > WinningScore
 }

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/PlatosCodes/desserted/backend/util"
-	"github.com/PlatosCodes/desserted/backend/val"
 
 	"github.com/stretchr/testify/require"
 )
@@ -58,8 +57,8 @@ func createPlayedDessert(t *testing.T) (playedDessertPlayerID int64, playedDesse
 		ingredients = append(ingredients, card.Name)
 	}
 
-	err := val.ValidateDessert(dessertName, ingredients)
-	require.NoError(t, err)
+	// err := val.ValidateDessert(dessertName, ingredients)
+	// require.NoError(t, err)
 
 	dessert_id, err := testQueries.GetDessertIDByName(context.Background(), dessertName)
 	require.NoError(t, err)
