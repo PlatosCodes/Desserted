@@ -15,17 +15,20 @@ type Hub struct {
 	register      chan *Client      // Register requests from the clients.
 	unregister    chan *Client      // Unregister requests from clients.
 	playerClients map[int64]*Client // Maps playerGameID to Client
+	messageQueue  *MessageQueue
 	mutex         sync.Mutex
 }
 
 // NewHub creates a new Hub.
 func NewHub() *Hub {
+	mq := NewMessageQueue(100)
 	return &Hub{
 		broadcast:     make(chan []byte),
 		register:      make(chan *Client),
 		unregister:    make(chan *Client),
 		clients:       make(map[*Client]bool),
 		playerClients: make(map[int64]*Client),
+		messageQueue:  mq,
 	}
 }
 
@@ -76,6 +79,24 @@ func (h *Hub) sendToClient(playerGameID int64, gameID int64, message interface{}
 			return
 		}
 		client.send <- serializedMessage
+	}
+}
+
+func (h *Hub) broadcastMessage(gameID int64, message []byte) {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
+	log.Printf("Broadcasting message to gameID %d: %s", gameID, string(message))
+
+	for client := range h.clients {
+		if client.gameID == gameID {
+			select {
+			case client.send <- message:
+			default:
+				close(client.send)
+				delete(h.clients, client)
+			}
+		}
 	}
 }
 

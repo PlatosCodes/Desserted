@@ -8,6 +8,7 @@ import (
 	"time"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
+	gameservice "github.com/PlatosCodes/desserted/backend/game_service"
 	"github.com/gorilla/websocket"
 )
 
@@ -38,8 +39,10 @@ type Client struct {
 	send            chan []byte
 	userID          int64
 	store           db.Store
+	gameService     *gameservice.GameService
 	messageHandlers map[string]messageHandler
 	messageQueue    *MessageQueue
+	broadcastChan   chan<- []byte
 	mutex           sync.Mutex
 	gameID          int64
 	playerGameID    int64
@@ -51,7 +54,7 @@ type WebSocketMessage struct {
 }
 
 // NewClient initializes a new client and sets up message handlers
-func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64, store db.Store, mq *MessageQueue, gameID int64, playerGameID int64) *Client {
+func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64, store db.Store, gameService *gameservice.GameService, mq *MessageQueue, broadcastChan chan<- []byte, gameID int64, playerGameID int64) *Client {
 	client := &Client{
 		ctx:             ctx,
 		hub:             hub,
@@ -59,8 +62,10 @@ func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64
 		send:            make(chan []byte, 256),
 		userID:          userID,
 		store:           store,
+		gameService:     gameService,
 		messageHandlers: make(map[string]messageHandler),
 		messageQueue:    mq,
+		broadcastChan:   broadcastChan,
 		gameID:          gameID,
 		playerGameID:    playerGameID,
 	}
@@ -74,8 +79,15 @@ func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64
 	return client
 }
 
+func (c *Client) sendBroadcastMessage(msg []byte) {
+	c.broadcastChan <- msg
+}
+
 func (c *Client) handleMessage(message []byte) {
 	var msg WebSocketMessage
+
+	log.Printf("Received message: %s", string(message))
+
 	err := json.Unmarshal(message, &msg)
 	if err != nil {
 		handleWebsocketError(err, c.conn)

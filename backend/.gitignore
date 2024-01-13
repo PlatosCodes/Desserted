@@ -1,3 +1,6 @@
 # misc 
 
 *.txt
+
+/doc/future_plans.md
+

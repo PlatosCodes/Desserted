@@ -10,7 +10,9 @@ import (
 	"net/http"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
+	gameservice "github.com/PlatosCodes/desserted/backend/game_service"
 	"github.com/PlatosCodes/desserted/backend/gapi"
+
 	"github.com/PlatosCodes/desserted/backend/pb"
 	"github.com/PlatosCodes/desserted/backend/util"
 	"github.com/PlatosCodes/desserted/backend/ws"
@@ -42,8 +44,9 @@ func main() {
 	runDBMigration(config.MigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
+	gameService := gameservice.NewGameService(store)
 
-	go runGatewayServer(config, store) //run in a separate routine
+	go runGatewayServer(config, store, gameService) //run in a separate routine
 	runGrpcServer(config, store)
 }
 
@@ -85,7 +88,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 //go:embed doc/swagger/*
 var swagger embed.FS
 
-func runGatewayServer(config util.Config, store db.Store) {
+func runGatewayServer(config util.Config, store db.Store, gameService *gameservice.GameService) {
 	server, tokenMaker, err := gapi.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server")
@@ -114,13 +117,14 @@ func runGatewayServer(config util.Config, store db.Store) {
 	mux.Handle("/", grpcMux)
 
 	wsHub := ws.NewHub()
-	go wsHub.Run() // Run WebSocket Hub in its own goroutine
+	go wsHub.Run()              // Run WebSocket Hub in its own goroutine
+	go wsHub.HandleGameEvents() // Start handling game events
 
 	messageQueue := ws.NewMessageQueue(100) // Adjust size as needed
 	messageQueue.StartProcessing(wsHub)
 
 	mux.Handle("/ws", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ws.ServeWs(wsHub, w, r, config, store, messageQueue, tokenMaker)
+		ws.ServeWs(wsHub, w, r, config, store, gameService, messageQueue, tokenMaker)
 	}))
 
 	// Create a sub filesystem that contains the swagger files

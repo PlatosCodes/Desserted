@@ -29,7 +29,6 @@ const GameboardView = () => {
         selectedCardsRef.current = selectedCards;
     }, [selectedCards]);
 
-
     useEffect(() => {
         const token = Cookie.get('access_token');
         const ws = connectWebSocket(token, game_id, player_game_id, handleMessage);
@@ -128,6 +127,8 @@ const GameboardView = () => {
 
     
     const handleMessage = useCallback((event) => {
+        console.log("WebSocket Message Received:", event);
+
         const data = JSON.parse(event.data);
         console.log("WebSocket Message Received:", data);
         
@@ -148,17 +149,23 @@ const GameboardView = () => {
                     console.error('Invalid hand data received', data.hand);
                 }
                 break;
-            case 'dessertResponse':
-                // Assuming 'data' contains information about the played dessert
-                if(data.success) {
-                    setPlayerHand(prevHand => prevHand.filter(card => !selectedCardsRef.current.includes(card.card_id)));
-                    setSelectedCards([]);
-                    setSnackbarMessage(data.message || "Successfully play dessert");
-                } else {
-                    // Handle failure (e.g., display an error message)
-                    setSnackbarMessage(data.message || "Failed to play dessert");
-                    setSnackbarOpen(true);
+            case 'dessertPlayedUpdate':
+                console.log("VIVA", data.data)
+                
+                let message = `Player ${data.data.player_number} played ${data.data.dessert_name} dessert for ${data.data.dessert_score} points!`;
+            
+                if (data.data.player_number === parseInt(player_number, 10)) {
+                    message = data.data.success 
+                        ? `You whipped up a ${data.data.dessert_name} dessert for ${data.data.dessert_score} points!` 
+                        : `Failed to play ${data.data.dessert_name}. Check your ingredients!`;
+                    
+                    if (data.data.success) {
+                        setPlayerHand(prevHand => prevHand.filter(card => !selectedCardsRef.current.includes(card.card_id)));
+                        setSelectedCards([]);
+                    }
                 }
+                setSnackbarMessage(message);
+                setSnackbarOpen(true);
                 break;
             case 'stealCardDetailedNotification':
                 handleStealCardDetailedNotification(data);
@@ -167,11 +174,10 @@ const GameboardView = () => {
                 handleStealCardGenericNotification(data);
                 break;
             case 'scoreUpdate':
-                updateScores(data.players);
+                updateScores(data.score_data);
                 break;
-            case 'endTurn':
-                console.log("I DID RECEIVE!")
-                setCurrentPlayerTurn(data.game.current_player_number);
+            case 'endTurnUpdate':
+                setCurrentPlayerTurn(data.end_turn_data.current_player_number);
                 break;
             case 'error':
                 setSnackbarMessage(data.message);
@@ -261,6 +267,36 @@ const GameboardView = () => {
                 onClose={handleSnackbarClose}
                 message={snackbarMessage}
             />
+            {/* Desserts List */}
+            <div className="desserts-list">
+                <Typography variant="h5">Desserts List</Typography>
+                <ul>
+                    <li>Cake (10 Points) - Requires Flour, Sugar, Eggs</li>
+                    <li>Pie (15 Points) - Requires Flour, Butter, Berries</li>
+                    <li>Chocolate Chip Cookies (20 Points) - Requires Flour, Sugar, Dark Chocolate</li>
+                    <li>Cheesecake (25 Points) - Requires Cream Cheese, Eggs, Vanilla</li>
+                    <li>Marble Cake (30 Points) - Requires Flour, Sugar, Eggs, Butter, Vanilla, Chocolate</li>
+                    <li>Triple Chocolate Brownies (35 Points) - Requires Chocolate, Butter, Sugar, Flour, Eggs</li>
+                    <li>Gourmet Truffles (40 Points) - Requires Chocolate, Cream Cheese, Honey</li>
+                    <li>Raspberry Chocolate Cheesecake (45 Points) - Requires Cream Cheese, Eggs, Sugar, Vanilla, Chocolate, Berries</li>
+                    <li>Gold Leaf Cupcakes (50 Points) - Requires Flour, Sugar, Butter, Edible Gold Leaf</li>
+                </ul>
+            </div>
+
+            {/* Special Cards */}
+            <div className="special-cards">
+                <Typography variant="h5">Special Cards</Typography>
+                <ul>
+                    <li>Wildcard Ingredient: Can substitute any one ingredient.</li>
+                    <li>Steal Card: Take a card at random from another player’s hand.</li>
+                    <li>Double Points: Doubles the points of the next dessert you play.</li>
+                    <li>Refresh Hand: Discard your hand and draw the same number of cards.</li>
+                    <li>Instant Bake: Play a dessert without using a turn.</li>
+                    <li>Mystery Ingredient: Add random extra points (1-10) to a dessert.</li>
+                    <li>Sabotage: Force another player to skip their turn.</li>
+                    <li>Glass of Milk: Add 3 points to your dessert.</li>
+                </ul>
+            </div>
         </Container>
     );
 };

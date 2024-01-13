@@ -7,13 +7,16 @@ import (
 	"strconv"
 
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
+	gameservice "github.com/PlatosCodes/desserted/backend/game_service"
 	"github.com/PlatosCodes/desserted/backend/token"
 	"github.com/PlatosCodes/desserted/backend/util"
 
 	"github.com/gorilla/websocket"
 )
 
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, config util.Config, store db.Store, mq *MessageQueue, tokenMaker token.Maker) {
+func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, config util.Config, store db.Store, gameService *gameservice.GameService, mq *MessageQueue, tokenMaker token.Maker) {
+	var broadcastChan chan<- []byte
+
 	// Define upgrader here with dynamic CheckOrigin
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -62,7 +65,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, config util.Confi
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	client := NewClient(ctx, hub, conn, payload.UserID, store, mq, gameID, playerGameID)
+	client := NewClient(ctx, hub, conn, payload.UserID, store, gameService, mq, broadcastChan, gameID, playerGameID)
 	hub.register <- client
 
 	go client.writePump()
