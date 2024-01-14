@@ -7,7 +7,7 @@ bin/
 pkg/
 
 # Environment files
-.env
+*.env
 
 ./frontend/src/first.txt
 ./frontend/src/end.txt
