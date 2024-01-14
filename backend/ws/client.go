@@ -79,9 +79,9 @@ func NewClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID int64
 	return client
 }
 
-func (c *Client) sendBroadcastMessage(msg []byte) {
-	c.broadcastChan <- msg
-}
+// func (c *Client) sendBroadcastMessage(msg []byte) {
+// 	c.broadcastChan <- msg
+// }
 
 func (c *Client) handleMessage(message []byte) {
 	var msg WebSocketMessage
@@ -108,8 +108,16 @@ func (c *Client) readPump() {
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+		log.Printf("SetReadDeadline failed: %v", err)
+		return
+	}
+
+	c.conn.SetPongHandler(func(string) error {
+		return c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	})
+
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
@@ -131,32 +139,47 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+				log.Printf("SetWriteDeadline failed: %v", err)
+				return
+			}
+
 			if !ok {
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
+					log.Printf("WriteMessage failed: %v", err)
+				}
 				return
 			}
 
-			c.mutex.Lock() // Lock for writing
+			c.mutex.Lock()
 			w, err := c.conn.NextWriter(websocket.TextMessage)
-			if err == nil {
-				w.Write(message) // Write only one message per frame
-				err = w.Close()
-			}
-			c.mutex.Unlock() // Unlock after writing
-
 			if err != nil {
+				c.mutex.Unlock()
+				log.Printf("NextWriter failed: %v", err)
 				return
 			}
+
+			if _, err := w.Write(message); err != nil {
+				log.Printf("Write failed: %v", err)
+			}
+
+			if err := w.Close(); err != nil {
+				log.Printf("Close failed: %v", err)
+			}
+			c.mutex.Unlock()
 
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-			c.mutex.Lock() // Lock for writing ping
-			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				c.mutex.Unlock() // Unlock before returning
+			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+				log.Printf("SetWriteDeadline failed: %v", err)
 				return
 			}
-			c.mutex.Unlock() // Unlock after writing ping
+			c.mutex.Lock()
+			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Printf("WriteMessage failed: %v", err)
+				c.mutex.Unlock()
+				return
+			}
+			c.mutex.Unlock()
 		}
 	}
 }

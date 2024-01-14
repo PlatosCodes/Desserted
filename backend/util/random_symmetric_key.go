@@ -1,8 +1,8 @@
 package util
 
 import (
+	"crypto/rand"
 	"encoding/hex"
-	"math/rand"
 )
 
 func RandomSymmetricKey() string {

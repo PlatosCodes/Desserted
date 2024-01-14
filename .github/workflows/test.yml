@@ -23,6 +23,7 @@ jobs:
             POSTGRES_USER: root
             POSTGRES_PASSWORD: bluecomet
             POSTGRES_DB: desserted-test
+            DB_SOURCE: ${{ secrets.TEST_DB_SOURCE }}
           ports:
             - 5432:5432
           options: >-
@@ -65,7 +66,6 @@ jobs:
         ACCESS_TOKEN_DURATION: 15m
         REFRESH_TOKEN_DURATION: 24h
         DB_DRIVER: postgres
-        DB_SOURCE: ${{ secrets.TEST_DB_SOURCE }}
         SMTP_HOST: smtp.gmail.com
         SMTP_PORT: 587
         SMTP_USERNAME: codingplato@gmail.com

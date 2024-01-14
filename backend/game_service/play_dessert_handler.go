@@ -91,7 +91,10 @@ func (s *GameService) PlayDessertHandler(ctx context.Context, arg PlayDessertHan
 
 	// If specialCard != nil, update Special Card played in the database
 	if specialCard != nil {
-		s.store.UpdateSpecialCardPlayedStatus(ctx, arg.PlayerGameID)
+		err = s.store.UpdateSpecialCardPlayedStatus(ctx, arg.PlayerGameID)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Check if the game is won
@@ -122,7 +125,11 @@ func (s *GameService) PlayDessertHandler(ctx context.Context, arg PlayDessertHan
 
 	if completed.Bool {
 		// notify EndTurnHandler to send event message to end turn, and reset the player's turn actions for next turn
-		s.EndTurnHandler(ctx, arg.GameID, arg.PlayerGameID)
+		err = s.EndTurnHandler(ctx, arg.GameID, arg.PlayerGameID)
+		if err != nil {
+			log.Printf("Error handling end turn event: %v", err)
+			return fmt.Errorf("error handling end turn event: %v", err)
+		}
 		log.Printf("Player %v has completed all actions for this turn", updatedPlayerGame.PlayerNumber)
 	}
 

@@ -26,19 +26,19 @@ func StartEventDispatcher(handleEvent func(Event)) {
 	})
 }
 
-func (s *GameService) emitDessertPlayEvent(gameID, playerGameID int64, playerNumber int32, dessertName string, score int32, success, gameOver bool) {
-	event := Event{
-		Type: EventTypeDessertPlayed,
-		Data: DessertPlayedData{
-			GameID:       gameID,
-			PlayerGameID: playerGameID,
-			PlayerNumber: playerNumber,
-			DessertName:  dessertName,
-			Score:        score,
-			DessertScore: score,
-			GameOver:     gameOver,
-			Success:      success,
-		},
-	}
-	EmitEvent(event)
-}
+// func (s *GameService) emitDessertPlayEvent(gameID, playerGameID int64, playerNumber int32, dessertName string, score int32, success, gameOver bool) {
+// 	event := Event{
+// 		Type: EventTypeDessertPlayed,
+// 		Data: DessertPlayedData{
+// 			GameID:       gameID,
+// 			PlayerGameID: playerGameID,
+// 			PlayerNumber: playerNumber,
+// 			DessertName:  dessertName,
+// 			Score:        score,
+// 			DessertScore: score,
+// 			GameOver:     gameOver,
+// 			Success:      success,
+// 		},
+// 	}
+// 	EmitEvent(event)
+// }
