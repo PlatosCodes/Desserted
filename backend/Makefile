@@ -11,7 +11,6 @@ LOCAL_DB_PATH := /Users/alexmerola/Developer/desserted/backend/db
 DB_URL := postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable
 TEST_DB_URL := postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${TEST_DB_NAME}?sslmode=disable
 
-
 # Docker PostgreSQL container setup
 network:
 	docker network create desserted-network

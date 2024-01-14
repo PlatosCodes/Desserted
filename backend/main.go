@@ -71,7 +71,7 @@ func runDBMigration(migrationURL string, dbSource string) {
 func runGrpcServer(config util.Config, store db.Store, mailer *mailer.Mailer) {
 	server, _, err := gapi.NewServer(config, store, mailer)
 	if err != nil {
-		log.Fatal("cannot create server")
+		log.Fatal("cannot create server1", err)
 	}
 
 	grpcServer := grpc.NewServer()
@@ -98,7 +98,7 @@ var swagger embed.FS
 func runGatewayServer(config util.Config, store db.Store, gameService *gameservice.GameService, mailer *mailer.Mailer) {
 	server, tokenMaker, err := gapi.NewServer(config, store, mailer)
 	if err != nil {
-		log.Fatal("cannot create server")
+		log.Fatal("cannot create server2", err)
 	}
 
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{

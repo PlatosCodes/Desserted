@@ -1,6 +1,7 @@
 package token
 
 import (
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -16,7 +17,12 @@ type PasetoMaker struct {
 
 // NewPasetoMaker creates a new PasetoMaker
 func NewPasetoMaker(symmetricKey string) (Maker, error) {
-	if len(symmetricKey) != chacha20poly1305.KeySize {
+	keyBytes, err := hex.DecodeString(symmetricKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(keyBytes) != chacha20poly1305.KeySize {
 		return nil, fmt.Errorf("invalid key size: must be exactly %d characters", chacha20poly1305.KeySize)
 	}
 

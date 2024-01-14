@@ -1,4 +1,5 @@
 -- SQL Schema for Desserted
+CREATE EXTENSION IF NOT EXISTS citext;
 
 -- Table: Users
 -- Stores user account information
