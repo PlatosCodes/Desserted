@@ -135,9 +135,14 @@ func (c *Client) notifyPlayersAboutSteal(playerGameID int64, targetPlayerID int6
 		StolenCard:     card,
 	}
 
+	detailedNotificationJSON, err := json.Marshal(detailedNotification)
+	if err != nil {
+		log.Printf("Error marshaling detailed notification for steal card: %w", err)
+	}
+
 	// Send detailed notifications
-	c.hub.sendToClient(playerGameID, gameID, detailedNotification)
-	c.hub.sendToClient(targetPlayerID, gameID, detailedNotification)
+	c.hub.sendToClient(playerGameID, gameID, detailedNotificationJSON)
+	c.hub.sendToClient(targetPlayerID, gameID, detailedNotificationJSON)
 
 	// Notify other players with a generic message
 	genericNotification := struct {

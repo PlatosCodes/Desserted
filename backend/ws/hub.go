@@ -61,24 +61,22 @@ func (h *Hub) Run() {
 
 // getClient retrieves a client by playerGameID
 func (h *Hub) getClient(playerGameID int64) *Client {
-	h.mutex.Lock()
-	defer h.mutex.Unlock()
 	if client, ok := h.playerClients[playerGameID]; ok {
 		return client
 	}
 	return nil
 }
 
-func (h *Hub) sendToClient(playerGameID int64, gameID int64, message interface{}) {
+func (h *Hub) sendToClient(playerGameID int64, gameID int64, message []byte) {
+	log.Println("WE GOT HEREEEE")
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
 	client := h.getClient(playerGameID)
 
 	if client != nil && client.gameID == gameID {
-		serializedMessage, err := json.Marshal(message)
-		if err != nil {
-			log.Printf("Error marshaling message: %v", err)
-			return
-		}
-		client.send <- serializedMessage
+		client.send <- message
+		log.Printf("Broadcasting message to client %d in gameID %d: %s", client.playerGameID, gameID, message)
 	}
 }
 

@@ -56,7 +56,7 @@ func (h *Hub) handleCardDrawnEvent(data gameservice.CardDrawnData) {
 	}
 
 	// Broadcast the message to all clients in the game
-	h.broadcastMessage(data.GameID, serializedMsg)
+	h.sendToClient(data.PlayerGameID, data.GameID, serializedMsg)
 }
 
 func (h *Hub) handleDessertPlayedEvent(data gameservice.DessertPlayedData) {
