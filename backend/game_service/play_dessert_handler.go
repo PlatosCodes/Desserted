@@ -139,7 +139,11 @@ func (s *GameService) PlayDessertHandler(ctx context.Context, arg PlayDessertHan
 	}
 
 	if winningCondition {
-		s.EndGameHandler(ctx, arg.GameID, arg.PlayerGameID)
+		err = s.EndGameHandler(ctx, arg.GameID, arg.PlayerGameID)
+		if err != nil {
+			log.Printf("Error handling end game event: %v", err)
+			return fmt.Errorf("error handling end game event: %v", err)
+		}
 		log.Printf("Player %v has won the game", updatedPlayerGame.PlayerNumber)
 	}
 

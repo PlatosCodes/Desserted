@@ -185,11 +185,15 @@ func (c *Client) writePump() {
 }
 
 // handleWebsocketError processes and logs WebSocket errors
-func handleWebsocketError(err error, conn *websocket.Conn) {
+func (c *Client) handleWebsocketError(err error, conn *websocket.Conn) {
 	log.Printf("websocket error: %v", err)
 	if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 		errMsg, _ := json.Marshal(map[string]string{"error": "WebSocket connection closed unexpectedly"})
-		conn.WriteMessage(websocket.TextMessage, errMsg)
+		if err := conn.WriteMessage(websocket.TextMessage, nil); err != nil {
+			log.Printf("WriteMessage failed: %v", errMsg)
+			c.mutex.Unlock()
+			return
+		}
 	}
 }
 
