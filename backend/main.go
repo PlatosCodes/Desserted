@@ -120,8 +120,10 @@ func runGatewayServer(config util.Config, store db.Store, gameService *gameservi
 		log.Fatalf("cannot register handler server: %s", err)
 	}
 
+	limiterMiddleware := gapi.RateLimitMiddleware(5, 10)
+
 	mux := http.NewServeMux()
-	mux.Handle("/", grpcMux)
+	mux.Handle("/", limiterMiddleware(grpcMux))
 
 	wsHub := ws.NewHub()
 	go wsHub.Run()              // Run WebSocket Hub in its own goroutine
