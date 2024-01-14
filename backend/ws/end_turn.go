@@ -16,7 +16,7 @@ func (c *Client) handleEndTurn(payload json.RawMessage) {
 	var endTurnPayload EndTurnPayload
 	if err := json.Unmarshal(payload, &endTurnPayload); err != nil {
 		log.Printf("Error unmarshaling draw card payload: %v", err)
-		sendErrorMessage(c.conn, "Invalid payload for drawing card")
+		c.sendErrorMessage(err.Error())
 		return
 	}
 

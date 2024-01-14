@@ -19,10 +19,11 @@ type Event struct {
 
 // CardDrawnData carries data for a card drawn event
 type CardDrawnData struct {
-	GameID      int64
-	PlayerID    int64
-	DrawnCardID int64
-	PlayerHand  []int64
+	CardID       int64  `json:"card_id"`
+	CardName     string `json:"name"`
+	PlayerGameID int64  `json:"player_game_id"`
+	PlayerHandID int64  `json:"player_hand_id"`
+	GameID       int64  `json:"game_id"`
 }
 
 // DessertPlayedData carries data for a dessert played event

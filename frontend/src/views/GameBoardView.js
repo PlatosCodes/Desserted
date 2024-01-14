@@ -141,7 +141,7 @@ const GameboardView = () => {
         switch (data.type) {
             case 'drawCardResponse':
                 setPlayerHand(prevHand => {
-                    const newHand = [...prevHand, data.card];
+                    const newHand = [...prevHand, data.cardDrawnData];
                     // Sort the new hand by card_id
                     return newHand.sort((a, b) => parseInt(a.card_id) - parseInt(b.card_id));
                 });
