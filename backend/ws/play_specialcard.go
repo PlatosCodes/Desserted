@@ -20,6 +20,7 @@ func (c *Client) handlePlaySpecialCard(payload json.RawMessage) {
 
 	if err := json.Unmarshal(payload, &specialCardPayload); err != nil {
 		log.Printf("Error unmarshaling special card payload: %v", err)
+		c.sendErrorMessage(err.Error())
 		return
 	}
 
@@ -38,6 +39,7 @@ func (c *Client) handlePlaySpecialCard(payload json.RawMessage) {
 			newHand, err := c.store.GetPlayerHand(ctx, specialCardPayload.PlayerGameID)
 			if err != nil {
 				log.Printf("Error fetching new hand: %v", err)
+				c.sendErrorMessage(err.Error())
 			} else {
 				// Send new hand to the client
 				log.Println(newHand)

@@ -36,6 +36,7 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 	var playDessertPayload PlayDessertPayload
 	if err := json.Unmarshal(payload, &playDessertPayload); err != nil {
 		log.Printf("Error unmarshaling play dessert payload: %v", err)
+		c.sendErrorMessage(err.Error())
 		return
 	}
 
@@ -57,25 +58,4 @@ func (c *Client) handlePlayDessert(payload json.RawMessage) {
 		return
 	}
 
-}
-
-func (c *Client) prepareDessertResponse(success bool, message string) []byte {
-
-	dessertResponse := struct {
-		Type    string `json:"type"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-	}{
-		Type:    "dessertResponse",
-		Success: success,
-		Message: message,
-	}
-
-	msg, err := json.Marshal(dessertResponse)
-	if err != nil {
-		log.Printf("Error marshaling dessert response message: %v", err)
-		return nil
-	}
-
-	return msg
 }
