@@ -12,7 +12,9 @@ import (
 // TODO: Write test for invalid token text
 
 func TestPasetoWMaker(t *testing.T) {
-	maker, err := NewPasetoMaker(util.RandomString(32))
+
+	key := util.RandomSymmetricKey()
+	maker, err := NewPasetoMaker(key)
 	require.NoError(t, err)
 
 	userID := util.Rand().Int63()
@@ -39,7 +41,9 @@ func TestPasetoWMaker(t *testing.T) {
 }
 
 func TestExpiredPasetoToken(t *testing.T) {
-	maker, err := NewPasetoMaker(util.RandomString(32))
+	key := util.RandomSymmetricKey()
+
+	maker, err := NewPasetoMaker(key)
 	require.NoError(t, err)
 
 	userID := util.Rand().Int63()
@@ -58,7 +62,9 @@ func TestExpiredPasetoToken(t *testing.T) {
 }
 
 func TestInvalidPasetoToken(t *testing.T) {
-	maker, err := NewPasetoMaker(util.RandomString(32))
+	key := util.RandomSymmetricKey()
+
+	maker, err := NewPasetoMaker(key)
 	require.NoError(t, err)
 
 	userID := util.Rand().Int63()

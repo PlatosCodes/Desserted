@@ -19,7 +19,7 @@ type PasetoMaker struct {
 func NewPasetoMaker(symmetricKey string) (Maker, error) {
 	keyBytes, err := hex.DecodeString(symmetricKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode symmetric key: %v", err)
 	}
 
 	if len(keyBytes) != chacha20poly1305.KeySize {
@@ -28,7 +28,7 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 
 	maker := &PasetoMaker{
 		paseto:       paseto.NewV2(),
-		symmetricKey: []byte(symmetricKey),
+		symmetricKey: keyBytes,
 	}
 	return maker, nil
 }
