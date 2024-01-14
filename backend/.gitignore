@@ -2,5 +2,10 @@
 
 *.txt
 
+*.env
+./app.env
+
+
+
 /doc/future_plans.md
 

@@ -8,6 +8,8 @@ pkg/
 
 # Environment files
 *.env
+./backend/app.env
+./frontend/.env
 
 ./frontend/src/first.txt
 ./frontend/src/end.txt
