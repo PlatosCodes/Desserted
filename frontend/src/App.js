@@ -15,6 +15,7 @@ import ListFriendRequestsView from './views/ListFriendRequestsView';
 
 const Login = lazy(() => import('./views/Login'));
 const Register = lazy(() => import('./views/Register'));
+const ActivateAccount = lazy(() => import('./views/ActivateAccount'));
 // const Gameboard = lazy(() => import('./views/MainGameView'));
 const Gameboard = lazy(() => import('./views/GameBoardView'));
 const UserProfile = lazy(() => import('./views/UserProfile'));
@@ -40,6 +41,7 @@ function App() {
                             <Suspense fallback={<div>Loading...</div>}>
                                 <Routes>
                                     <Route path="/register" element={<Register />} />
+                                    <Route path="/activate" element={<ActivateAccount />} />
                                     <Route path="/login" element={<Login />} />
                                     <Route path="/profile" element={<ProtectedRoute element={<UserProfile />} />} />
                                     <Route path="/update_profile" element={<ProtectedRoute element={<UpdateProfile />} />} />

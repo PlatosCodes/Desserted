@@ -307,10 +307,10 @@ func (store *SQLStore) DrawCard(ctx context.Context, arg DrawCardTxParams) (Draw
 		PlayerHandID: player_hand_id,
 	}
 
-	err = store.UpdateCardDrawnStatus(ctx, arg.PlayerID)
-	if err != nil {
-		return rsp, fmt.Errorf("failed to update player's drawn card status for this turn: %w", err)
-	}
+	// err = store.UpdateCardDrawnStatus(ctx, arg.PlayerID)
+	// if err != nil {
+	// 	return rsp, fmt.Errorf("failed to update player's drawn card status for this turn: %w", err)
+	// }
 
 	// Commit transaction
 	if err := tx.Commit(); err != nil {

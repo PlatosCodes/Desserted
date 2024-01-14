@@ -5,6 +5,7 @@ import { Container, Grid, Typography, Button, CircularProgress, Snackbar } from 
 import Hand from '../components/Hand';
 import PlayArea from '../components/PlayArea';
 import Scoreboard from '../components/Scoreboard';
+import EndGame from '../components/EndGame';
 import { connectWebSocket, sendMessage, closeWebSocket } from '../services/websocketService';
 import { selectUser } from '../features/user/userSlice';
 import Cookie from 'js-cookie';
@@ -19,11 +20,16 @@ const GameboardView = () => {
     const [playerHand, setPlayerHand] = useState([]);
     const [selectedCards, setSelectedCards] = useState([]);
     const [playerScores, setPlayerScores] = useState([]);
+    const [winner, setWinner] = useState(null);
+    const [winningScore, setWinningScore] = useState(null);
+    const [winningMessage, setWinningMessage] = useState(null);
     const [currentPlayerTurn, setCurrentPlayerTurn] = useState(null)
+    const [gameOver, setGameOver] = useState(false)
     const [isLoading, setIsLoading] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const selectedCardsRef = useRef(selectedCards);
+
 
     useEffect(() => {
         selectedCardsRef.current = selectedCards;
@@ -149,9 +155,7 @@ const GameboardView = () => {
                     console.error('Invalid hand data received', data.hand);
                 }
                 break;
-            case 'dessertPlayedUpdate':
-                console.log("VIVA", data.data)
-                
+            case 'dessertPlayedUpdate':                
                 let message = `Player ${data.data.player_number} played ${data.data.dessert_name} dessert for ${data.data.dessert_score} points!`;
             
                 if (data.data.player_number === parseInt(player_number, 10)) {
@@ -179,6 +183,17 @@ const GameboardView = () => {
             case 'endTurnUpdate':
                 setCurrentPlayerTurn(data.end_turn_data.current_player_number);
                 break;
+            case 'endGameUpdate':
+                let endGameMessage = `Player ${data.end_game_data.winner_player_number} has won the game with ${data.end_game_data.winner_player_number} points!`;
+                setCurrentPlayerTurn(0)
+                setGameOver(true);
+                setWinner(data.end_game_data.winner_player_number);
+                setWinningScore(data.end_game_data.dessert_score);
+                setWinningMessage(endGameMessage);
+                setSnackbarMessage(endGameMessage);
+                setSnackbarOpen(true);
+                // console.log("WINNER IS ", winner, "and WINNING SCORE IS ",  winningScore)
+                break;
             case 'error':
                 setSnackbarMessage(data.message);
                 setSnackbarOpen(true);
@@ -186,7 +201,7 @@ const GameboardView = () => {
             default:
                 console.warn('Unhandled message type:', data.type);
         }
-    }, [setPlayerHand, setPlayerScores, setCurrentPlayerTurn, setSnackbarMessage, setSnackbarOpen, 
+    }, [setPlayerHand, setPlayerScores, setCurrentPlayerTurn, setGameOver, setWinner, setWinningScore, setSnackbarMessage, setSnackbarOpen, 
         handleStealCardDetailedNotification, handleStealCardGenericNotification]);
 
     const handleCardSelect = (cardId) => {
@@ -234,13 +249,16 @@ const GameboardView = () => {
     if (isLoading) return <CircularProgress />;
     if (!game) return <Typography variant="h6">Game not found or error loading game</Typography>;
     
+    if (gameOver) {
+        return <EndGame winner={winner} winningScore={winningScore} winningMessage={winningMessage}/>;
+    } else {
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Game Board</Typography>
             <Scoreboard players={playerScores} />
             <Button onClick={handleDrawCard} disabled={currentPlayerTurn !== parseInt(player_number,10)}>
                 Draw Card
-            </Button>            
+            </Button>
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <PlayArea
@@ -299,6 +317,7 @@ const GameboardView = () => {
             </div>
         </Container>
     );
+    }
 };
 
 export default GameboardView;

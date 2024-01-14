@@ -12,6 +12,7 @@ import (
 	db "github.com/PlatosCodes/desserted/backend/db/sqlc"
 	gameservice "github.com/PlatosCodes/desserted/backend/game_service"
 	"github.com/PlatosCodes/desserted/backend/gapi"
+	"github.com/PlatosCodes/desserted/backend/mailer"
 
 	"github.com/PlatosCodes/desserted/backend/pb"
 	"github.com/PlatosCodes/desserted/backend/util"
@@ -46,8 +47,14 @@ func main() {
 	store := db.NewStore(conn)
 	gameService := gameservice.NewGameService(store)
 
-	go runGatewayServer(config, store, gameService) //run in a separate routine
-	runGrpcServer(config, store)
+	mailer := mailer.New(config.SmtpHost, config.SmtpPort, config.SmtpUsername,
+		config.SmtpPassword, config.SmtpSender)
+	if err != nil {
+		log.Fatal("cannot create mailer:", err)
+	}
+
+	go runGatewayServer(config, store, gameService, mailer) //run in a separate routine
+	runGrpcServer(config, store, mailer)
 }
 
 func runDBMigration(migrationURL string, dbSource string) {
@@ -61,8 +68,8 @@ func runDBMigration(migrationURL string, dbSource string) {
 	log.Println("db migrated successfully")
 }
 
-func runGrpcServer(config util.Config, store db.Store) {
-	server, _, err := gapi.NewServer(config, store)
+func runGrpcServer(config util.Config, store db.Store, mailer *mailer.Mailer) {
+	server, _, err := gapi.NewServer(config, store, mailer)
 	if err != nil {
 		log.Fatal("cannot create server")
 	}
@@ -88,8 +95,8 @@ func runGrpcServer(config util.Config, store db.Store) {
 //go:embed doc/swagger/*
 var swagger embed.FS
 
-func runGatewayServer(config util.Config, store db.Store, gameService *gameservice.GameService) {
-	server, tokenMaker, err := gapi.NewServer(config, store)
+func runGatewayServer(config util.Config, store db.Store, gameService *gameservice.GameService, mailer *mailer.Mailer) {
+	server, tokenMaker, err := gapi.NewServer(config, store, mailer)
 	if err != nil {
 		log.Fatal("cannot create server")
 	}

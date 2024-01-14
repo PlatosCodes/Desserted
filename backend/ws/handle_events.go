@@ -10,29 +10,32 @@ import (
 func (h *Hub) HandleGameEvents() {
 	gameservice.StartEventDispatcher(func(event gameservice.Event) {
 		switch event.Type {
-		case gameservice.EventTypeCardDrawn:
-			h.handleCardDrawnEvent(event.Data.(gameservice.CardDrawnData))
+		// case gameservice.EventTypeCardDrawn:
+		// 	h.handleCardDrawnEvent(event.Data.(gameservice.CardDrawnData))
 		case gameservice.EventTypeDessertPlayed:
 			h.handleDessertPlayedEvent(event.Data.(gameservice.DessertPlayedData))
-		case gameservice.EventTypeSpecialCardPlayed:
-			h.handleSpecialCardPlayedEvent(event.Data.(gameservice.SpecialCardPlayedData))
+		// case gameservice.EventTypeSpecialCardPlayed:
+		// 	h.handleSpecialCardPlayedEvent(event.Data.(gameservice.SpecialCardPlayedData))
 		case gameservice.EventTypeScoreUpdate:
 			h.handleScoreUpdateEvent(event.Data.([]gameservice.ScoreUpdateData))
 		case gameservice.EventTypeEndTurn:
 			h.handleEndTurnEvent(event.Data.(gameservice.EndTurnData))
+		case gameservice.EventTypeEndGame:
+			h.handleEndGameEvent(event.Data.(gameservice.EndGameData))
+
 		}
 	})
 }
 
-func (h *Hub) handleCardDrawnEvent(data gameservice.CardDrawnData) {
-	// Convert to WebSocket message and send to relevant clients
-	msg, err := json.Marshal(data) // Customize as needed
-	if err != nil {
-		log.Printf("Error marshaling card drawn data: %v", err)
-		return
-	}
-	h.messageQueue.Enqueue(msg) // Enqueue the message
-}
+// func (h *Hub) handleCardDrawnEvent(data gameservice.CardDrawnData) {
+// 	// Convert to WebSocket message and send to relevant clients
+// 	msg, err := json.Marshal(data) // Customize as needed
+// 	if err != nil {
+// 		log.Printf("Error marshaling card drawn data: %v", err)
+// 		return
+// 	}
+// 	h.messageQueue.Enqueue(msg) // Enqueue the message
+// }
 
 func (h *Hub) handleDessertPlayedEvent(data gameservice.DessertPlayedData) {
 	// Create a message structure as per your frontend requirements
@@ -54,15 +57,15 @@ func (h *Hub) handleDessertPlayedEvent(data gameservice.DessertPlayedData) {
 	h.broadcastMessage(data.GameID, serializedMsg)
 }
 
-func (h *Hub) handleSpecialCardPlayedEvent(data gameservice.SpecialCardPlayedData) {
-	// Convert to WebSocket message and send to relevant clients
-	_, err := json.Marshal(data) // Customize as needed
-	if err != nil {
-		log.Printf("Error marshaling dessert played data: %v", err)
-		return
-	}
-	// h.broadcastMessage(msg)
-}
+// func (h *Hub) handleSpecialCardPlayedEvent(data gameservice.SpecialCardPlayedData) {
+// 	// Convert to WebSocket message and send to relevant clients
+// 	_, err := json.Marshal(data) // Customize as needed
+// 	if err != nil {
+// 		log.Printf("Error marshaling dessert played data: %v", err)
+// 		return
+// 	}
+// 	// h.broadcastMessage(msg)
+// }
 
 func (h *Hub) handleScoreUpdateEvent(scoreData []gameservice.ScoreUpdateData) {
 	msg := struct {
@@ -75,7 +78,7 @@ func (h *Hub) handleScoreUpdateEvent(scoreData []gameservice.ScoreUpdateData) {
 
 	serializedMsg, err := json.Marshal(msg)
 	if err != nil {
-		log.Printf("Error marshaling dessert played data: %v", err)
+		log.Printf("Error marshaling score update data: %v", err)
 		return
 	}
 
@@ -93,9 +96,27 @@ func (h *Hub) handleEndTurnEvent(endTurnData gameservice.EndTurnData) {
 
 	serializedMsg, err := json.Marshal(msg)
 	if err != nil {
-		log.Printf("Error marshaling dessert played data: %v", err)
+		log.Printf("Error marshaling end turn data: %v", err)
 		return
 	}
 
 	h.broadcastMessage(endTurnData.GameID, serializedMsg)
+}
+
+func (h *Hub) handleEndGameEvent(endGameData gameservice.EndGameData) {
+	msg := struct {
+		Type string                  `json:"type"`
+		Data gameservice.EndGameData `json:"end_game_data"`
+	}{
+		Type: "endGameUpdate",
+		Data: endGameData,
+	}
+
+	serializedMsg, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("Error marshaling end game data: %v", err)
+		return
+	}
+
+	h.broadcastMessage(endGameData.GameID, serializedMsg)
 }

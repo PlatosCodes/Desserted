@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// Handles the coordination of services when a player play's a dessert
+// Handles the coordination of services when a player's turn is over
 func (s *GameService) EndTurnHandler(ctx context.Context, gameID int64, playerGameID int64) error {
 
 	updatedGame, err := s.store.EndTurnTx(ctx, gameID, playerGameID)

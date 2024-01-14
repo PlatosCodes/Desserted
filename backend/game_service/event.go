@@ -8,6 +8,7 @@ const (
 	EventTypeSpecialCardPlayed EventType = "SpecialCardPlayed"
 	EventTypeScoreUpdate       EventType = "ScoreUpdate"
 	EventTypeEndTurn           EventType = "EndTurn"
+	EventTypeEndGame           EventType = "EndGame"
 )
 
 // Event represents a game event
@@ -60,4 +61,11 @@ type EndTurnData struct {
 	CurrentPlayerNumber int32  `json:"current_player_number"`
 }
 
-// ... other data types for different events ...
+// EndGameData carries data for an end game event
+type EndGameData struct {
+	GameID              int64  `json:"game_id"`
+	Status              string `json:"status"`
+	WinningPlayerGameID int64  `json:"winner_player_game_id"`
+	WinningPlayerNumber int32  `json:"winner_player_number"`
+	WinningScore        int32  `json:"winning_score"`
+}

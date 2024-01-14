@@ -51,7 +51,7 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 	}
 	// c.hub.broadcast <- drawCardUpdateMessage
 
-	// Check if all actions are completed
+	//Check if all actions are completed
 	completed, err := c.store.CheckAllActionsCompleted(ctx, drawCardPayload.PlayerGameID)
 	if err != nil {
 		log.Printf("Error checking actions completed: %v", err)
@@ -60,6 +60,7 @@ func (c *Client) handleDrawCard(payload json.RawMessage) {
 
 	if completed.Bool {
 		log.Println("MAKE FIX FOR PLAYER WHO's TURN IS OVER -- EVENT DRIVEN DESIGN>")
+		c.gameService.EndTurnHandler(ctx, c.gameID, card.PlayerGameID)
 	}
 
 }

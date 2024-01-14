@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Desserted_CreateUser_FullMethodName            = "/pb.Desserted/CreateUser"
+	Desserted_ActivateUser_FullMethodName          = "/pb.Desserted/ActivateUser"
 	Desserted_LoginUser_FullMethodName             = "/pb.Desserted/LoginUser"
 	Desserted_Logout_FullMethodName                = "/pb.Desserted/Logout"
 	Desserted_CheckUserSession_FullMethodName      = "/pb.Desserted/CheckUserSession"
@@ -51,6 +52,8 @@ const (
 type DessertedClient interface {
 	// Creates a new user
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
+	// Activates a user
+	ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error)
 	// Logs in a user
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
 	// Logs out a user
@@ -99,6 +102,15 @@ func NewDessertedClient(cc grpc.ClientConnInterface) DessertedClient {
 func (c *dessertedClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
 	out := new(CreateUserResponse)
 	err := c.cc.Invoke(ctx, Desserted_CreateUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dessertedClient) ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error) {
+	out := new(ActivateUserResponse)
+	err := c.cc.Invoke(ctx, Desserted_ActivateUser_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -309,6 +321,8 @@ func (c *dessertedClient) DrawCard(ctx context.Context, in *DrawCardRequest, opt
 type DessertedServer interface {
 	// Creates a new user
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
+	// Activates a user
+	ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error)
 	// Logs in a user
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
 	// Logs out a user
@@ -353,6 +367,9 @@ type UnimplementedDessertedServer struct {
 
 func (UnimplementedDessertedServer) CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedDessertedServer) ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateUser not implemented")
 }
 func (UnimplementedDessertedServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
@@ -447,6 +464,24 @@ func _Desserted_CreateUser_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DessertedServer).CreateUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Desserted_ActivateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DessertedServer).ActivateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Desserted_ActivateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DessertedServer).ActivateUser(ctx, req.(*ActivateUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -857,6 +892,10 @@ var Desserted_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateUser",
 			Handler:    _Desserted_CreateUser_Handler,
+		},
+		{
+			MethodName: "ActivateUser",
+			Handler:    _Desserted_ActivateUser_Handler,
 		},
 		{
 			MethodName: "LoginUser",

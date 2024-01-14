@@ -97,11 +97,6 @@ func (s *GameService) PlayDessertHandler(ctx context.Context, arg PlayDessertHan
 	// Check if the game is won
 	winningCondition := game.IsGameWon(updatedPlayerGame.PlayerScore)
 
-	if winningCondition {
-		// TODO: send event message to end game
-		log.Printf("Player %v has won the game", updatedPlayerGame.PlayerNumber)
-	}
-
 	dessertPlayedEvent := Event{
 		Type: EventTypeDessertPlayed,
 		Data: DessertPlayedData{
@@ -125,7 +120,6 @@ func (s *GameService) PlayDessertHandler(ctx context.Context, arg PlayDessertHan
 		return fmt.Errorf("error checking actions completed: %v", err)
 	}
 
-	log.Println("COMPLETED", completed)
 	if completed.Bool {
 		// notify EndTurnHandler to send event message to end turn, and reset the player's turn actions for next turn
 		s.EndTurnHandler(ctx, arg.GameID, arg.PlayerGameID)
@@ -135,6 +129,11 @@ func (s *GameService) PlayDessertHandler(ctx context.Context, arg PlayDessertHan
 	err = s.UpdateScoresForAllPlayers(ctx, arg.GameID)
 	if err != nil {
 		return err
+	}
+
+	if winningCondition {
+		s.EndGameHandler(ctx, arg.GameID, arg.PlayerGameID)
+		log.Printf("Player %v has won the game", updatedPlayerGame.PlayerNumber)
 	}
 
 	return nil

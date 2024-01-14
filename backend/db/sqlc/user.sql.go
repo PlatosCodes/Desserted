@@ -10,10 +10,21 @@ import (
 	"database/sql"
 )
 
+const activateUser = `-- name: ActivateUser :exec
+UPDATE users
+SET activated = true
+WHERE id = $1
+`
+
+func (q *Queries) ActivateUser(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, activateUser, id)
+	return err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password, email) 
 VALUES ($1, $2, $3) 
-RETURNING id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses
+RETURNING id, username, email, password, activated, password_changed_at, created_at, total_score, total_wins, total_losses
 `
 
 type CreateUserParams struct {
@@ -30,6 +41,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.Activated,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.TotalScore,
@@ -49,7 +61,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
+SELECT id, username, email, password, activated, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
  WHERE email = $1 LIMIT 1
 `
 
@@ -61,6 +73,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.Activated,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.TotalScore,
@@ -71,7 +84,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
+SELECT id, username, email, password, activated, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -83,6 +96,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.Activated,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.TotalScore,
@@ -93,7 +107,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
+SELECT id, username, email, password, activated, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
 WHERE username = $1 LIMIT 1
 `
 
@@ -105,6 +119,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.Activated,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.TotalScore,
@@ -115,7 +130,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
+SELECT id, username, email, password, activated, password_changed_at, created_at, total_score, total_wins, total_losses FROM users
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -140,6 +155,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Username,
 			&i.Email,
 			&i.Password,
+			&i.Activated,
 			&i.PasswordChangedAt,
 			&i.CreatedAt,
 			&i.TotalScore,
@@ -167,7 +183,7 @@ SET
   password_changed_at = COALESCE($3, password_changed_at)
 WHERE
   username = $4
-RETURNING id, username, email, password, password_changed_at, created_at, total_score, total_wins, total_losses
+RETURNING id, username, email, password, activated, password_changed_at, created_at, total_score, total_wins, total_losses
 `
 
 type UpdateUserParams struct {
@@ -190,6 +206,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.Activated,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.TotalScore,

@@ -14,6 +14,7 @@ import (
 type Querier interface {
 	AcceptFriendRequest(ctx context.Context, arg AcceptFriendRequestParams) error
 	AcceptGameInvitation(ctx context.Context, arg AcceptGameInvitationParams) error
+	ActivateUser(ctx context.Context, id int64) error
 	AddCardToPlayerHand(ctx context.Context, arg AddCardToPlayerHandParams) (int64, error)
 	AddPlayerToGame(ctx context.Context, arg AddPlayerToGameParams) error
 	BlockSession(ctx context.Context, id uuid.UUID) error
@@ -32,13 +33,15 @@ type Querier interface {
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Declare the winner of the game
-	DeclareWinner(ctx context.Context, gameID int64) (int64, error)
+	DeclareWinner(ctx context.Context, gameID int64) (DeclareWinnerRow, error)
+	DeleteActivationToken(ctx context.Context, userID int64) error
 	DeleteFriendship(ctx context.Context, friendshipID int64) error
 	DeleteGameInvitation(ctx context.Context, arg DeleteGameInvitationParams) error
 	DeleteUser(ctx context.Context, id int64) error
 	DoesInvitationExist(ctx context.Context, arg DoesInvitationExistParams) (bool, error)
 	DrawTopCard(ctx context.Context, gameID int64) (int64, error)
 	EndGame(ctx context.Context, gameID int64) error
+	GetActivationToken(ctx context.Context, activationToken string) (ActivationToken, error)
 	// Get card by ID
 	GetCardByID(ctx context.Context, cardID int64) (Card, error)
 	// Get card by Name
@@ -58,6 +61,7 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
+	InsertActivationToken(ctx context.Context, arg InsertActivationTokenParams) (ActivationToken, error)
 	InsertIntoGameDeck(ctx context.Context, arg InsertIntoGameDeckParams) (int64, error)
 	IsCardInPlayerHand(ctx context.Context, arg IsCardInPlayerHandParams) (bool, error)
 	IsDeckEmpty(ctx context.Context, gameID int64) (bool, error)
