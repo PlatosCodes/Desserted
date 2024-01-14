@@ -4,6 +4,7 @@ package pb;
 
 import "google/api/annotations.proto";
 import "rpc_create_user.proto";
+import "rpc_activate_user.proto";
 import "rpc_login_user.proto";
 import "rpc_logout.proto";
 import "rpc_check_session.proto";
@@ -15,7 +16,6 @@ import "rpc_list_friend_requests.proto";
 import "rpc_accept_friend_request.proto";
 import "rpc_create_game.proto";
 import "rpc_get_game_by_id.proto";
-
 import "rpc_invite_players_to_game.proto";
 import "rpc_accept_game_invite.proto";
 import "rpc_list_game_invites.proto";
@@ -55,6 +55,17 @@ service Desserted {
           description: "Use this API to create a new user";
           summary: "Create new user";
         };
+    };
+    // Activates a user
+    rpc ActivateUser (ActivateUserRequest) returns (ActivateUserResponse) {
+      option (google.api.http) = {    
+        post: "/v1/activate"
+        body: "*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Activates a user account using activation token";
+        summary: "Activate User Account";
+      };
     };
     // Logs in a user
     rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {

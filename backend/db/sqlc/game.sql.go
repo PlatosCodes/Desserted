@@ -35,17 +35,23 @@ func (q *Queries) CreateGame(ctx context.Context, createdBy int64) (Game, error)
 }
 
 const declareWinner = `-- name: DeclareWinner :one
-SELECT player_id FROM player_game 
+SELECT player_game_id, player_number, player_score FROM player_game 
 WHERE game_id = $1 
 ORDER BY player_score DESC LIMIT 1
 `
 
+type DeclareWinnerRow struct {
+	PlayerGameID int64         `json:"player_game_id"`
+	PlayerNumber sql.NullInt32 `json:"player_number"`
+	PlayerScore  int32         `json:"player_score"`
+}
+
 // Declare the winner of the game
-func (q *Queries) DeclareWinner(ctx context.Context, gameID int64) (int64, error) {
+func (q *Queries) DeclareWinner(ctx context.Context, gameID int64) (DeclareWinnerRow, error) {
 	row := q.db.QueryRowContext(ctx, declareWinner, gameID)
-	var player_id int64
-	err := row.Scan(&player_id)
-	return player_id, err
+	var i DeclareWinnerRow
+	err := row.Scan(&i.PlayerGameID, &i.PlayerNumber, &i.PlayerScore)
+	return i, err
 }
 
 const endGame = `-- name: EndGame :exec

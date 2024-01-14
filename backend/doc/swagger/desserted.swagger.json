@@ -91,6 +91,40 @@
         ]
       }
     },
+    "/v1/activate": {
+      "post": {
+        "summary": "Activate User Account",
+        "description": "Activates a user account using activation token",
+        "operationId": "Desserted_ActivateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbActivateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbActivateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Desserted"
+        ]
+      }
+    },
     "/v1/check_session": {
       "post": {
         "summary": "Check user session",
@@ -842,6 +876,26 @@
         "gameId": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "pbActivateUserRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "activationToken": {
+          "type": "string"
+        }
+      }
+    },
+    "pbActivateUserResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
         }
       }
     },

@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type ActivationToken struct {
+	UserID          int64     `json:"user_id"`
+	ActivationToken string    `json:"activation_token"`
+	IsBlocked       bool      `json:"is_blocked"`
+	ExpiresAt       time.Time `json:"expires_at"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
 // Details of each card used in the game
 type Card struct {
 	CardID int64  `json:"card_id"`
@@ -117,6 +125,7 @@ type User struct {
 	Username          string    `json:"username"`
 	Email             string    `json:"email"`
 	Password          []byte    `json:"password"`
+	Activated         bool      `json:"activated"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 	TotalScore        int32     `json:"total_score"`

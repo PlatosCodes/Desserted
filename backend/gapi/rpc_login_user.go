@@ -34,6 +34,10 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		return nil, status.Errorf(codes.NotFound, "incorrect password")
 	}
 
+	if !user.Activated {
+		return nil, status.Errorf(codes.PermissionDenied, "Please use the link that was sent to your email in order to activate your account.")
+	}
+
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.ID,
 		user.Username,

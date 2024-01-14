@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/PlatosCodes/desserted/backend/pb";
+
+
+message ActivateUserRequest {
+    int64 user_id = 1;
+    string activation_token = 2;
+  }
+  
+  message ActivateUserResponse {
+    string message = 1;
+  }

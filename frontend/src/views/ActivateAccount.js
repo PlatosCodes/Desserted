@@ -1,20 +1,9 @@
 // src/views/ActivateAccount.js
 import React, { useEffect, useState } from 'react';
-import { Typography, Container, Paper, makeStyles } from '@mui/materials/styles';
-import axiosInstance from '../services/apiService';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(3),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: theme.spacing(8),
-  },
-}));
+import { Typography, Container, Paper } from '@mui/material';
+import apiService from '../services/apiService';
 
 function ActivateAccount() {
-    const classes = useStyles();
     const [status, setStatus] = useState('Loading...');
     
     useEffect(() => {
@@ -27,18 +16,18 @@ function ActivateAccount() {
             return;
         }
 
-        axiosInstance.post('/activate', {
+        apiService.post('http://localhost:8082/v1/activate', {
             user_id: parseInt(userId, 10),
             activation_token: activationToken
         }).then(response => {
             setStatus('User successfully activated!');
         }).catch(error => {
-            setStatus('Failed to activate user.');
+            setStatus('Failed to activate user: ' + error.message);
         });
     }, []);
     
     return (
-        <Container component={Paper} className={classes.root} maxWidth="sm">
+        <Container component={Paper} sx={{ padding: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8, maxWidth: 'sm' }}>
             <Typography variant="h4" gutterBottom>
                 Activation Status
             </Typography>

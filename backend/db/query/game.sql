@@ -40,7 +40,7 @@ WHERE game_id = $2;
 
 -- name: DeclareWinner :one
 -- Declare the winner of the game
-SELECT player_id FROM player_game 
+SELECT player_game_id, player_number, player_score FROM player_game 
 WHERE game_id = $1 
 ORDER BY player_score DESC LIMIT 1;
 

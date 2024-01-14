@@ -64,6 +64,16 @@ const apiService = {
         }
     },
 
+
+    activateUser: async (activationData) => {
+        try {
+            const response = await axiosInstance.post('/v1/activate', activationData);
+            return response.data;
+        } catch (error) {
+            handleRequestError(error, 'activating user');
+        }
+    },
+
     loginUser: async (loginData) => {
         try {
             const response = await axiosInstance.post('/v1/login_user', loginData);
