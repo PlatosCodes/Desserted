@@ -61,7 +61,7 @@ createdb_test:
 	docker exec -it ${CONTAINER_NAME} createdb --username=${POSTGRES_USER} --owner=${POSTGRES_USER} ${TEST_DB_NAME}
 
 migrateup_test:
-	migrate -path backend/db/migration -database "${TEST_DB_URL}" -verbose up
+	migrate -path db/migration -database "${TEST_DB_URL}" -verbose up
 
 # Drop the test database
 dropdb_test:
