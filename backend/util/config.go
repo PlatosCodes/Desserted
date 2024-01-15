@@ -46,12 +46,12 @@ func LoadConfig(path string) (config Config, err error) {
 			return
 		}
 	}
-
 	// Unmarshal the configuration (from file and/or env vars) into the Config struct
 	err = viper.Unmarshal(&config)
 	if err != nil {
 		log.Printf("Error unmarshaling config: %v", err)
 	}
+	log.Println("Yo marshal:", config)
 
 	return
 }

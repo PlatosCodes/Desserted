@@ -71,3 +71,4 @@ jobs:
         SMTP_USERNAME: codingplato@gmail.com
         SMTP_SENDER: codingplato@gmail.com
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+
