@@ -24,7 +24,5 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.53
-          working-directory: backend
-          args: run --verbose --out-format=github-actions --issues-exit-code=0
-
-  
+          working-directory: ./backend
+          args: run --verbose --out-format=github-actions --issues-exit-code=0 --path-prefix=backend
