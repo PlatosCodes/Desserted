@@ -61,7 +61,7 @@ jobs:
         HTTP_SERVER_ADDRESS: 0.0.0.0:8082
         GRPC_SERVER_ADDRESS: 0.0.0.0:9091
         FRONTEND_ADDRESS: http://localhost:3000
-        DB_SOURCE: ${{ secrets.TEST_DB_SOURCE }}
+        DB_SOURCE: postgresql://root:bluecomet@localhost:5432/desserted-test?sslmode=disable
         TOKEN_SYMMETRIC_KEY: ${{ secrets.TOKEN_SYMMETRIC_KEY }}
         ACCESS_TOKEN_DURATION: 15m
         REFRESH_TOKEN_DURATION: 24h
