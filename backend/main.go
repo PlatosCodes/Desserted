@@ -38,12 +38,13 @@ func main() {
 	}
 
 	dbSource := "postgresql://root:bluecomet@localhost:5432/desserted?sslmode=disable"
+	log.Println(dbSource)
 	conn, err := sql.Open(config.DBDriver, dbSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	runDBMigration(config.MigrationURL, config.DBSource)
+	runDBMigration(config.MigrationURL, dbSource)
 
 	store := db.NewStore(conn)
 	gameService := gameservice.NewGameService(store)
