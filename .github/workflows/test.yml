@@ -49,6 +49,17 @@ jobs:
       run: make migrateup_test
       working-directory: ./backend
 
+    - name: Debug info
+      run: |
+        echo "POSTGRES_USER=${POSTGRES_USER}"
+        echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+        echo "TEST_DB_NAME=${TEST_DB_NAME}"
+        echo "LOCAL_DB_PATH=${LOCAL_DB_PATH}"
+        ls -l ${LOCAL_DB_PATH}
+
+    - name: Install PostgreSQL client
+      run: sudo apt-get install postgresql-client
+      
     - name: Seed databse
       run: make seeddb_test
       working-directory: ./backend
