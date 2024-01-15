@@ -50,11 +50,11 @@ jobs:
       working-directory: ./backend
 
     - name: Seed databse
-      run: make seeddb
+      run: make seeddb_test
       working-directory: ./backend
 
     - name: Test
-      run: make test
+      run: make test_test
       working-directory: ./backend
       env:
         MIGRATION_URL: file://backend/db/migration
