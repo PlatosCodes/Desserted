@@ -37,7 +37,8 @@ func main() {
 		log.Fatal("cannot load config", err)
 	}
 
-	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	dbSource := "postgresql://root:bluecomet@localhost:5432/desserted-test?sslmode=disable"
+	conn, err := sql.Open(config.DBDriver, dbSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
