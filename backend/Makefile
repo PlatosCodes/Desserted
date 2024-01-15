@@ -73,7 +73,7 @@ seeddb_local_test:
 
 # Seed the database used with Github Actions
 seeddb_test:
-    PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${TEST_DB_NAME} -a -f ./db/seed.sql
+	PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${TEST_DB_NAME} -a -f ./db/seed.sql
 
 resetdb_test:
 	@echo "Resetting test database..."
