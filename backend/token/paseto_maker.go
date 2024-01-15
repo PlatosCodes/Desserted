@@ -40,6 +40,9 @@ func (maker *PasetoMaker) CreateToken(userID int64, username string, duration ti
 		return "", payload, err
 	}
 	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	if err != nil {
+		return "", payload, err
+	}
 
 	return token, payload, err
 }

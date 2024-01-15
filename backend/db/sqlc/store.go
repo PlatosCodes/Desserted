@@ -95,6 +95,10 @@ func (store *SQLStore) RegisterTx(ctx context.Context, arg CreateUserParams) (Re
 		return nil
 	})
 
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
+
 	return result, err
 
 }
@@ -186,6 +190,9 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 
 		return nil
 	})
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
 
 	return result, err
 }
@@ -432,6 +439,10 @@ func (store *SQLStore) StealRandomCardFromPlayerTx(ctx context.Context, playerGa
 		return nil
 	})
 
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
+
 	return StealRandomCardFromPlayerTxResult{
 		TargetPlayerID: targetPlayerID,
 		StolenCardID:   stolenCardID,
@@ -485,6 +496,10 @@ func (store *SQLStore) EndTurnTx(ctx context.Context, gameID int64, playerGameID
 
 		return nil
 	})
+
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
 
 	return result, err
 }
