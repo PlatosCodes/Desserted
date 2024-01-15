@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"embed"
-	"fmt"
 	"io/fs"
 	"log"
 	"net"
@@ -38,14 +37,14 @@ func main() {
 		log.Fatal("cannot load config", err)
 	}
 
-	dbSource := fmt.Sprintf(config.DBSource + "sslmode=disable")
+	log.Println("DB SOURCE YOOOOO", config.DBSource)
 
-	conn, err := sql.Open(config.DBDriver, dbSource)
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	runDBMigration(config.MigrationURL, dbSource)
+	runDBMigration(config.MigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
 	gameService := gameservice.NewGameService(store)
