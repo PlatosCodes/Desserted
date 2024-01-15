@@ -34,20 +34,24 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 
-	err = viper.ReadInConfig() // This is now the fallback option
+	// Try reading the configuration from the file
+	err = viper.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Printf("error config file not found, but continuing: %v", err)
-			err = nil
+			// Config file not found; ignore this error and continue
+			log.Printf("Config file not found, using environment variables")
 		} else {
-			log.Printf("error reading config: %v", err)
+			// Some other error occurred while reading the config file
+			log.Printf("Error reading config: %v", err)
 			return
 		}
 	}
 
+	// Unmarshal the configuration (from file and/or env vars) into the Config struct
 	err = viper.Unmarshal(&config)
 	if err != nil {
-		log.Printf("error unmarshaling config: %v", err)
+		log.Printf("Error unmarshaling config: %v", err)
 	}
+
 	return
 }
