@@ -51,7 +51,6 @@ func LoadConfig(path string) (config Config, err error) {
 	if err != nil {
 		log.Printf("Error unmarshaling config: %v", err)
 	}
-	log.Println("Yo marshal:", config)
 
 	return
 }

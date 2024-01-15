@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"fmt"
 	"io/fs"
 	"log"
 	"net"
@@ -37,8 +38,8 @@ func main() {
 		log.Fatal("cannot load config", err)
 	}
 
-	dbSource := "postgresql://root:bluecomet@localhost:5432/desserted?sslmode=disable"
-	log.Println(dbSource)
+	dbSource := fmt.Sprintf(config.DBSource + "sslmode=disable")
+
 	conn, err := sql.Open(config.DBDriver, dbSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
