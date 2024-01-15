@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -36,6 +37,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, config util.Confi
 	// Verify the token
 	payload, err := validateToken(r, tokenMaker)
 	if err != nil {
+		log.Printf("err is: %v", err)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}

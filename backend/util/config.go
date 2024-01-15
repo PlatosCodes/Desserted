@@ -1,6 +1,7 @@
 package util
 
 import (
+	"log"
 	"time"
 
 	"github.com/spf13/viper"
@@ -27,17 +28,31 @@ type Config struct {
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig(path string) (config Config, err error) {
+	viper.AutomaticEnv()
+
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 
-	viper.AutomaticEnv()
-
+	// Try reading the configuration from the file
 	err = viper.ReadInConfig()
 	if err != nil {
-		return
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found; ignore this error and continue
+			log.Printf("Config file not found, using environment variables")
+		} else {
+			// Some other error occurred while reading the config file
+			log.Printf("Error reading config: %v", err)
+			return
+		}
+	}
+	// Unmarshal the configuration (from file and/or env vars) into the Config struct
+	err = viper.Unmarshal(&config)
+	if err != nil {
+		log.Printf("Error unmarshaling config: %v", err)
 	}
 
-	err = viper.Unmarshal(&config)
+	log.Println(config)
+
 	return
 }

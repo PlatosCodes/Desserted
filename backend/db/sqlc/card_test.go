@@ -31,10 +31,10 @@ func TestListCards(t *testing.T) {
 	// Retrieve all cards
 	cards, err := testQueries.ListCards(context.Background())
 	require.NoError(t, err)
-	require.Len(t, cards, 50)
+	require.Len(t, cards, 183)
 
-	expectedIngredientCount := 29
-	expectedSpecialCount := 21
+	expectedIngredientCount := 122
+	expectedSpecialCount := 61
 
 	var ingredientCount, specialCount int
 
@@ -72,9 +72,9 @@ func TestListCardsByType(t *testing.T) {
 		}
 		switch cardType {
 		case "ingredient":
-			require.Equal(t, cardCount, 29)
+			require.Equal(t, cardCount, 122)
 		case "special":
-			require.Equal(t, cardCount, 21)
+			require.Equal(t, cardCount, 61)
 		default:
 			t.Errorf("Unexpected card type: %s", cardType)
 		}

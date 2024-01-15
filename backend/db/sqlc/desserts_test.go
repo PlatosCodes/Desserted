@@ -38,7 +38,7 @@ func createPlayedDessert(t *testing.T) (playedDessertPlayerID int64, playedDesse
 	player1GameID, _, _ := createActiveGame(t)
 	// Cake is made up of Flour: (id 1-6), Sugar: (id 7-11), Eggs: (id 12-15)
 
-	ingredientCardIDs := []int64{1, 7, 12}
+	// ingredientCardIDs := []int64{1, 7, 12}
 	dessertName := "Cake"
 
 	// // Add flour, sugar and eggs to hand
@@ -49,13 +49,13 @@ func createPlayedDessert(t *testing.T) (playedDessertPlayerID int64, playedDesse
 	// 	})
 	// 	require.NoError(t, err)
 	// }
-	var ingredients []string
-	for _, cardID := range ingredientCardIDs {
-		card, err := testQueries.GetCardByID(context.Background(), cardID)
-		require.NoError(t, err)
+	// var ingredients []string
+	// for _, cardID := range ingredientCardIDs {
+	// 	card, err := testQueries.GetCardByID(context.Background(), cardID)
+	// 	require.NoError(t, err)
 
-		ingredients = append(ingredients, card.Name)
-	}
+	// 	ingredients = append(ingredients, card.Name)
+	// }
 
 	// err := val.ValidateDessert(dessertName, ingredients)
 	// require.NoError(t, err)

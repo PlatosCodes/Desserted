@@ -44,6 +44,7 @@ func (m Mailer) Send(recipient, templateFile string, data interface{}) error {
 	// file system.
 	tmpl, err := template.New("email").ParseFS(templateFS, "templates/"+templateFile)
 	if err != nil {
+		log.Printf("error creating template to send email: %v", err)
 		return err
 	}
 
@@ -75,6 +76,7 @@ func (m Mailer) Send(recipient, templateFile string, data interface{}) error {
 	for i := 1; i <= 3; i++ {
 		err = m.dialer.DialAndSend(msg)
 		if err == nil {
+			log.Printf("Error sending email: %v", err)
 			break
 		}
 

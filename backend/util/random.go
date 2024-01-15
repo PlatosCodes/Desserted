@@ -65,8 +65,7 @@ func RandomIngredient() string {
 // RandomDessert generates a random dessert.
 func RandomDessertName() string {
 	dessertName := []string{
-		"Cake", "Pie", "Chocolate Chip Cookies", "Cheesecake", "Tiramisu",
-		"Matcha Cake", "Saffron Panna Cotta", "Gourmet Truffles", "Gold Leaf Cupcakes",
+		"Cake", "Pie", "Chocolate Chip Cookies", "Cheesecake", "Gourmet Truffles", "Gold Leaf Cupcakes",
 	}
 	return dessertName[rand.Intn(len(dessertName))]
 }

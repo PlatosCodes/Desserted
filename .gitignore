@@ -7,8 +7,7 @@ bin/
 pkg/
 
 # Environment files
-*.env
-./backend/app.env
+./backend/util/random_symmetric_key.go
 ./frontend/.env
 
 ./frontend/src/first.txt

@@ -85,5 +85,9 @@ func (store *SQLStore) PlayDessertTx(ctx context.Context, arg PlayDessertTxParam
 		return nil
 	})
 
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
+
 	return updatedPlayerGame, err
 }

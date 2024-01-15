@@ -2,8 +2,7 @@
 
 *.txt
 
-*.env
-./app.env
+
 
 
 

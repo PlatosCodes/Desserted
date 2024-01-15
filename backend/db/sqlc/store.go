@@ -95,6 +95,10 @@ func (store *SQLStore) RegisterTx(ctx context.Context, arg CreateUserParams) (Re
 		return nil
 	})
 
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
+
 	return result, err
 
 }
@@ -186,45 +190,45 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 
 		return nil
 	})
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
 
 	return result, err
 }
 
 // InitializeDeck initializes the deck for a game.
 func (store *SQLStore) InitializeDeck(ctx context.Context, gameID int64, cardIDs []int64) (int64, error) {
-	game_deck_id := int64(0)
+	var gameDeckID int64
 
-	// Begin transaction
-	tx, err := store.db.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		return game_deck_id, fmt.Errorf("failed to begin transaction: %w", err)
-	}
+	err := store.execTx(ctx, func(q *Queries) error {
+		// Shuffle cardIDs
+		util.Rand().Seed(time.Now().UnixNano())
+		util.Rand().Shuffle(len(cardIDs), func(i, j int) {
+			cardIDs[i], cardIDs[j] = cardIDs[j], cardIDs[i]
+		})
 
-	// Shuffle cardIDs
-	util.Rand().Seed(time.Now().UnixNano())
-	util.Rand().Shuffle(len(cardIDs), func(i, j int) {
-		cardIDs[i], cardIDs[j] = cardIDs[j], cardIDs[i]
+		// Insert each card into game_deck table with order_index
+		for index, cardID := range cardIDs {
+			id, err := q.InsertIntoGameDeck(ctx, InsertIntoGameDeckParams{
+				GameID:     gameID,
+				CardID:     cardID,
+				OrderIndex: int32(index),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to insert card into game_deck: %w", err)
+			}
+			gameDeckID = id
+		}
+
+		return nil
 	})
 
-	// Insert each card into game_deck table with order_index
-	for index, cardID := range cardIDs {
-		game_deck_id, err = store.InsertIntoGameDeck(ctx, InsertIntoGameDeckParams{
-			GameID:     gameID,
-			CardID:     cardID,
-			OrderIndex: int32(index),
-		})
-		if err != nil {
-			tx.Rollback()
-			return game_deck_id, fmt.Errorf("failed to insert card into game_deck: %w", err)
-		}
+	if err != nil {
+		return 0, err
 	}
 
-	// Commit transaction
-	if err := tx.Commit(); err != nil {
-		return game_deck_id, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return game_deck_id, nil
+	return gameDeckID, nil
 }
 
 // RefreshPlayerHand discards the player's hand and draws the same number of new cards.
@@ -435,6 +439,10 @@ func (store *SQLStore) StealRandomCardFromPlayerTx(ctx context.Context, playerGa
 		return nil
 	})
 
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
+
 	return StealRandomCardFromPlayerTxResult{
 		TargetPlayerID: targetPlayerID,
 		StolenCardID:   stolenCardID,
@@ -488,6 +496,10 @@ func (store *SQLStore) EndTurnTx(ctx context.Context, gameID int64, playerGameID
 
 		return nil
 	})
+
+	if err != nil {
+		log.Printf("error with tx in RegisterTx: %v", err)
+	}
 
 	return result, err
 }

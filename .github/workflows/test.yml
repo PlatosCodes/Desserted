@@ -49,6 +49,12 @@ jobs:
       run: make migrateup_test
       working-directory: ./backend
 
+    - name: Install PostgreSQL client
+      run: sudo apt-get install postgresql-client
+    
+    - name: Print working directory
+      run: pwd
+
     - name: Seed databse
       run: make seeddb_test
       working-directory: ./backend
@@ -56,3 +62,14 @@ jobs:
     - name: Test
       run: make test
       working-directory: ./backend
+      env:
+        TOKEN_SYMMETRIC_KEY: ${{ secrets.TOKEN_SYMMETRIC_KEY }}
+        SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+        SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        POSTGRES_USER: root
+        POSTGRES_PASSWORD: bluecomet
+        TEST_DB_NAME: desserted-test
+        LOCAL_DB_PATH: ./backend/db
+        
+

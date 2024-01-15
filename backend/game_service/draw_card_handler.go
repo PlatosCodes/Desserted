@@ -57,7 +57,11 @@ func (s *GameService) DrawCardHandler(ctx context.Context, arg DrawCardHandlerPa
 
 	if completed.Bool {
 		log.Println("player's turn is completed -- they have drawn card and played both a dessert and special card")
-		s.EndTurnHandler(ctx, arg.GameID, card.PlayerGameID)
+		err = s.EndTurnHandler(ctx, arg.GameID, card.PlayerGameID)
+		if err != nil {
+			log.Printf("Error handling end turn event: %v", err)
+			return fmt.Errorf("error handling end turn event: %v", err)
+		}
 	}
 
 	drawCardEvent := Event{
