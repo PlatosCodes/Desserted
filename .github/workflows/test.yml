@@ -54,7 +54,7 @@ jobs:
       working-directory: ./backend
 
     - name: Test
-      run: make test_test
+      run: make test
       working-directory: ./backend
       env:
         MIGRATION_URL: file://backend/db/migration
