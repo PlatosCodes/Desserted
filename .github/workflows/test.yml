@@ -57,7 +57,7 @@ jobs:
       run: make test
       working-directory: ./backend
       env:
-        MIGRATION_URL: file://db/migration
+        MIGRATION_URL: file://backend/db/migration
         HTTP_SERVER_ADDRESS: 0.0.0.0:8082
         GRPC_SERVER_ADDRESS: 0.0.0.0:9091
         FRONTEND_ADDRESS: http://localhost:3000
