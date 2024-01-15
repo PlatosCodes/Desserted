@@ -23,7 +23,6 @@ jobs:
             POSTGRES_USER: root
             POSTGRES_PASSWORD: bluecomet
             POSTGRES_DB: desserted-test
-            DB_SOURCE: ${{ secrets.TEST_DB_SOURCE }}
           ports:
             - 5432:5432
           options: >-
@@ -62,6 +61,7 @@ jobs:
         HTTP_SERVER_ADDRESS: 0.0.0.0:8082
         GRPC_SERVER_ADDRESS: 0.0.0.0:9091
         FRONTEND_ADDRESS: http://localhost:3000
+        DB_SOURCE: ${{ secrets.TEST_DB_SOURCE }}
         TOKEN_SYMMETRIC_KEY: ${{ secrets.TOKEN_SYMMETRIC_KEY }}
         ACCESS_TOKEN_DURATION: 15m
         REFRESH_TOKEN_DURATION: 24h
