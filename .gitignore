@@ -9,6 +9,8 @@ pkg/
 # Environment files
 ./backend/util/random_symmetric_key.go
 ./frontend/.env
+backend/app2.env
+.github/workflows/deploy.yml
 
 ./frontend/src/first.txt
 ./frontend/src/end.txt
