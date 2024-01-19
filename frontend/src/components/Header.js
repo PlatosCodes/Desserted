@@ -130,7 +130,7 @@ const Header = () => {
                             <IconButton color="inherit" onClick={handleCakeIconClick} component={Link} to="/create_game">
                                 <CakeIcon />
                             </IconButton>
-                            <Typography variant="caption">Create</Typography>
+                            <Typography variant="caption">Create Game</Typography>
                         </NavigationAction>
                         <NavigationAction selected={isSelected('/profile')}>
                             <IconButton color="inherit" component={Link} to="/profile">
@@ -142,7 +142,7 @@ const Header = () => {
                             <IconButton color="inherit" component={Link} to="/friend_requests">
                                 <MailIcon />
                             </IconButton>
-                            <Typography variant="caption">Friends</Typography>
+                            <Typography variant="caption">Friend Requests</Typography>
                         </NavigationAction>
                     </Box>
                 )}

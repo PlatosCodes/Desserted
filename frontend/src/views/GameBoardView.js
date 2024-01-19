@@ -28,6 +28,11 @@ const GameboardView = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const selectedCardsRef = useRef(selectedCards);
+    const currentPlayerTurnRef = useRef(currentPlayerTurn);
+
+    useEffect(() => {
+        currentPlayerTurnRef.current = currentPlayerTurn;
+    }, [currentPlayerTurn]);
 
     const fetchPlayerHand = useCallback(async () => {
         setIsLoading(true);
@@ -41,6 +46,7 @@ const GameboardView = () => {
             setIsLoading(false);
         }
     }, [player_game_id]);
+
 
     const handleStealCardDetailedNotification = useCallback((data) => {
         if (data.playerGameID === parseInt(player_game_id, 10)) {
@@ -82,7 +88,7 @@ const GameboardView = () => {
     };
 
     const handleDrawCard = () => {
-        if (game.game.current_player_number === currentPlayerTurn) {
+        if (currentPlayerTurnRef.current === currentPlayerTurn) {
         sendMessage({ type: 'drawCard', data: { game_id: parseInt(game_id, 10), 
                                                 player_game_id: parseInt(playerHand[0].player_game_id, 10), 
                                                 player_number: parseInt(player_number,10), 
@@ -93,12 +99,13 @@ const GameboardView = () => {
     };
 
     const handleEndTurn = () => {
-        if (game.game.current_player_number === parseInt(player_number,10)) {
+        if (currentPlayerTurnRef.current === currentPlayerTurn) {
             sendMessage({ type: 'endTurn', data: { game_id: parseInt(game_id, 10), player_game_id: parseInt(playerHand[0].player_game_id, 10) } });
         }
-        };
+        setSelectedCards([]);
+    };
 
-        const updateScores = (players) => {
+    const updateScores = (players) => {
         const updatedScores = players.map(player => ({
             id: player.player_id,
             score: player.player_score || 0,
@@ -136,17 +143,19 @@ const GameboardView = () => {
                 }
                 break;
             case 'dessertPlayedUpdate':                
-                let message = `Player ${data.data.player_number} played ${data.data.dessert_name} dessert for ${data.data.dessert_score} points!`;
-            
+                let message;
                 if (data.data.player_number === parseInt(player_number, 10)) {
-                    message = data.data.success 
-                        ? `You whipped up a ${data.data.dessert_name} dessert for ${data.data.dessert_score} points!` 
-                        : `Failed to play ${data.data.dessert_name}. Check your ingredients!`;
-                    
                     if (data.data.success) {
+                        // Only remove selected cards from hand if the dessert play was successful
                         setPlayerHand(prevHand => prevHand.filter(card => !selectedCardsRef.current.includes(card.card_id)));
                         setSelectedCards([]);
+                        message = `You whipped up a ${data.data.dessert_name} dessert for ${data.data.dessert_score} points!`;
+                    } else {
+                        // Dessert play failed, do not remove cards from hand
+                        message = `Failed to play ${data.data.dessert_name}. Check your ingredients!`;
                     }
+                } else {
+                    message = `Player ${data.data.player_number} played ${data.data.dessert_name} dessert for ${data.data.dessert_score} points!`;
                 }
                 setSnackbarMessage(message);
                 setSnackbarOpen(true);
@@ -184,6 +193,7 @@ const GameboardView = () => {
     }, [player_number, setPlayerHand, setCurrentPlayerTurn, setGameOver, setWinner, setWinningScore, setSnackbarMessage, setSnackbarOpen, 
         handleStealCardDetailedNotification, handleStealCardGenericNotification]);
 
+
     useEffect(() => {
         selectedCardsRef.current = selectedCards;
     }, [selectedCards]);
@@ -217,7 +227,6 @@ const GameboardView = () => {
                 console.log("G DATA: ", gameData)              
                 setGame(gameData);
                 setCurrentPlayerTurn(gameData.game.current_player_number)
-                console.log("PlayerTURN: ", currentPlayerTurn)              
 
             } catch (error) {
                 console.error('Error fetching game data:', error);
@@ -227,7 +236,7 @@ const GameboardView = () => {
             }
         };
         fetchGame();
-    }, [user.id, game_id, player_game_id, fetchPlayerHand, handleMessage, currentPlayerTurn]);
+    }, [user.id, game_id, player_game_id, fetchPlayerHand, handleMessage]);
 
     useEffect(() => {
         const fetchScores = async () => {

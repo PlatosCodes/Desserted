@@ -38,12 +38,11 @@ const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setP
         setErrorMessage('');
     };
 
-    const handlePlayDessert = async () => {
+    const handlePlayDessert = () => {
         if (!dessertName || selectedCards.length === 0) {
             setErrorMessage("Please select a dessert and at least one card");
             return;
         }
-    
         try {
             // Prepare the data for the WebSocket message
             const dessertData = {
@@ -54,8 +53,6 @@ const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setP
             };
             // Send the message through WebSocket
             sendMessage({ type: 'playDessert', data: dessertData });
-            setPlayerHand(prevHand => prevHand.filter(card => !selectedCardsRef.current.includes(card.card_id)));
-            setSelectedCards([]);
         } catch (error) {
             console.error('Error playing dessert:', error);
             setErrorMessage('Failed to play dessert. Please try again.');
@@ -63,7 +60,6 @@ const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setP
         resetSelections();
         setErrorMessage('');
     };
-    
 
     return (
         <Paper elevation={3} style={{ padding: '20px', minHeight: '200px' }}>
@@ -110,9 +106,9 @@ const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setP
                     label="Special Card"
                     onChange={(e) => setSpecialCardType(e.target.value)}
                 >
-                    <MenuItem value="RefreshPantry">Refresh Pantry</MenuItem>
-                    <MenuItem value="StealCard">Steal Card</MenuItem>
-                    <MenuItem value="InstantBake">Instant Bake</MenuItem>
+                    <MenuItem value="Refresh Pantry">Refresh Pantry</MenuItem>
+                    <MenuItem value="Steal Card">Steal Card</MenuItem>
+                    <MenuItem value="Instant Bake">Instant Bake</MenuItem>
                     <MenuItem value="Sabotage">Sabotage</MenuItem>
                 </Select>
             </FormControl>

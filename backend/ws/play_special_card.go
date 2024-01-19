@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -29,8 +30,29 @@ func (c *Client) handlePlaySpecialCard(payload json.RawMessage) {
 
 	ctx := context.Background()
 
+	card, err := c.store.GetCardByID(ctx, specialCardPayload.CardID)
+	if err != nil || card.Name != specialCardPayload.CardType {
+		errr := errors.New("the card submitted does not match the special card type selected")
+		log.Printf("Error in validating special card: %v", errr)
+		log.Printf("card sent was: %s and card in db is: %s", specialCardPayload.CardType, card.Name)
+		// Optionally, send an error message back to the client
+		c.sendErrorMessage("Failed to validate special card: " + errr.Error())
+		return
+	}
+
+	inHand, err := c.store.IsCardInPlayerHand(ctx, db.IsCardInPlayerHandParams{
+		PlayerGameID: specialCardPayload.PlayerGameID,
+		CardID:       specialCardPayload.CardID,
+	})
+	if err != nil || !inHand {
+		log.Printf("Error in validating special card in player's hand: %v", err)
+		// Optionally, send an error message back to the client
+		c.sendErrorMessage("error in validating special card in player's hand: " + err.Error())
+		return
+	}
+
 	switch specialCardPayload.CardType {
-	case "RefreshPantry":
+	case "Refresh Pantry":
 		err := c.store.RefreshPlayerPantryTx(ctx, specialCardPayload.PlayerGameID, specialCardPayload.CardID)
 		if err != nil {
 			log.Printf("Error refreshing player hand: %v", err)
@@ -46,7 +68,7 @@ func (c *Client) handlePlaySpecialCard(payload json.RawMessage) {
 				c.sendUpdatedHand(newHand)
 			}
 		}
-	case "StealCard":
+	case "Steal Card":
 		targetPlayerID, stolenCard, err := c.stealRandomCard(ctx, specialCardPayload.PlayerGameID, specialCardPayload.CardID)
 		if err != nil {
 			log.Printf("Error in stealing card: %v", err)
