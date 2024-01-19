@@ -1,7 +1,6 @@
 // src/components/PlayArea.js
 import React, { useState, useRef, useEffect } from 'react';
 import { Paper, Typography, Button, Chip, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import apiService from '../services/apiService';
 import { sendMessage } from '../services/websocketService';
 
 const PlayArea = ({ game_id, playerGameId, selectedCards, setSelectedCards, setPlayerHand, playerHand, currentPlayerTurn, playerNumber}) => {

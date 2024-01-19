@@ -1,6 +1,6 @@
 // src/components/FriendRequestList.js
 import React from 'react';
-import { List, ListItem, Button, ListItemText, Snackbar } from '@mui/material';
+import { List, ListItem, Button, ListItemText } from '@mui/material';
 
 const FriendRequestList = ({ friendRequests, onAccept }) => {
     return (

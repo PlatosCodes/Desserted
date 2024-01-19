@@ -35,18 +35,20 @@ const UserProfile = () => {
     };
 
     return (
-        <Paper>
-            <Typography variant="h4">Update Profile</Typography>
-            <form onSubmit={handleSubmit}>
-                <TextField label="Username" name="username" value={formData.username} onChange={handleChange} />
-                <TextField label="Email" name="email" value={formData.email} onChange={handleChange} />
-                <TextField label="Password" name="password" type="password" value={formData.password} onChange={handleChange} />
-                <Button type="submit">Update</Button>
-            </form>
-            {updateProfileMutation.isError && (
-                <Alert severity="error">{updateProfileMutation.error.message}</Alert>
-            )}
-        </Paper>
+        <StyledContainer>
+            <Paper>
+                <Typography variant="h4">Update Profile</Typography>
+                <form onSubmit={handleSubmit}>
+                    <TextField label="Username" name="username" value={formData.username} onChange={handleChange} />
+                    <TextField label="Email" name="email" value={formData.email} onChange={handleChange} />
+                    <TextField label="Password" name="password" type="password" value={formData.password} onChange={handleChange} />
+                    <Button type="submit">Update</Button>
+                </form>
+                {updateProfileMutation.isError && (
+                    <Alert severity="error">{updateProfileMutation.error.message}</Alert>
+                )}
+            </Paper>
+        </StyledContainer>
     );
 };
 

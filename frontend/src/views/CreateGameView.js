@@ -5,8 +5,9 @@ import { selectUser } from '../features/user/userSlice';
 import { useUserFriends } from '../hooks/useUserFriends.js';
 import { useMutation, useQueryClient } from 'react-query';
 import apiService from '../services/apiService';
-import { Button, Container, Typography, Alert, Snackbar, Checkbox, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { Container, Typography, Alert, Snackbar, Checkbox, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { GradientButton } from '../commonStyledComponents.js';
 
 const CreateGameView = () => {
     const user = useSelector(selectUser);
@@ -70,7 +71,7 @@ const CreateGameView = () => {
                     ))}
                 </List>
             )}
-            <Button onClick={handleCreateGame} disabled={isLoading}>Create Game and Invite Friends</Button>
+            <GradientButton onClick={handleCreateGame} disabled={isLoading}>Create Game and Invite Friends</GradientButton>
             {feedback && (
                 <Snackbar open={Boolean(feedback)} autoHideDuration={6000} onClose={() => setFeedback('')}>
                     <Alert onClose={() => setFeedback('')} severity={createGameMutation.isError ? 'error' : 'info'}>

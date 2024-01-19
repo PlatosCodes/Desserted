@@ -155,7 +155,7 @@ func (store *SQLStore) StartGameTx(ctx context.Context, arg StartGameTxParams) (
 				return err
 			}
 
-			for i := 0; i < 7; i++ { // Deal 7 cards to each player
+			for i := 0; i < 10; i++ { // Deal 7 cards to each player
 				top_card, err := store.DrawTopCard(ctx, arg.GameID)
 				if err != nil {
 					return fmt.Errorf("failed to draw top card: %w", err)

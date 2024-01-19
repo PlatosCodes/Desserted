@@ -4,7 +4,7 @@ import { Box, Typography, Button, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 import Confetti from 'react-confetti';
 // 
-const EndGame = ({ winner, score }) => {
+const EndGame = ({ winner, winningScore, winningMessage }) => {
     const theme = useTheme();
     // const [width, height] = "auto";
 
@@ -41,10 +41,10 @@ const EndGame = ({ winner, score }) => {
                 Game Over
             </Typography>
             <Typography variant="h4" gutterBottom>
-                {`Congratulations, ${winner}!`}
+                {`Congratulations, Player ${winner}!`}
             </Typography>
             <Typography variant="h5">
-                {`Final Score: ${score}`}
+                {`Final Score: ${winningScore}`}
             </Typography>
             <Button
                 component={motion.button}

@@ -15,7 +15,7 @@ export const useWebSocket = (userId, onMessageHandler) => {
         newSocket.onclose = (event) => console.log('WebSocket Disconnected', event.code, event.reason);
 
         setSocket(newSocket);
-    }, [userId, onMessageHandler]);
+    }, [onMessageHandler]);
 
     const disconnect = useCallback(() => {
         if (socket) {
