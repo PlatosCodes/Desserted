@@ -19,11 +19,11 @@ type Config struct {
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-	SmtpHost             string        `mapstructure:"smtpHost"`
-	SmtpPort             int           `mapstructure:"smtpPort"`
-	SmtpUsername         string        `mapstructure:"smtpUsername"`
-	SmtpPassword         string        `mapstructure:"smtpPassword"`
-	SmtpSender           string        `mapstructure:"smtpSender"`
+	SmtpHost             string        `mapstructure:"SMTP_HOST"`
+	SmtpPort             int           `mapstructure:"SMTP_PORT"`
+	SmtpUsername         string        `mapstructure:"SMTP_USERNAME"`
+	SmtpPassword         string        `mapstructure:"SMTP_PASSWORD"`
+	SmtpSender           string        `mapstructure:"SMTP_SENDER"`
 }
 
 // LoadConfig reads configuration from file or environment variables.
@@ -52,7 +52,7 @@ func LoadConfig(path string) (config Config, err error) {
 		log.Printf("Error unmarshaling config: %v", err)
 	}
 
-	log.Println(config)
+	log.Println(config.FrontendAddress)
 
 	return
 }

@@ -11,7 +11,6 @@ import { selectUser } from '../features/user/userSlice';
 import Cookie from 'js-cookie';
 import apiService from '../services/apiService';
 import { useParams } from 'react-router-dom';
-import { useWebSocket } from '../hooks/useWebSocket'; 
 
 const GameboardView = () => {
     const user = useSelector(selectUser);
@@ -30,50 +29,7 @@ const GameboardView = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const selectedCardsRef = useRef(selectedCards);
 
-
-    useEffect(() => {
-        selectedCardsRef.current = selectedCards;
-    }, [selectedCards]);
-
-    useEffect(() => {
-        const token = Cookie.get('access_token');
-        const ws = connectWebSocket(token, game_id, player_game_id, handleMessage);
-        
-        // Reset the game state and fetch new data when game_id changes
-        resetGameState();
-        fetchPlayerHand();
-
-        return () => {
-            closeWebSocket();
-            resetGameState(); 
-        };
-    }, [user.id, game_id, player_game_id]);
-
-    const resetGameState = () => {
-        setPlayerHand([]);
-        setSelectedCards([]);
-        setPlayerScores([]);
-        setCurrentPlayerTurn(null);
-    };
-
-    useEffect(() => {
-        const fetchGame = async () => {
-            setIsLoading(true);
-            try {
-                const gameData = await apiService.getGameDetails(game_id);                
-                setGame(gameData);
-                setCurrentPlayerTurn(gameData.game.current_player_number)
-            } catch (error) {
-                console.error('Error fetching game data:', error);
-                // Handle error appropriately
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchGame();
-    }, [game_id]);
-
-    const fetchPlayerHand = async () => {
+    const fetchPlayerHand = useCallback(async () => {
         setIsLoading(true);
         try {
             const handData = await apiService.getPlayerHand(player_game_id);
@@ -84,26 +40,7 @@ const GameboardView = () => {
         } finally {
             setIsLoading(false);
         }
-    };
-
-    useEffect(() => {
-        const fetchScores = async () => {
-            try {
-                const playersData = await apiService.listGamePlayers( {game_id: parseInt(game_id, 10) });
-                setPlayerScores(playersData.players.map(player => ({
-                    id: player.player_id,
-                    player_number: player.player_number,
-                    // name: player.username, 
-                    score: typeof player.player_score === 'object' ? 
-                    (player.player_score.Valid ? player.player_score.Int32 : 0) :
-                    (player.player_score !== undefined ? player.player_score : 0)
-         })));
-            } catch (error) {
-                console.error('Error fetching game players:', error);
-            }
-        };
-        fetchScores();
-    }, []);
+    }, [player_game_id]);
 
     const handleStealCardDetailedNotification = useCallback((data) => {
         if (data.playerGameID === parseInt(player_game_id, 10)) {
@@ -131,7 +68,50 @@ const GameboardView = () => {
         setSnackbarOpen(true);
     }, [setSnackbarMessage, setSnackbarOpen]);
 
-    
+
+    const handleCardSelect = (cardId) => {
+        setSelectedCards(prevSelectedCards => {
+            const newSelectedCards = new Set(prevSelectedCards);
+            if (newSelectedCards.has(cardId)) {
+                newSelectedCards.delete(cardId);
+            } else {
+                newSelectedCards.add(cardId);
+            }
+            return Array.from(newSelectedCards);
+        });
+    };
+
+    const handleDrawCard = () => {
+        if (game.game.current_player_number === currentPlayerTurn) {
+        sendMessage({ type: 'drawCard', data: { game_id: parseInt(game_id, 10), 
+                                                player_game_id: parseInt(playerHand[0].player_game_id, 10), 
+                                                player_number: parseInt(player_number,10), 
+                                                player_hand_id: parseInt(playerHand[0].player_hand_id, 10)} });
+    } else {
+            alert("It's not your turn!");
+        }
+    };
+
+    const handleEndTurn = () => {
+        if (game.game.current_player_number === parseInt(player_number,10)) {
+            sendMessage({ type: 'endTurn', data: { game_id: parseInt(game_id, 10), player_game_id: parseInt(playerHand[0].player_game_id, 10) } });
+        }
+        };
+
+        const updateScores = (players) => {
+        const updatedScores = players.map(player => ({
+            id: player.player_id,
+            score: player.player_score || 0,
+        }));
+        setPlayerScores(updatedScores);
+    };
+
+    // Snackbar close handler
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
+
     const handleMessage = useCallback((event) => {
         console.log("WebSocket Message Received:", event);
 
@@ -184,11 +164,11 @@ const GameboardView = () => {
                 setCurrentPlayerTurn(data.end_turn_data.current_player_number);
                 break;
             case 'endGameUpdate':
-                let endGameMessage = `Player ${data.end_game_data.winner_player_number} has won the game with ${data.end_game_data.winner_player_number} points!`;
+                let endGameMessage = `Player ${data.end_game_data.winner_player_number} has won the game with ${data.end_game_data.winning_score} points!`;
                 setCurrentPlayerTurn(0)
                 setGameOver(true);
                 setWinner(data.end_game_data.winner_player_number);
-                setWinningScore(data.end_game_data.dessert_score);
+                setWinningScore(data.end_game_data.winning_score);
                 setWinningMessage(endGameMessage);
                 setSnackbarMessage(endGameMessage);
                 setSnackbarOpen(true);
@@ -201,50 +181,73 @@ const GameboardView = () => {
             default:
                 console.warn('Unhandled message type:', data.type);
         }
-    }, [setPlayerHand, setPlayerScores, setCurrentPlayerTurn, setGameOver, setWinner, setWinningScore, setSnackbarMessage, setSnackbarOpen, 
+    }, [player_number, setPlayerHand, setCurrentPlayerTurn, setGameOver, setWinner, setWinningScore, setSnackbarMessage, setSnackbarOpen, 
         handleStealCardDetailedNotification, handleStealCardGenericNotification]);
 
-    const handleCardSelect = (cardId) => {
-        setSelectedCards(prevSelectedCards => {
-            const newSelectedCards = new Set(prevSelectedCards);
-            if (newSelectedCards.has(cardId)) {
-                newSelectedCards.delete(cardId);
-            } else {
-                newSelectedCards.add(cardId);
+    useEffect(() => {
+        selectedCardsRef.current = selectedCards;
+    }, [selectedCards]);
+
+    const resetGameState = () => {
+        setPlayerHand([]);
+        setSelectedCards([]);
+        setPlayerScores([]);
+        setCurrentPlayerTurn(null);
+    };
+
+    useEffect(() => {
+        const token = Cookie.get('access_token');
+        connectWebSocket(token, game_id, player_game_id, handleMessage);
+        
+        // Reset the game state and fetch new data when game_id changes
+        resetGameState();
+        fetchPlayerHand(player_game_id);
+
+        return () => {
+            closeWebSocket();
+            resetGameState(); 
+        };
+    }, [user.id, game_id, player_game_id, fetchPlayerHand, handleMessage]);
+
+    useEffect(() => {
+        const fetchGame = async () => {
+            setIsLoading(true);
+            try {
+                const gameData = await apiService.getGameDetails(game_id);  
+                console.log("G DATA: ", gameData)              
+                setGame(gameData);
+                setCurrentPlayerTurn(gameData.game.current_player_number)
+                console.log("PlayerTURN: ", currentPlayerTurn)              
+
+            } catch (error) {
+                console.error('Error fetching game data:', error);
+                // Handle error appropriately
+            } finally {
+                setIsLoading(false);
             }
-            return Array.from(newSelectedCards);
-        });
-    };
+        };
+        fetchGame();
+    }, [user.id, game_id, player_game_id, fetchPlayerHand, handleMessage, currentPlayerTurn]);
 
-    const handleDrawCard = () => {
-        if (game.game.current_player_number === parseInt(player_number,10)) {
-        sendMessage({ type: 'drawCard', data: { game_id: parseInt(game_id, 10), 
-                                                player_game_id: parseInt(playerHand[0].player_game_id, 10), 
-                                                player_number: parseInt(player_number,10), 
-                                                player_hand_id: parseInt(playerHand[0].player_hand_id, 10)} });
-    } else {
-            alert("It's not your turn!");
-        }
-    };
+    useEffect(() => {
+        const fetchScores = async () => {
+            try {
+                const playersData = await apiService.listGamePlayers( {game_id: parseInt(game_id, 10) });
+                setPlayerScores(playersData.players.map(player => ({
+                    id: player.player_id,
+                    player_number: player.player_number,
+                    // name: player.username, 
+                    score: typeof player.player_score === 'object' ? 
+                    (player.player_score.Valid ? player.player_score.Int32 : 0) :
+                    (player.player_score !== undefined ? player.player_score : 0)
+         })));
+            } catch (error) {
+                console.error('Error fetching game players:', error);
+            }
+        };
+        fetchScores();
+    }, [game_id]);
 
-    const handleEndTurn = () => {
-        if (game.game.current_player_number === parseInt(player_number,10)) {
-            sendMessage({ type: 'endTurn', data: { game_id: parseInt(game_id, 10), player_game_id: parseInt(playerHand[0].player_game_id, 10) } });
-        }
-      };
-
-      const updateScores = (players) => {
-        const updatedScores = players.map(player => ({
-            id: player.player_id,
-            score: player.player_score || 0,
-        }));
-        setPlayerScores(updatedScores);
-    };
-
-    // Snackbar close handler
-    const handleSnackbarClose = () => {
-        setSnackbarOpen(false);
-    };
 
     if (isLoading) return <CircularProgress />;
     if (!game) return <Typography variant="h6">Game not found or error loading game</Typography>;

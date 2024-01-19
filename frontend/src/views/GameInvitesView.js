@@ -6,6 +6,16 @@ import { selectUser } from '../features/user/userSlice';
 import { useGameInvites } from '../hooks/useGameInvites';
 import { useMutation, useQueryClient } from 'react-query';
 import apiService from '../services/apiService';
+import { styled } from '@mui/material/styles';
+
+
+const SmallVibrantTypography = styled(Typography)(({ theme }) => ({
+  color: '##000',
+  textShadow: '10px 0px 8px rgba(0, 0, 0, 0.8)',
+  fontWeight: 'bold',
+  fontSize: '2rem',
+}));
+
 
 const GameInvitesView = () => {
   const user = useSelector(selectUser);
@@ -48,7 +58,7 @@ const GameInvitesView = () => {
 
   return (
     <Container>
-      <Typography variant="h4">Game Invites</Typography>
+      <SmallVibrantTypography variant="h4">Game Invites</SmallVibrantTypography>
       <List>
         {gameInvites.map(invite => (
           <ListItem key={invite.game_invitation_id}>

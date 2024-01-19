@@ -16,7 +16,8 @@ function ActivateAccount() {
             return;
         }
 
-        apiService.post('http://localhost:8082/v1/activate', {
+        // Use the activateUser method from apiService
+        apiService.activateUser({
             user_id: parseInt(userId, 10),
             activation_token: activationToken
         }).then(response => {

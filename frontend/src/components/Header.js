@@ -1,13 +1,17 @@
 // src/components/Header.js
-import React, {useEffect, useState} from 'react';
 import { styled } from '@mui/material/styles';
-import { AppBar, Toolbar, Typography, Button, BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
 import CakeIcon from '@mui/icons-material/Cake';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 import StarIcon from '@mui/icons-material/Star';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser, selectAuthenticated } from '../features/user/userSlice';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { GradientButton } from '../commonStyledComponents';
+import MailIcon from '@mui/icons-material/Mail';
+import Box from '@mui/material/Box';
+
+
 
 const PREFIX = 'Header';
 
@@ -26,7 +30,8 @@ const StyledAppBar = styled(AppBar)((
     }
 ) => ({
     [`&.${classes.appBar}`]: {
-        backgroundColor: '#1E213A',
+        backgroundColor: 'rgba(255, 250, 245, 0.85)',
+        backdropFilter: 'blur(5px)',
     },
 
     [`& .${classes.toolbar}`]: {
@@ -40,6 +45,7 @@ const StyledAppBar = styled(AppBar)((
         alignItems: 'center',
         fontSize: '1.5rem',
         letterSpacing: '1px',
+        color: 'black'
     },
 
     [`& .${classes.logo}`]: {
@@ -59,21 +65,26 @@ const StyledAppBar = styled(AppBar)((
     },
 
     [`& .${classes.bottomNav}`]: {
-        backgroundColor: 'white',
         boxShadow: 'none',
+        backgroundColor: 'rgba(255, 250, 245, 0.85)',
+
     }
 }));
+
+const NavigationAction = styled(Box)(({ theme, selected }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: selected ? theme.palette.secondary.main : theme.palette.action.active,
+    paddingBottom: theme.spacing(1),
+  }));
 
 const Header = () => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
-    const [value, setValue] = useState(location.pathname);
-
-    useEffect(() => {
-        setValue(location.pathname);
-    }, [location.pathname]);
 
     const handleCakeIconClick = () => {
         sessionStorage.removeItem("cakeListCurrentPage");
@@ -93,34 +104,59 @@ const Header = () => {
 
     const isAuthenticated = useSelector(selectAuthenticated);
 
+    const isSelected = (path) => location.pathname === path;
+
     return (
         <StyledAppBar position="static" className={classes.appBar}>
             <Toolbar className={classes.toolbar}>
-            <Typography variant="h6" className={classes.title}>
-                <Link to="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
-                    <img src='./images/cake.webp' alt="App Logo" className={classes.logo} />
-                    Desserted
-                </Link>
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '120px'}}>
+                    <Typography variant="h6" className={classes.title}>
+                        <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <img src='images/cake.webp' alt="App Logo" className={classes.logo} />
+                            Desserted
+                        </Link>
+                    </Typography>
+                </Box>
+
                 {isAuthenticated && (
-                    <Button variant="contained" className={classes.logoutButton} onClick={handleLogout}>
-                        Logout
-                    </Button>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-around', flexGrow: 1 }}>
+                        <NavigationAction selected={isSelected('/dashboard')}>
+                            <IconButton color="inherit" component={Link} to="/dashboard">
+                                <LibraryAddCheckIcon />
+                            </IconButton>
+                            <Typography variant="caption">Dashboard</Typography>
+                        </NavigationAction>
+                        <NavigationAction selected={isSelected('/create_game')}>
+                            <IconButton color="inherit" onClick={handleCakeIconClick} component={Link} to="/create_game">
+                                <CakeIcon />
+                            </IconButton>
+                            <Typography variant="caption">Create</Typography>
+                        </NavigationAction>
+                        <NavigationAction selected={isSelected('/profile')}>
+                            <IconButton color="inherit" component={Link} to="/profile">
+                                <StarIcon />
+                            </IconButton>
+                            <Typography variant="caption">Profile</Typography>
+                        </NavigationAction>
+                        <NavigationAction selected={isSelected('/friend_requests')}>
+                            <IconButton color="inherit" component={Link} to="/friend_requests">
+                                <MailIcon />
+                            </IconButton>
+                            <Typography variant="caption">Friends</Typography>
+                        </NavigationAction>
+                    </Box>
+                )}
+
+                {isAuthenticated && (
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '120px'}}>
+                        <GradientButton variant="contained" onClick={handleLogout}>
+                            Logout
+                        </GradientButton>
+                    </Box>
                 )}
             </Toolbar>
-            {isAuthenticated && (
-                <BottomNavigation 
-                value={value} 
-                onChange={(event, newValue) => setValue(newValue)} 
-                className={classes.bottomNav}
-                >
-                <BottomNavigationAction label="Dashboard" value="/dashboard" icon={<LibraryAddCheckIcon />} component={Link} to="/dashboard" />
-                <BottomNavigationAction label="Create Game" value="Create Game" icon={<CakeIcon />} component={Link} onClick={handleCakeIconClick} to="/create_game" />
-                <BottomNavigationAction label="Profile" value="Profile View" icon={<StarIcon />} component={Link} to="/profile" />
-            </BottomNavigation>
-                )}
         </StyledAppBar>
     );
-}
+};
 
 export default Header;
