@@ -11,13 +11,13 @@ Desserted is a strategic, fun, and engaging online card game where players combi
 ## Getting Started
 
 ### Prerequisites
-- Node.js (required for development environment setup)
 - Go (for the backend)
 - PostgreSQL (for the database)
 - gRPC and Protobuf (for API design and communication)
 - WebSocket (for real-time interaction)
 - dbdocs (for database documentation)
 - sqlc (for generating Go code from SQL)
+- Node.js (required for development environment setup)
 
 ### Installation
 - Clone the repository: `git clone [github.com/PlatosCodes/Desserted]`
@@ -44,14 +44,8 @@ Desserted is a strategic, fun, and engaging online card game where players combi
 - **sqlc**: Generating type-safe Go code from SQL.
 
 ### Deployment
-- **Initial Testing**: Deployed on Heroku for the beta version, ensuring cost-effectiveness and ease of setup.
+- **Initial Testing**: Deployed on AWS free tier for the beta version, ensuring cost-effectiveness and ease of setup.
 - **Full Version**: Planned deployment on AWS for scalability and robustness to handle a larger user base.
-
-### Contributing
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](/tags).
 
 ## Authors
 - Alexander Merola - *Initial work* - [PlatosCodes](https://github.com/yourprofile)
